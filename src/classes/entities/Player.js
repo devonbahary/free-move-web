@@ -1,9 +1,9 @@
 import { Character } from './Character';
 
 export class Player extends Character {
-    constructor(startCoord) {
+    constructor(startPosition) {
         super();
         this.setElementId('player');
-        this.moveTo(startCoord.x, startCoord.y);
+        this.moveTo(startPosition.x, startPosition.y);
     }
 }

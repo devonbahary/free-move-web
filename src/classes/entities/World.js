@@ -3,7 +3,7 @@ import { Element } from './Element';
 import { Player } from "./Player";
 
 export class World extends Element {
-    constructor(bounds, playerStartCoord) {
+    constructor(bounds, playerStartPosition) {
         super();
 
         const { width, height } = bounds; 
@@ -13,7 +13,7 @@ export class World extends Element {
         
         this.entities = [];
         
-        this.player = new Player(playerStartCoord);
+        this.player = new Player(playerStartPosition);
         this.addEntity(this.player);
     }
 

@@ -8,14 +8,14 @@ const gameParams = {
         height: 15,
     },
     player: {
-        startCoord: {
+        startPosition: {
             x: 12,
             y: 7,
         },
     },
 };
 
-const world = new World(gameParams.bounds, gameParams.player.startCoord);
+const world = new World(gameParams.bounds, gameParams.player.startPosition);
 new Control(world);
 
 setInterval(() => {
