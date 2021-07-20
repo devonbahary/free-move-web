@@ -1,4 +1,5 @@
-import { World } from './classes/World';
+import { Control } from './classes/Control';
+import { World } from './classes/entities/World';
 import './main.css';
 
 const gameParams = {
@@ -9,6 +10,7 @@ const gameParams = {
 };
 
 const world = new World(gameParams.bounds.width, gameParams.bounds.height);
+new Control(world);
 
 setInterval(() => {
     world.update();

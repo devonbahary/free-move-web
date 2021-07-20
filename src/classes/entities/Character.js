@@ -1,9 +1,12 @@
+import { vector } from '../../utilities';
 import { Element } from './Element';
 
 export class Character extends Element {
     constructor(radius = 0.5) {
         super();
 
+        this.acceleration = vector(0, 0);
+        
         this.radius = radius;
         
         this.element = Element.createCharacter();
@@ -26,13 +29,23 @@ export class Character extends Element {
         return this.y + this.radius * 2;
     }
 
+    move(vector) {
+        this.acceleration = vector;
+    }
+
     moveTo(x, y) {
         this.x = x;
         this.y = y;
     }
 
     update() {
+        this.updatePosition();
         this.updateElementPosition(this.x, this.y);
+    }
+
+    updatePosition() {
+        this.x += this.acceleration.x;
+        this.y += this.acceleration.y;
     }
 
 }

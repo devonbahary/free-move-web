@@ -1,4 +1,4 @@
-import { convertSizeToPixels } from '../utilities';
+import { convertSizeToPixels } from '../../utilities';
 import { Element } from './Element';
 import { Player } from "./Player";
 

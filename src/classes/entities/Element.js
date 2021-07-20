@@ -1,4 +1,4 @@
-import { convertSizeToPixels } from "../utilities";
+import { convertSizeToPixels } from "../../utilities";
 
 export class Element {
     constructor() {
