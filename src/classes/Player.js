@@ -2,7 +2,8 @@ import { Character } from './Character';
 
 export class Player extends Character {
     constructor() {
-        super(20);
+        super();
         this.setElementId('player');
+        this.moveTo(6, 4);
     }
 }

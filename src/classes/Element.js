@@ -1,3 +1,5 @@
+import { convertSizeToPixels } from "../utilities";
+
 export class Element {
     constructor() {
         this.element = null;
@@ -11,13 +13,31 @@ export class Element {
 
     setElementDimensions(width, height) {
         Object.assign(this.element.style, {
-            width: `${width}px`,
-            height: `${height}px`,  
+            width: convertSizeToPixels(width),
+            height: convertSizeToPixels(height),  
         });
     }
 
     updateElementPosition() {
-        this.element.style.left = `${this.x0}px`;
-        this.element.style.top = `${this.y0}px`;
+        this.element.style.left = convertSizeToPixels(this.x0);
+        this.element.style.top = convertSizeToPixels(this.y0);
+    }
+
+    static createCharacter() {
+        return Element.createElement('span', 'character');
+    }
+
+    static createGridRow() {
+        return Element.createElement('div', 'row');
+    }
+
+    static createGridColumn() {
+        return Element.createElement('div', 'column');
+    }
+
+    static createElement(htmlElement, elementClass) {
+        const element = document.createElement(htmlElement);
+        if (elementClass) element.classList.add(elementClass);
+        return element;
     }
 }

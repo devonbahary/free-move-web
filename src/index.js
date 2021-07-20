@@ -3,8 +3,8 @@ import './main.css';
 
 const gameParams = {
     bounds: {
-        width: 400,
-        height: 400,
+        width: 24,
+        height: 16,
     },
 };
 

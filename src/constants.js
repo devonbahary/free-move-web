@@ -1,0 +1,1 @@
+export const PIXELS_IN_SQUARE = 24;
