@@ -38,7 +38,4 @@ export class Character extends Element {
         this.updateElementPosition(this.x, this.y);
     }
 
-    updatePosition() {
-        
-    }
 }
