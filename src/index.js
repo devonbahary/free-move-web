@@ -4,12 +4,18 @@ import './main.css';
 
 const gameParams = {
     bounds: {
-        width: 24,
-        height: 16,
+        width: 25,
+        height: 15,
+    },
+    player: {
+        startCoord: {
+            x: 12,
+            y: 7,
+        },
     },
 };
 
-const world = new World(gameParams.bounds.width, gameParams.bounds.height);
+const world = new World(gameParams.bounds, gameParams.player.startCoord);
 new Control(world);
 
 setInterval(() => {

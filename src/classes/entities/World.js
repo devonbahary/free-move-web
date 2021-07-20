@@ -3,16 +3,17 @@ import { Element } from './Element';
 import { Player } from "./Player";
 
 export class World extends Element {
-    constructor(width, height) {
+    constructor(bounds, playerStartCoord) {
         super();
 
+        const { width, height } = bounds; 
         this.width = width;
         this.height = height;
         this.initElement();
         
         this.entities = [];
         
-        this.player = new Player();
+        this.player = new Player(playerStartCoord);
         this.addEntity(this.player);
     }
 
