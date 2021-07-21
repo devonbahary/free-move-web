@@ -1,4 +1,4 @@
-import { convertSizeToPixels } from "../../utilities";
+import { PIXELS_IN_SQUARE } from "../../constants";
 
 export class Element {
     constructor() {
@@ -13,15 +13,17 @@ export class Element {
 
     setElementDimensions(width, height) {
         Object.assign(this.element.style, {
-            width: convertSizeToPixels(width),
-            height: convertSizeToPixels(height),  
+            width: Element.convertSizeToPixels(width),
+            height: Element.convertSizeToPixels(height),  
         });
     }
 
     updateElementPosition() {
-        this.element.style.left = convertSizeToPixels(this.x0);
-        this.element.style.top = convertSizeToPixels(this.y0);
+        this.element.style.left = Element.convertSizeToPixels(this.x0);
+        this.element.style.top = Element.convertSizeToPixels(this.y0);
     }
+
+    static convertSizeToPixels = (size) => `${size * PIXELS_IN_SQUARE}px`;
 
     static createCharacter() {
         return Element.createElement('span', 'character');

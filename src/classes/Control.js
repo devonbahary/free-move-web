@@ -1,4 +1,4 @@
-import { vector } from "../utilities";
+import { Vectors } from "../utilities/Vectors";
 
 export class Control {
     constructor(world) {
@@ -15,19 +15,19 @@ export class Control {
         switch (keyboardEvent.key) {
             case 'ArrowRight':
                 keyboardEvent.preventDefault();
-                this.player.move(vector(movement, 0));
+                this.player.move(Vectors.create(movement, 0));
                 break;
             case 'ArrowUp':
                 keyboardEvent.preventDefault();
-                this.player.move(vector(0, -movement));
+                this.player.move(Vectors.create(0, -movement));
                 break;
             case 'ArrowLeft':
                 keyboardEvent.preventDefault();
-                this.player.move(vector(-movement, 0));
+                this.player.move(Vectors.create(-movement, 0));
                 break;
             case 'ArrowDown':
                 keyboardEvent.preventDefault();
-                this.player.move(vector(0, movement));
+                this.player.move(Vectors.create(0, movement));
                 break;
             default:
                 break;
