@@ -28,7 +28,7 @@ body {
 }
 
 .character {
-    position: relative;
+    position: absolute;
     background: white;
     display: inline-block;
     border-radius: 50%;
