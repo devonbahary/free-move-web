@@ -2,11 +2,13 @@ import { Collisions } from '../../utilities/Collisions';
 import { Vectors } from '../../utilities/Vectors';
 import { Element } from './Element';
 
+const isCircle = (entity) => entity.hasOwnProperty('radius');
+
 export class Character extends Element {
     constructor(radius = 0.5) {
         super();
 
-        this.acceleration = Vectors.create(0, 0);
+        this.velocity = Vectors.create(0, 0);
         
         this.radius = radius;
         
@@ -14,12 +16,12 @@ export class Character extends Element {
         this.setElementDimensions(this.radius * 2, this.radius * 2);
     }
 
-    get x0() {
-        return this.x;
-    }
-
     get center() {
         return { x: this.x + this.radius, y: this.y + this.radius };
+    }
+
+    get x0() {
+        return this.x;
     }
 
     get x1() {
@@ -34,8 +36,12 @@ export class Character extends Element {
         return this.y + this.radius * 2;
     }
 
+    isMoving() {
+        return Vectors.magnitude(this.velocity);
+    }
+
     move(vector) {
-        this.acceleration = vector;
+        this.velocity = vector;
     }
 
     moveTo(x, y) {
@@ -53,31 +59,37 @@ export class Character extends Element {
     }
 
     updatePosition() {
-        if (!Vectors.magnitude(this.acceleration)) {
+        if (!this.isMoving()) {
             return;
         }
 
-        this.x += this.acceleration.x;
-        this.y += this.acceleration.y;
+        const movementBoundingBox = Collisions.getMovementBoundingBox(this);
 
         for (const entity of this.world.collisionEntities) {
             if (entity === this) {
                 continue;
             }
-        
-            if (entity.radius) { // for circles
 
-            } else { // for rectangles
-                const vectorToRect = Vectors.getClosestVectorToRectFromCircle(this, entity);
+            if (isCircle(entity)) {
+                const vectorToRect = Vectors.getClosestVectorToRectFromCircle(entity, movementBoundingBox);
                 const distanceToRectangle = Vectors.magnitude(vectorToRect);
                 
                 if (Collisions.isCircleCollidedWithRectangle(distanceToRectangle, this.radius)) {
-                    Collisions.resolveCircleRectangleCollision(vectorToRect, this);
+                    const timeOfCollision = Collisions.getTimeOfCircleOnCircleCollision(this, entity);
+
+                    if (timeOfCollision !== null) {
+                        this.x += this.velocity.x * timeOfCollision;
+                        this.y += this.velocity.y * timeOfCollision;
+                        
+                        return;
+                    }
+                    
                 }
             }
-
-            // for lines? difference with rectangles?
         }
+
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
     }
 
 }
