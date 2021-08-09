@@ -57,7 +57,6 @@ export class Control {
     }
 
     onkeyup = (keyboardEvent) => {
-        console.log(keyboardEvent.key);
         delete this.pressedKeys[keyboardEvent.key];
     }
 }
