@@ -7,6 +7,8 @@ const quadratic = (a, b, c) => {
     ];
 };
 
+const isVerticalLine = (rect) => rect.x0 === rect.x1;
+
 export class Collisions {
     static getMovementBoundingBox = (character) => {
         const { center, x0, x1, y0, y1, velocity } = character;
@@ -20,7 +22,19 @@ export class Collisions {
         };
     }
 
-    // returns 0 > t > 1, where t is the distance along movement where collision happens
+    // returns 0 > t > 1 or null, where t is the distance along movement where collision happens
+    static getTimeOfCollision = (a, b, c) => {
+        const roots = quadratic(a, b, c);
+
+        const validRoots = roots.filter(t => t <= 1);
+
+        if (!validRoots.length) {
+            return null;
+        }
+        
+        return Math.min(...validRoots);
+    };
+
     static getTimeOfCircleOnCircleCollision = (A, B) => {
         const { center: centerA, radius: radiusA, velocity } = A;
         const { x: Ax, y: Ay } = centerA;
@@ -54,19 +68,39 @@ export class Collisions {
         const b = 2 * dx * dABx + 2 * dy * dABy;
         const c = dABx ** 2 + dABy ** 2 - (radiusA + radiusB) ** 2;
 
-        const roots = quadratic(a, b, c);
-
-        const validRoots = roots.filter(t => t <= 1);
-
-        if (!validRoots.length) {
-            return null;
-        }
-        
-        return Math.min(...validRoots);
+        return Collisions.getTimeOfCollision(a, b, c);
     }
 
     static isCircleCollidedWithRectangle = (distanceToRectangle, circleRadius) => {
         return distanceToRectangle <= circleRadius;
+    }
+
+    static areRectanglesColliding = (A, B) => {
+        return (
+            A.x0 < B.x0 + (B.x1 - B.x0) &&
+            A.x0 + (A.x1 - A.x0) > B.x0 &&
+            A.y0 < B.y0 + (B.y1 - B.y0) &&
+            A.y0 + (A.y1 - A.y0) > B.y0
+        );
+    };
+
+    static getTimeOfCircleOnRectangleCollision = (circle, rect) => {
+        const { center, radius, velocity } = circle;
+        const { x: x1, y: y1 } = center;
+        const { x: dx, y: dy } = velocity;
+
+        let a, b, c;
+        if (isVerticalLine(rect)) {
+            a = dx ** 2;
+            b = 2 * x1 * dx - 2 * rect.x0 * dx;
+            c = rect.x0 ** 2 + x1 ** 2 - 2 * rect.x0 * x1 - radius ** 2;
+        } else {
+            a = dy ** 2;
+            b = 2 * y1 * dy - 2 * rect.y0 * dy;
+            c = rect.y0 ** 2 + y1 ** 2 - 2 * rect.y0 * y1 - radius ** 2;
+        }
+
+        return Collisions.getTimeOfCollision(a, b, c);
     }
 
     static resolveCircleRectangleCollision = (vectorToRectFromCircle, circle) => {

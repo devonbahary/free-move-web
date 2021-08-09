@@ -78,18 +78,29 @@ export class Character extends Element {
                     const timeOfCollision = Collisions.getTimeOfCircleOnCircleCollision(this, entity);
 
                     if (timeOfCollision !== null) {
-                        this.x += this.velocity.x * timeOfCollision;
-                        this.y += this.velocity.y * timeOfCollision;
+                        this.x = Math.round((this.x + this.velocity.x * timeOfCollision) * 1000) / 1000;
+                        this.y = Math.round((this.y + this.velocity.y * timeOfCollision) * 1000) / 1000;
                         
                         return;
                     }
                     
                 }
+            } else { // isRectangle
+                if (Collisions.areRectanglesColliding(movementBoundingBox, entity)) {
+                    const timeOfCollision = Collisions.getTimeOfCircleOnRectangleCollision(this, entity);
+
+                    if (timeOfCollision !== null) {
+                        this.x = Math.round((this.x + this.velocity.x * timeOfCollision) * 1000) / 1000;
+                        this.y = Math.round((this.y + this.velocity.y * timeOfCollision) * 1000) / 1000;
+                        
+                        return;
+                    }
+                }
             }
         }
 
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+        this.x = Math.round((this.x + this.velocity.x) * 1000) / 1000;
+        this.y = Math.round((this.y + this.velocity.y) * 1000) / 1000;
     }
 
 }
