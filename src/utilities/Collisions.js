@@ -110,7 +110,8 @@ export class Collisions {
         const circleRectangleOverlap = circle.radius - distanceToRect;
         const repositionVector = Vectors.mult(normalizedVectorToRect, circleRectangleOverlap);
         
-        circle.x += repositionVector.x;
-        circle.y += repositionVector.y;
+        const { x, y } = repositionVector;
+        circle.x += x;
+        circle.y += y;
     }
 }
