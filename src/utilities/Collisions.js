@@ -72,7 +72,7 @@ export class Collisions {
     }
 
     static isCircleCollidedWithRectangle = (distanceToRectangle, circleRadius) => {
-        return distanceToRectangle <= circleRadius;
+        return distanceToRectangle < circleRadius;
     }
 
     static areRectanglesColliding = (A, B) => {
