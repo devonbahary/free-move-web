@@ -4,6 +4,8 @@ import { Element } from './Element';
 
 const isCircle = (entity) => entity.hasOwnProperty('radius');
 const DECELERATION_DUE_TO_FRICTION = 0.01;
+// TODO: is this needed?
+// const round = (val) => Math.round(val * 1000) / 1000;
 
 export class Character extends Element {
     constructor() {
@@ -82,8 +84,8 @@ export class Character extends Element {
                     const timeOfCollision = Collisions.getTimeOfCircleOnCircleCollision(this, entity);
 
                     if (timeOfCollision !== null) {
-                        this.x = Math.round((this.x + this.velocity.x * timeOfCollision) * 1000) / 1000;
-                        this.y = Math.round((this.y + this.velocity.y * timeOfCollision) * 1000) / 1000;
+                        this.x = this.x + this.velocity.x * timeOfCollision;
+                        this.y = this.y + this.velocity.y * timeOfCollision;
 
                         if (this.isElastic && entity.isElastic) {
                             Collisions.resolveElasticCircleOnCircleCollision(this, entity);
@@ -98,8 +100,8 @@ export class Character extends Element {
                     const timeOfCollision = Collisions.getTimeOfCircleOnRectangleCollision(this, entity);
 
                     if (timeOfCollision !== null) {
-                        this.x = Math.round((this.x + this.velocity.x * timeOfCollision) * 1000) / 1000;
-                        this.y = Math.round((this.y + this.velocity.y * timeOfCollision) * 1000) / 1000;
+                        this.x = this.x + this.velocity.x * timeOfCollision;
+                        this.y = this.y + this.velocity.y * timeOfCollision;
 
                         if (this.isElastic) { // assume all rectangles are inelastic
                             Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, entity);
@@ -111,8 +113,8 @@ export class Character extends Element {
             }
         }
 
-        this.x = Math.round((this.x + this.velocity.x) * 1000) / 1000;
-        this.y = Math.round((this.y + this.velocity.y) * 1000) / 1000;
+        this.x = this.x + this.velocity.x;
+        this.y = this.y + this.velocity.y;
     }
 
     applyFriction() {
