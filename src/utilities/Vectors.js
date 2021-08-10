@@ -1,6 +1,10 @@
 export class Vectors {
     static create = (x, y) => ({ x, y });
 
+    static distance = (pointA, pointB) => {
+        return Math.sqrt((pointA.x - pointB.x) ** 2 + (pointA.y - pointB.y) ** 2);
+    }
+
     static getClosestVectorToRectFromCircle = (circle, rect) => {
         const closestXToRect = Math.max(rect.x0, Math.min(rect.x1, circle.center.x));
         const closestYToRect = Math.max(rect.y0, Math.min(rect.y1, circle.center.y));
