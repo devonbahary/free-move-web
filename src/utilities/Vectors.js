@@ -30,5 +30,9 @@ export class Vectors {
         return Vectors.divide(vector, mag);
     };
 
+    static rescale = (vector, mag) => {
+        return Vectors.mult(Vectors.normalize(vector), mag);
+    }
+
     static subtract = (v1, v2) => ({ x: v1.x - v2.x, y: v1.y - v2.y });
 }

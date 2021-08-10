@@ -40,8 +40,7 @@ export class Player extends Character {
 
         if (Vectors.magnitude(movementVector)) {
             const movement = 0.1;
-            const normalizedVector = Vectors.normalize(movementVector);
-            this.move(Vectors.mult(normalizedVector, movement));
+            this.move(Vectors.rescale(movementVector, movement));
         }
     }
 }
