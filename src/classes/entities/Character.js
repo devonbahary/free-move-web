@@ -3,6 +3,7 @@ import { Vectors } from '../../utilities/Vectors';
 import { Element } from './Element';
 
 const isCircle = (entity) => entity.hasOwnProperty('radius');
+const DECELERATION_DUE_TO_FRICTION = 0.01;
 
 export class Character extends Element {
     constructor(radius = 0.5) {
@@ -54,6 +55,7 @@ export class Character extends Element {
     }
 
     update() {
+        this.applyFriction();
         this.updatePosition();
         this.updateElementPosition(this.x, this.y);
     }
@@ -103,4 +105,11 @@ export class Character extends Element {
         this.y = Math.round((this.y + this.velocity.y) * 1000) / 1000;
     }
 
+    applyFriction() {
+        const originalMag = Vectors.magnitude(this.velocity);
+        const newMag = Math.max(0, originalMag - DECELERATION_DUE_TO_FRICTION);
+
+        const newVelocity = Vectors.mult(Vectors.normalize(this.velocity), newMag);
+        this.velocity = newVelocity; 
+    }
 }
