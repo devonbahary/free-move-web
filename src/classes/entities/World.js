@@ -1,8 +1,7 @@
 import { Element } from './Element';
-import { Player } from "./Player";
 
 export class World extends Element {
-    constructor(bounds, playerStartPosition) {
+    constructor(bounds) {
         super();
 
         const { width, height } = bounds; 
@@ -13,9 +12,6 @@ export class World extends Element {
         this.characters = [];
         this.obstacles = [];
         this.initObstacles();
-        
-        this.player = new Player(playerStartPosition);
-        this.addCharacter(this.player);
     }
 
     get collisionEntities() {

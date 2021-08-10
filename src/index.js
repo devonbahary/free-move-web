@@ -1,23 +1,15 @@
-import { Control } from './classes/Control';
-import { World } from './classes/entities/World';
+import { Character } from './classes/entities/Character';
+import { game, gameParams} from './classes/Game';
 import './main.css';
 
-const gameParams = {
-    bounds: {
-        width: 25,
-        height: 15,
-    },
-    player: {
-        startPosition: {
-            x: 12,
-            y: 7,
-        },
-    },
-};
-
-const world = new World(gameParams.bounds, gameParams.player.startPosition);
-new Control(world);
+for (let i = 0; i < 3; i++) {
+    const character = new Character();
+    const randX = Math.floor((Math.random() * gameParams.bounds.width));
+    const randY = Math.floor((Math.random() * gameParams.bounds.height));
+    character.moveTo(randX, randY);
+    game.world.addCharacter(character);
+}
 
 setInterval(() => {
-    world.update();
+    game.update();
 }, 1000 / 60);
