@@ -71,6 +71,49 @@ export class Collisions {
         return Collisions.getTimeOfCollision(a, b, c);
     }
 
+    // only pass in circles A, B when their position (center) has been set for the * time * of collision
+    static resolveElasticCircleOnCircleCollision = (A, B) => {
+        /*
+            2D Elastic Collision (angle-free)
+
+                                mass scalar      dot product (scalar)        magnitude        pos diff vector
+                vA` = vA - ((2mB) / (mA + mB)) * (<vA - vB | xA - xB> / (|| xA - xB || ** 2)) * (xA - xB)
+                  where v = velocity
+                        m = mass
+                        x = position (at time of collision)
+        */
+
+        const { center: xA, mass: mA, velocity: vA } = A;
+        const { center: xB, mass: mB, velocity: vB } = B;
+
+        const massScalar = (2 * mB) / (mA + mB);
+
+        const diffVelocities = Vectors.subtract(vA, vB);
+        const diffPositions = Vectors.subtract(xA, xB);
+        const dotProduct = Vectors.dot(diffVelocities, diffPositions);
+
+        const magnitude = Vectors.magnitude(diffPositions) ** 2;
+
+        const coefficient = massScalar * (dotProduct / magnitude);
+        const finalVelocityA = Vectors.subtract(vA, Vectors.mult(diffPositions, coefficient));
+
+        /* 
+            conservation of momentum
+                mAvA` + mBvB` = mAvA + mBvB
+                             sum
+                vB` = (mAvA + mBvB - mAvA`) / mB
+        */
+            
+        const sum = Vectors.subtract(
+            Vectors.add(Vectors.mult(vA, mA), Vectors.mult(vB, mB)), 
+            Vectors.mult(finalVelocityA, mA)
+        );
+        const finalVelocityB = Vectors.divide(sum, mB);
+        
+        A.move(finalVelocityA);
+        B.move(finalVelocityB);
+    }
+
     static isCircleCollidedWithRectangle = (distanceToRectangle, circleRadius) => {
         return distanceToRectangle < circleRadius;
     }
@@ -103,15 +146,16 @@ export class Collisions {
         return Collisions.getTimeOfCollision(a, b, c);
     }
 
-    static resolveCircleRectangleCollision = (vectorToRectFromCircle, circle) => {
-        const normalizedVectorToRect = Vectors.normalize(vectorToRectFromCircle);
-        const distanceToRect = Vectors.magnitude(vectorToRectFromCircle);
-        
-        const circleRectangleOverlap = circle.radius - distanceToRect;
-        const repositionVector = Vectors.mult(normalizedVectorToRect, circleRectangleOverlap);
-        
-        const { x, y } = repositionVector;
-        circle.x += x;
-        circle.y += y;
+    /*
+        if the circle approaches an "x" boundary, flip x and conserve y
+                              ... a "y" boundary, flip y and conserve x
+    */
+    static resolveElasticCircleOnInelasticRectangleCollision = (circle, rect) => {
+        const { x, y } = circle.velocity;
+        if (isVerticalLine(rect)) {
+            circle.move(Vectors.create(-x, y));
+        } else {
+            circle.move(Vectors.create(x, -y));
+        }
     }
 }

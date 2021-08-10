@@ -6,12 +6,14 @@ const isCircle = (entity) => entity.hasOwnProperty('radius');
 const DECELERATION_DUE_TO_FRICTION = 0.01;
 
 export class Character extends Element {
-    constructor(radius = 0.5) {
+    constructor() {
         super();
 
         this.velocity = Vectors.create(0, 0);
         
-        this.radius = radius;
+        this.radius = 0.5;
+        this.mass = 1;
+        this.isElastic = true;
         
         this.element = Element.createCharacter();
         this.setElementDimensions(this.radius * 2, this.radius * 2);
@@ -82,6 +84,10 @@ export class Character extends Element {
                     if (timeOfCollision !== null) {
                         this.x = Math.round((this.x + this.velocity.x * timeOfCollision) * 1000) / 1000;
                         this.y = Math.round((this.y + this.velocity.y * timeOfCollision) * 1000) / 1000;
+
+                        if (this.isElastic && entity.isElastic) {
+                            Collisions.resolveElasticCircleOnCircleCollision(this, entity);
+                        }
                         
                         return;
                     }
@@ -94,6 +100,10 @@ export class Character extends Element {
                     if (timeOfCollision !== null) {
                         this.x = Math.round((this.x + this.velocity.x * timeOfCollision) * 1000) / 1000;
                         this.y = Math.round((this.y + this.velocity.y * timeOfCollision) * 1000) / 1000;
+
+                        if (this.isElastic) { // assume all rectangles are inelastic
+                            Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, entity);
+                        }
                         
                         return;
                     }

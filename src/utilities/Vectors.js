@@ -1,8 +1,22 @@
 export class Vectors {
     static create = (x, y) => ({ x, y });
 
+    static add = (v1, v2) => {
+        return { x: v1.x + v2.x, y: v1.y + v2.y };
+    }
+
     static distance = (pointA, pointB) => {
         return Math.sqrt((pointA.x - pointB.x) ** 2 + (pointA.y - pointB.y) ** 2);
+    }
+
+    /*
+        a · b 
+            = |a| × |b| × cos(θ)
+                    or
+            = ax × bx + ay × by
+    */
+    static dot = (A, B) => {
+        return (A.x * B.x) + (A.y * B.y);
     }
 
     static getClosestVectorToRectFromCircle = (circle, rect) => {
