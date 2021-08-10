@@ -13,11 +13,21 @@ export class Vectors {
 
     static mult = ({ x, y }, scalar) => ({ x: x * scalar, y: y * scalar });
 
+    static divide = (vector, scalar) => {
+        if (scalar === 0) {
+            throw new Error(`can't divide a vector by 0`);
+        }
+        return Vectors.mult(vector, 1 / scalar);
+    }
+
     static neg = ({ x, y }) => ({ x: -x, y: -y });
 
     static normalize = (vector) => {
         const mag = Vectors.magnitude(vector);
-        return { x: vector.x / mag, y: vector.y / mag };
+        if (!mag) {
+            return vector;
+        }
+        return Vectors.divide(vector, mag);
     };
 
     static subtract = (v1, v2) => ({ x: v1.x - v2.x, y: v1.y - v2.y });
