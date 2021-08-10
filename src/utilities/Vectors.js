@@ -10,10 +10,8 @@ export class Vectors {
     }
 
     /*
-        a · b 
-            = |a| × |b| × cos(θ)
-                    or
-            = ax × bx + ay × by
+        a · b = |a| × |b| × cos(θ)
+              = ax × bx + ay × by
     */
     static dot = (A, B) => {
         return (A.x * B.x) + (A.y * B.y);
