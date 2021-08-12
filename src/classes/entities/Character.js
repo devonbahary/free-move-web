@@ -81,6 +81,8 @@ export class Character extends Element {
 
         const movementBoundingBox = Collisions.getMovementBoundingBox(this);
 
+        let wasCollision = false;
+
         for (const entity of this.world.collisionEntities) {
             if (entity === this) {
                 continue;
@@ -106,8 +108,9 @@ export class Character extends Element {
                             this.move(getFinalVelocityOvercomingFriction(finalVelocity));
                             entity.move(getFinalVelocityOvercomingFriction(entityFinalVelocity));
                         }
-                        
-                        return;
+
+                        wasCollision = true;
+                        continue;
                     }
                     
                 }
@@ -123,14 +126,17 @@ export class Character extends Element {
                             Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, entity);
                         }
                         
-                        return;
+                        wasCollision = true;
+                        continue;
                     }
                 }
             }
         }
-
-        this.x = this.x + this.velocity.x;
-        this.y = this.y + this.velocity.y;
+        
+        if (!wasCollision) {
+            this.x = this.x + this.velocity.x;
+            this.y = this.y + this.velocity.y;
+        }
     }
 
     applyFriction() {
