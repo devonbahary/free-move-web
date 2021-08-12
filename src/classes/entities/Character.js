@@ -124,9 +124,12 @@ export class Character extends Element {
     }
 
     applyFriction() {
-        const originalMag = Vectors.magnitude(this.velocity);
-        const adjustedMag = Math.max(0, originalMag - DECELERATION_DUE_TO_FRICTION);
+        const magnitude = Vectors.magnitude(this.velocity);
+        if (!magnitude) {
+            return;
+        }
 
+        const adjustedMag = Math.max(0, magnitude - DECELERATION_DUE_TO_FRICTION);
         const newVelocity = Vectors.rescale(this.velocity, adjustedMag);
         this.move(newVelocity); 
     }
