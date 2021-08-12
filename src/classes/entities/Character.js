@@ -7,6 +7,16 @@ const DECELERATION_DUE_TO_FRICTION = 0.01;
 // TODO: is this needed?
 // const round = (val) => Math.round(val * 1000) / 1000;
 
+
+// fixes unintended behavior where the last, smallest amount of resolution needed
+// to move AROUND an entity could not overcome friction, making entities "stick"
+// to each other
+// TODO: better way to resolve this than to ignore friction?
+const getFinalVelocityOvercomingFriction = (velocity) => {
+    const adjustedMag = Vectors.magnitude(velocity) + DECELERATION_DUE_TO_FRICTION;
+    return Vectors.rescale(velocity, adjustedMag);
+};
+
 export class Character extends Element {
     constructor() {
         super();
@@ -93,8 +103,8 @@ export class Character extends Element {
                                 entityFinalVelocity,
                             ] = Collisions.resolveElasticCircleOnCircleCollision(this, entity);
                             
-                            this.move(finalVelocity);
-                            entity.move(entityFinalVelocity);
+                            this.move(getFinalVelocityOvercomingFriction(finalVelocity));
+                            entity.move(getFinalVelocityOvercomingFriction(entityFinalVelocity));
                         }
                         
                         return;
