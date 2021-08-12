@@ -2,6 +2,8 @@ import { Character } from './Character';
 import { Vectors } from '../../utilities/Vectors';
 import { game } from '../Game';
 
+const PLAYER_MOVEMENT_SPEED = 0.1;
+
 export class Player extends Character {
     constructor(startPosition) {
         super();
@@ -39,8 +41,7 @@ export class Player extends Character {
         }
 
         if (Vectors.magnitude(movementVector)) {
-            const movement = 0.1;
-            this.move(Vectors.rescale(movementVector, movement));
+            this.move(Vectors.rescale(movementVector, PLAYER_MOVEMENT_SPEED));
         }
     }
 }
