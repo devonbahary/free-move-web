@@ -110,8 +110,7 @@ export class Collisions {
         );
         const finalVelocityB = Vectors.divide(sum, mB);
         
-        A.move(finalVelocityA);
-        B.move(finalVelocityB);
+        return [ finalVelocityA, finalVelocityB ];
     }
 
     static isCircleCollidedWithRectangle = (distanceToRectangle, circleRadius) => {

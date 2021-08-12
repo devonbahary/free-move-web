@@ -88,7 +88,13 @@ export class Character extends Element {
                         this.y = this.y + this.velocity.y * timeOfCollision;
 
                         if (this.isElastic && entity.isElastic) {
-                            Collisions.resolveElasticCircleOnCircleCollision(this, entity);
+                            const [
+                                finalVelocity,
+                                entityFinalVelocity,
+                            ] = Collisions.resolveElasticCircleOnCircleCollision(this, entity);
+                            
+                            this.move(finalVelocity);
+                            entity.move(entityFinalVelocity);
                         }
                         
                         return;
