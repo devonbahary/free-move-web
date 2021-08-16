@@ -4,7 +4,7 @@ import { World } from './entities/World';
 
 export const gameParams = {
     bounds: {
-        width: 25,
+        width: 15,
         height: 15,
     },
     player: {
