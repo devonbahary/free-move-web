@@ -18,13 +18,6 @@ const GAME_MODES = {
 
 const gameMode = GAME_MODES.NORMAL;
 
-setInterval(() => {
-    game.update();
-}, 1000 / 60);
-
-seedCharacters();
-gameSetup();
-
 const gameSetup = () => {
     switch (gameMode) {
         case GAME_MODES.NORMAL:
@@ -50,3 +43,11 @@ const seedCharacters = () => {
         game.world.addCharacter(character);
     }
 };
+
+setInterval(() => {
+    game.update();
+}, 1000 / 60);
+
+seedCharacters();
+gameSetup();
+
