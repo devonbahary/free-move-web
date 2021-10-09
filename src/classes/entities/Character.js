@@ -69,9 +69,9 @@ export class Character extends Element {
     }
 
     update() {
+        super.update();
         this.applyFriction();
         this.updatePosition();
-        this.updateElementPosition(this.x, this.y);
     }
 
     updatePosition() {

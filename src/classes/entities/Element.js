@@ -18,6 +18,10 @@ export class Element {
         });
     }
 
+    update() {
+        this.updateElementPosition();
+    }
+
     updateElementPosition() {
         this.element.style.left = Element.convertSizeToPixels(this.x0);
         this.element.style.top = Element.convertSizeToPixels(this.y0);
