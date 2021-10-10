@@ -55,8 +55,9 @@ export class Character extends Element {
         return Vectors.magnitude(this.velocity);
     }
 
-    move(vector) {
-        this.velocity = vector;
+    move(movementVector) {
+        const diffVelocity = Vectors.subtract(movementVector, this.velocity);
+        this.applyForce(Vectors.mult(diffVelocity, this.mass));
     }
 
     moveTo(x, y) {
@@ -72,6 +73,21 @@ export class Character extends Element {
         super.update();
         this.applyFriction();
         this.updatePosition();
+    }
+
+    applyForce(force) {
+        this.velocity = Vectors.add(this.velocity, Vectors.divide(force, this.mass));
+    }
+
+    applyFriction() {
+        const magnitude = Vectors.magnitude(this.velocity);
+        if (!magnitude) {
+            return;
+        }
+
+        const adjustedMag = Math.max(0, magnitude - DECELERATION_DUE_TO_FRICTION);
+        const oppositeMovementVector = Vectors.rescale(Vectors.neg(this.velocity), adjustedMag);
+        this.applyForce(oppositeMovementVector); 
     }
 
     updatePosition() {
@@ -137,16 +153,5 @@ export class Character extends Element {
             this.x = this.x + this.velocity.x;
             this.y = this.y + this.velocity.y;
         }
-    }
-
-    applyFriction() {
-        const magnitude = Vectors.magnitude(this.velocity);
-        if (!magnitude) {
-            return;
-        }
-
-        const adjustedMag = Math.max(0, magnitude - DECELERATION_DUE_TO_FRICTION);
-        const newVelocity = Vectors.rescale(this.velocity, adjustedMag);
-        this.move(newVelocity); 
     }
 }
