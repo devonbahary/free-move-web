@@ -3,19 +3,6 @@ import { Vectors } from '../../utilities/Vectors';
 import { Element } from './Element';
 
 const isCircle = (entity) => entity.hasOwnProperty('radius');
-const DECELERATION_DUE_TO_FRICTION = 0.01;
-// TODO: is this needed?
-// const round = (val) => Math.round(val * 1000) / 1000;
-
-
-// fixes unintended behavior where the last, smallest amount of resolution needed
-// to move AROUND an entity could not overcome friction, making entities "stick"
-// to each other
-// TODO: better way to resolve this than to ignore friction?
-const getFinalVelocityOvercomingFriction = (velocity) => {
-    const adjustedMag = Vectors.magnitude(velocity) + DECELERATION_DUE_TO_FRICTION;
-    return Vectors.rescale(velocity, adjustedMag);
-};
 
 export class Character extends Element {
     constructor() {
@@ -71,23 +58,11 @@ export class Character extends Element {
 
     update() {
         super.update();
-        this.applyFriction();
         this.updatePosition();
     }
 
     applyForce(force) {
         this.velocity = Vectors.add(this.velocity, Vectors.divide(force, this.mass));
-    }
-
-    applyFriction() {
-        const magnitude = Vectors.magnitude(this.velocity);
-        if (!magnitude) {
-            return;
-        }
-
-        const adjustedMag = Math.max(0, magnitude - DECELERATION_DUE_TO_FRICTION);
-        const oppositeMovementVector = Vectors.rescale(Vectors.neg(this.velocity), adjustedMag);
-        this.applyForce(oppositeMovementVector); 
     }
 
     updatePosition() {
