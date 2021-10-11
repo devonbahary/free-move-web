@@ -75,9 +75,10 @@ export class Collisions {
     static resolveElasticCircleOnCircleCollision = (A, B) => {
         /*
             2D Elastic Collision (angle-free)
+            https://stackoverflow.com/questions/35211114/2d-elastic-ball-collision-physics
 
                                 mass scalar      dot product (scalar)        magnitude        pos diff vector
-                vA` = vA - ((2mB) / (mA + mB)) * (<vA - vB | xA - xB> / (|| xA - xB || ** 2)) * (xA - xB)
+                vA` = vA - (2mB / (mA + mB)) * (<vA - vB | xA - xB> / (|| xA - xB || ** 2)) * (xA - xB)
                   where v = velocity
                         m = mass
                         x = position (at time of collision)
