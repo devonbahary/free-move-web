@@ -70,6 +70,12 @@ export class Character extends Element {
             return;
         }
 
+        const movePartiallyTowardsVelocity = (timeOfCollision) => {
+            const dx = this.velocity.x * timeOfCollision;
+            const dy = this.velocity.y * timeOfCollision;
+            this.moveTo(this.x + dx, this.y + dy);
+        };
+
         const movementBoundingBox = Collisions.getMovementBoundingBox(this);
 
         let wasCollision = false;
@@ -88,8 +94,7 @@ export class Character extends Element {
                     const timeOfCollision = Collisions.getTimeOfCircleOnCircleCollision(this, entity);
 
                     if (timeOfCollision !== null) {
-                        this.x = this.x + this.velocity.x * timeOfCollision;
-                        this.y = this.y + this.velocity.y * timeOfCollision;
+                        movePartiallyTowardsVelocity(timeOfCollision);
 
                         if (this.isElastic && entity.isElastic) {
                             const [
@@ -111,8 +116,7 @@ export class Character extends Element {
                     const timeOfCollision = Collisions.getTimeOfCircleOnRectangleCollision(this, entity);
 
                     if (timeOfCollision !== null) {
-                        this.x = this.x + this.velocity.x * timeOfCollision;
-                        this.y = this.y + this.velocity.y * timeOfCollision;
+                        movePartiallyTowardsVelocity(timeOfCollision);
 
                         if (this.isElastic) { // assume all rectangles are inelastic
                             Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, entity);
