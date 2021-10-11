@@ -9,7 +9,7 @@ export const gameParams = {
     },
     player: {
         startPosition: {
-            x: 12,
+            x: 7,
             y: 7,
         },
     },
