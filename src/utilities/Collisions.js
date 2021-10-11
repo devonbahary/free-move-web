@@ -153,9 +153,9 @@ export class Collisions {
     static resolveElasticCircleOnInelasticRectangleCollision = (circle, rect) => {
         const { x, y } = circle.velocity;
         if (isVerticalLine(rect)) {
-            circle.move(Vectors.create(-x, y));
+            return Vectors.create(-x, y);
         } else {
-            circle.move(Vectors.create(x, -y));
+            return Vectors.create(x, -y);
         }
     }
 }

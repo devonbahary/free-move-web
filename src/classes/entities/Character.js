@@ -119,7 +119,8 @@ export class Character extends Element {
                         movePartiallyTowardsVelocity(timeOfCollision);
 
                         if (this.isElastic) { // assume all rectangles are inelastic
-                            Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, entity);
+                            const newVector = Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, entity);
+                            this.move(newVector);
                         }
                         
                         wasCollision = true;
