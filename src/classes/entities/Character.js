@@ -74,6 +74,7 @@ export class Character extends Element {
 
         let wasCollision = false;
 
+        // TODO: what if multiple collisions possible in movement and should react to closest?
         for (const entity of this.world.collisionEntities) {
             if (entity === this) {
                 continue;
