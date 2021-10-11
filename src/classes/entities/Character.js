@@ -96,9 +96,9 @@ export class Character extends Element {
                                 finalVelocity,
                                 entityFinalVelocity,
                             ] = Collisions.resolveElasticCircleOnCircleCollision(this, entity);
-                            
-                            this.move(getFinalVelocityOvercomingFriction(finalVelocity));
-                            entity.move(getFinalVelocityOvercomingFriction(entityFinalVelocity));
+
+                            this.move(finalVelocity);
+                            entity.move(entityFinalVelocity);
                         }
 
                         wasCollision = true;
