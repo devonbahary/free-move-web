@@ -25,7 +25,7 @@ const gameSetup = () => {
             break;
         case GAME_MODES.CHAOS:
             for (const character of game.world.characters) {
-                character.move(Vectors.create(Math.random() * 1, Math.random() * 1));
+                character.body.move(Vectors.create(Math.random() * 1, Math.random() * 1));
             }
             break;
         default:
@@ -39,8 +39,8 @@ const seedCharacters = () => {
         const character = new Character();
         const randX = Math.floor((Math.random() * gameParams.bounds.width));
         const randY = Math.floor((Math.random() * gameParams.bounds.height));
-        character.moveTo(randX, randY);
-        game.world.addCharacter(character);
+        character.body.moveTo(randX, randY);
+        game.addCharacter(character);
     }
 };
 

@@ -3,8 +3,6 @@ import { PIXELS_IN_SQUARE } from "../../constants";
 export class Element {
     constructor() {
         this.element = null;
-        this.x = 0;
-        this.y = 0;
     }
 
     setElementId(id) {
@@ -23,8 +21,8 @@ export class Element {
     }
 
     updateElementPosition() {
-        this.element.style.left = Element.convertSizeToPixels(this.x0);
-        this.element.style.top = Element.convertSizeToPixels(this.y0);
+        this.element.style.left = Element.convertSizeToPixels(this.body.x0);
+        this.element.style.top = Element.convertSizeToPixels(this.body.y0);
     }
 
     static convertSizeToPixels = (size) => `${size * PIXELS_IN_SQUARE}px`;

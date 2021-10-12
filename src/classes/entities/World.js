@@ -9,19 +9,18 @@ export class World extends Element {
         this.height = height;
         this.initElement();
         
-        this.characters = [];
+        // TODO: can consolidate bodies + obstacles if they're the same base class
+        this.bodies = [];
         this.obstacles = [];
         this.initObstacles();
     }
 
     get collisionEntities() {
-        return [ ...this.characters, ...this.obstacles ];
+        return [ ...this.bodies, ...this.obstacles ];
     }
     
-    addCharacter(character) {
-        this.characters.push(character);
-        character.setWorld(this);    
-        this.element.appendChild(character.element);
+    addBody(body) {
+        this.bodies.push(body);
     }
 
     initElement() {
@@ -63,8 +62,8 @@ export class World extends Element {
     }    
 
     update() {
-        for (const character of this.characters) {
-            character.update();
+        for (const body of this.bodies) {
+            body.update(this);
         }
     }
 }

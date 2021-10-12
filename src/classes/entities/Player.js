@@ -8,7 +8,7 @@ export class Player extends Character {
     constructor(startPosition) {
         super();
         this.setElementId('player');
-        this.moveTo(startPosition.x, startPosition.y);
+        this.body.moveTo(startPosition.x, startPosition.y);
     }
 
     update() {
@@ -41,7 +41,7 @@ export class Player extends Character {
         }
 
         if (Vectors.magnitude(movementVector)) {
-            this.move(Vectors.rescale(movementVector, PLAYER_MOVEMENT_SPEED));
+            this.body.move(Vectors.rescale(movementVector, PLAYER_MOVEMENT_SPEED));
         }
     }
 }

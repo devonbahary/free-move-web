@@ -19,13 +19,24 @@ class Game {
     constructor() {
         this.world = new World(gameParams.bounds);
         
+        this.characters = [];
         this.player = new Player(gameParams.player.startPosition);
-        this.world.addCharacter(this.player);
+        this.addCharacter(this.player);
         
         this.control = new Control();
     }
 
+    addCharacter(character) {
+        this.characters.push(character);
+        this.world.addBody(character.body);
+        this.world.element.appendChild(character.element);
+    }
+
     update() {
+        this.player.update();
+        for (const character of this.characters) {
+            character.update();
+        }
         this.world.update();
     }
 }
