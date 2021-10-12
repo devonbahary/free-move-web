@@ -1,7 +1,7 @@
 import { Collisions } from "../../utilities/Collisions";
 import { Vectors } from "../../utilities/Vectors";
 
-const isCircle = (entity) => entity.hasOwnProperty('radius');
+const isCircle = (body) => body.hasOwnProperty('radius');
 
 // abstract for now
 export class Body {
@@ -77,29 +77,29 @@ export class CircleBody extends Body {
         let wasCollision = false;
 
         // TODO: what if multiple collisions possible in movement and should react to closest?
-        for (const entity of world.collisionEntities) {
-            if (entity === this) {
+        for (const body of world.bodies) {
+            if (body === this) {
                 continue;
             }
 
-            if (isCircle(entity)) {
-                const vectorToRect = Vectors.getClosestVectorToRectFromCircle(entity, movementBoundingBox);
+            if (isCircle(body)) {
+                const vectorToRect = Vectors.getClosestVectorToRectFromCircle(body, movementBoundingBox);
                 const distanceToRectangle = Vectors.magnitude(vectorToRect);
                 
                 if (Collisions.isCircleCollidedWithRectangle(distanceToRectangle, this.radius)) {
-                    const timeOfCollision = Collisions.getTimeOfCircleOnCircleCollision(this, entity);
+                    const timeOfCollision = Collisions.getTimeOfCircleOnCircleCollision(this, body);
 
                     if (timeOfCollision !== null) {
                         movePartiallyTowardsVelocity(timeOfCollision);
 
-                        if (this.isElastic && entity.isElastic) {
+                        if (this.isElastic && body.isElastic) {
                             const [
                                 finalVelocity,
-                                entityFinalVelocity,
-                            ] = Collisions.resolveElasticCircleOnCircleCollision(this, entity);
+                                bodyFinalVelocity,
+                            ] = Collisions.resolveElasticCircleOnCircleCollision(this, body);
 
                             this.move(finalVelocity);
-                            entity.move(entityFinalVelocity);
+                            body.move(bodyFinalVelocity);
                         }
 
                         wasCollision = true;
@@ -108,14 +108,14 @@ export class CircleBody extends Body {
                     
                 }
             } else { // isRectangle
-                if (Collisions.areRectanglesColliding(movementBoundingBox, entity)) {
-                    const timeOfCollision = Collisions.getTimeOfCircleOnRectangleCollision(this, entity);
+                if (Collisions.areRectanglesColliding(movementBoundingBox, body)) {
+                    const timeOfCollision = Collisions.getTimeOfCircleOnRectangleCollision(this, body);
 
                     if (timeOfCollision !== null) {
                         movePartiallyTowardsVelocity(timeOfCollision);
 
                         if (this.isElastic) { // assume all rectangles are inelastic
-                            const newVector = Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, entity);
+                            const newVector = Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, body);
                             this.move(newVector);
                         }
                         

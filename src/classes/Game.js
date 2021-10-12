@@ -1,5 +1,6 @@
 import { Control } from './Control';
 import { Player } from './entities/Player';
+import { Sprite, SPRITE_TYPE } from './entities/Sprite';
 import { World } from './entities/World';
 
 export const gameParams = {
@@ -17,27 +18,54 @@ export const gameParams = {
 
 class Game {
     constructor() {
-        this.world = new World(gameParams.bounds);
+        this.initWorld();
         
+        this.sprites = [];
         this.characters = [];
-        this.player = new Player(gameParams.player.startPosition);
-        this.addCharacter(this.player);
+
+        this.initPlayer();
         
         this.control = new Control();
     }
 
-    addCharacter(character) {
+    initWorld() {
+        this.world = new World(gameParams.bounds);
+
+        this.worldElement = Sprite.createWorld(this.world);
+        document.body.appendChild(this.worldElement);
+    }
+
+    initPlayer() {
+        this.player = new Player(gameParams.player.startPosition);
+        const playerSprite = new Sprite(SPRITE_TYPE.PLAYER, this.player);
+        this.addCharacter(this.player, playerSprite);
+    }
+
+    addCharacter(character, characterSprite) {
         this.characters.push(character);
         this.world.addBody(character.body);
-        this.world.element.appendChild(character.element);
+
+        this.sprites.push(characterSprite);
+        this.worldElement.appendChild(characterSprite.element);
     }
 
     update() {
+        this.updateGameEntities();
+        this.world.update();
+        this.updateSprites();
+    }
+
+    updateGameEntities() {
         this.player.update();
         for (const character of this.characters) {
             character.update();
         }
-        this.world.update();
+    }
+
+    updateSprites() {
+        for (const sprite of this.sprites) {
+            sprite.update();
+        }
     }
 }
 

@@ -5,14 +5,13 @@ import { game } from '../Game';
 const PLAYER_MOVEMENT_SPEED = 0.1;
 
 export class Player extends Character {
+    // TODO: get rid of startPosition here, let game reposition player
     constructor(startPosition) {
         super();
-        this.setElementId('player');
         this.body.moveTo(startPosition.x, startPosition.y);
     }
 
     update() {
-        super.update();
         this.updateUserInput();
     }
 

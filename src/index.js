@@ -2,6 +2,7 @@ import { Character } from './classes/entities/Character';
 import { game, gameParams} from './classes/Game';
 import { Vectors } from './utilities/Vectors';
 import './main.css';
+import { Sprite, SPRITE_TYPE } from './classes/entities/Sprite';
 
 /*
     to-do list:
@@ -40,7 +41,8 @@ const seedCharacters = () => {
         const randX = Math.floor((Math.random() * gameParams.bounds.width));
         const randY = Math.floor((Math.random() * gameParams.bounds.height));
         character.body.moveTo(randX, randY);
-        game.addCharacter(character);
+        const characterSprite = new Sprite(SPRITE_TYPE.CHARACTER, character);
+        game.addCharacter(character, characterSprite);
     }
 };
 
