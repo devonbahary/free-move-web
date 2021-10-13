@@ -58,10 +58,5 @@ const GAME_MODES = {
         game.addCharacter(character, characterSprite);
     }
 
-    // game loop (run ~60 times per second)
-    setInterval(() => {
-        game.update();
-    }, 1000 / 60);
-
 })();
 

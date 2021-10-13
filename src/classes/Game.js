@@ -13,6 +13,7 @@ export class Game {
 
         this.initWorld();
         this.initPlayer();
+        this.initGameLoop();
 
         this.control = new Control();
     }
@@ -30,6 +31,12 @@ export class Game {
 
         const { x, y } = this.params.player.startPosition;
         this.player.body.moveTo(x, y);
+    }
+
+    initGameLoop() {
+        this.gameLoopInterval = setInterval(() => {
+            this.update();
+        }, 1000 / 60); // 60/s
     }
 
     addCharacter(character, characterSprite) {
