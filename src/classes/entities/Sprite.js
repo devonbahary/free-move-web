@@ -3,9 +3,6 @@ import { PIXELS_IN_SQUARE } from "../../constants";
 export const SPRITE_TYPE = {
     CHARACTER: 'CHARACTER',
     PLAYER: 'PLAYER',
-    WORLD: 'WORLD',
-    GRID_ROW: 'GRID_ROW',
-    GRID_COLUMN: 'GRID_COLUMN',
 };
 
 export class Sprite {
@@ -19,11 +16,6 @@ export class Sprite {
             case SPRITE_TYPE.CHARACTER:
                 this.element = Sprite.createElement('span', 'character');
                 Sprite.setElementDimensions(this.element, gameEntity.body.radius * 2, gameEntity.body.radius * 2);
-                break;
-            case SPRITE_TYPE.WORLD:
-                this.element = Sprite.createElement('div');
-                this.element.setAttribute('id', 'world');
-                Sprite.setElementDimensions(this.element, gameEntity.width, gameEntity.height);
                 break;
             default:
                 throw new Error(`can't create Sprite with type ${type}`);
