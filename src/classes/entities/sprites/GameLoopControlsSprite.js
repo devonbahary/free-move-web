@@ -10,6 +10,7 @@ export class GameLoopControlsSprite {
 
     static get playButtonHTML() { return '<ion-icon name="play"></ion-icon>'; };
     static get pauseButtonHTML() { return '<ion-icon name="pause"></ion-icon>'; };
+    static get stepForwardButtonHTML() { return '<ion-icon name="skip-forward"></ion-icon>'; };
 
     initElement() {
         this.element = Element.create('div', undefined, 'game-loop-controls');
@@ -26,6 +27,10 @@ export class GameLoopControlsSprite {
             : GameLoopControlsSprite.pauseButtonHTML;
     }
 
+    stepForwardInLoop() {
+        this.game.update(true);
+    }
+
     togglePlayPause() {
         this.game.togglePlayPause();
     }
@@ -36,5 +41,15 @@ export class GameLoopControlsSprite {
 
     onGamePauseChange(isPaused) {
         this.updatePlayPauseButtonHTML(isPaused);
+        if (isPaused) {
+            const stepForwardButtonElement = Element.create('button'); 
+            stepForwardButtonElement.onclick = () => this.stepForwardInLoop();
+            stepForwardButtonElement.innerHTML = GameLoopControlsSprite.stepForwardButtonHTML;
+            
+            this.stepForwardButtonElement = stepForwardButtonElement;
+            this.element.appendChild(this.stepForwardButtonElement);
+        } else if (this.stepForwardButtonElement) {
+            this.stepForwardButtonElement.remove();
+        }
     }
 }

@@ -58,8 +58,8 @@ export class Game {
         this.worldElement.appendChild(characterSprite.element);
     }
 
-    update() {
-        if (!this.isPaused) {
+    update(force = false) {
+        if (!this.isPaused || force) {
             this.control.update();
             this.world.update();
         }
