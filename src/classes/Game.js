@@ -5,6 +5,21 @@ import { PlayerSprite } from './entities/sprites/PlayerSprite';
 import { GameLoopControlsSprite } from './entities/sprites/GameLoopControlsSprite';
 import { World } from './entities/World';
 
+const BEGIN_FRAME = 0;
+const MAX_FRAME_STATES_TO_SAVE = 1000;
+const STEP_FORWARD_FRAMES = 1;
+const STEP_BACKWARD_FRAMES = 5;
+
+const toSaveableBodyState = (body) => {
+    const { id, x, y, velocity } = body;
+    return {
+        id,
+        x,
+        y,
+        velocity: { ...velocity }, 
+    };
+};
+
 export class Game {
     constructor(params) {
         this.params = params;
@@ -43,6 +58,8 @@ export class Game {
     }
 
     initGameLoop() {
+        this.frameCount = BEGIN_FRAME;
+        this.frameToBodiesState = {};
         this.isPaused = false;
         
         setInterval(() => {
@@ -60,8 +77,10 @@ export class Game {
 
     update(force = false) {
         if (!this.isPaused || force) {
+            this.frameCount += 1;
             this.control.update();
             this.world.update();
+            this.updateFrameState();
         }
         this.updateSprites();
     }
@@ -73,6 +92,31 @@ export class Game {
     updateSprites() {
         for (const sprite of this.sprites) {
             sprite.update();
+        }
+    }
+
+    updateFrameState() {
+        const framesAgo = this.frameCount - MAX_FRAME_STATES_TO_SAVE;
+        if (framesAgo >= BEGIN_FRAME) {
+            delete this.frameToBodiesState[framesAgo];
+        }
+
+        this.frameToBodiesState[this.frameCount] = this.world.bodies.map(toSaveableBodyState);
+    }
+
+    stepBackward() {
+        this.frameCount -= STEP_BACKWARD_FRAMES;
+        const frameBodiesState = this.frameToBodiesState[this.frameCount];
+        for (const bodyState of frameBodiesState) {
+            const body = this.world.bodies.find(body => body.id === bodyState.id);
+            body.moveTo(bodyState.x, bodyState.y);
+            body.move(bodyState.velocity);
+        }
+    }
+
+    stepForward() {
+        for (let i = 0; i < STEP_FORWARD_FRAMES; i++) {
+            this.update(true);
         }
     }
 }

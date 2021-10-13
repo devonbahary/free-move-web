@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import { Collisions } from "../../utilities/Collisions";
 import { Vectors } from "../../utilities/Vectors";
 
@@ -7,6 +8,7 @@ const isCircle = (body) => body.hasOwnProperty('radius');
 // a circle or rectangle
 export class Body {
     constructor() {
+        this.id = uuid();
         this.x = 0;
         this.y = 0;
 
