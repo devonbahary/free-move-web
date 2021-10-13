@@ -4,8 +4,4 @@ export class Character {
     constructor() {
         this.body = new CircleBody();
     }
-
-    update() {
-        
-    }
 }

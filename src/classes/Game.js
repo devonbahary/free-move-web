@@ -45,7 +45,6 @@ export class Game {
 
     update() {
         this.updatePlayerInput();
-        this.updateGameEntities();
         this.world.update();
         this.updateSprites();
     }
@@ -76,13 +75,6 @@ export class Game {
 
         if (Vectors.magnitude(movementVector)) {
             this.player.body.move(Vectors.rescale(movementVector, PLAYER_MOVEMENT_SPEED));
-        }
-    }
-
-    updateGameEntities() {
-        this.player.update();
-        for (const character of this.characters) {
-            character.update();
         }
     }
 
