@@ -1,6 +1,7 @@
 import { Vectors } from '../utilities/Vectors';
 import { Control } from './Control';
 import { Character } from './entities/Character';
+import { Element } from './entities/Element';
 import { Sprite, SPRITE_TYPE } from './entities/Sprite';
 import { World } from './entities/World';
 
@@ -21,12 +22,12 @@ export class Game {
 
     initWorld() {
         this.world = new World(this.params.bounds);
-        this.worldElement = Sprite.createWorld(this.world);
+        this.worldElement = Element.createWorld(this.world);
         document.body.appendChild(this.worldElement);
     }
 
     initPlayPauseButton() {
-        this.playPauseButton = Sprite.createElement('button', undefined, 'play-pause-button'); 
+        this.playPauseButton = Element.create('button', undefined, 'play-pause-button'); 
         this.playPauseButton.innerHTML = '<ion-icon name="pause"></ion-icon>';
         this.playPauseButton.onclick = () => this.togglePlayPause();
         document.body.appendChild(this.playPauseButton);
