@@ -9,6 +9,7 @@ import './main.css';
         - inelastic collisions with another circle / rectangle
             - implement "sliding" or "glancing" 
         - investigate weird "jumping" / teleporting behavior when moving immobile elastic entities
+        - investigate why player mass of 500 would make collisions "stick" to it
 */
 
 const GAME_PARAMS = {
@@ -31,6 +32,7 @@ const GAME_MODES = {
 
 (() => {
     const game = new Game(GAME_PARAMS);
+    console.log(game);
 
     // game setup
     const mode = GAME_MODES.NORMAL;
