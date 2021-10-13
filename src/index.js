@@ -1,8 +1,8 @@
 import { Character } from './classes/entities/Character';
-import { Game, gameParams} from './classes/Game';
+import { Game } from './classes/Game';
 import { Vectors } from './utilities/Vectors';
-import './main.css';
 import { Sprite, SPRITE_TYPE } from './classes/entities/Sprite';
+import './main.css';
 
 /*
     to-do list:
@@ -11,19 +11,31 @@ import { Sprite, SPRITE_TYPE } from './classes/entities/Sprite';
         - investigate weird "jumping" / teleporting behavior when moving immobile elastic entities
 */
 
+const GAME_PARAMS = {
+    bounds: {
+        width: 15,
+        height: 15,
+    },
+    player: {
+        startPosition: {
+            x: 7,
+            y: 7,
+        },
+    },
+};
+
 const GAME_MODES = {
     NORMAL: 'NORMAL',
     CHAOS: 'CHAOS',
 };
 
-const gameMode = GAME_MODES.NORMAL;
+(() => {
+    const game = new Game(GAME_PARAMS);
 
-const game = new Game();
-
-const gameSetup = () => {
-    switch (gameMode) {
+    // game setup
+    const mode = GAME_MODES.NORMAL;
+    switch (mode) {
         case GAME_MODES.NORMAL:
-    
             break;
         case GAME_MODES.CHAOS:
             for (const character of game.world.characters) {
@@ -33,23 +45,21 @@ const gameSetup = () => {
         default:
             break;
     }
-};
 
-const seedCharacters = () => {
+    // seed characters
     for (let i = 0; i < 5; i++) {
         const character = new Character();
-        const randX = Math.floor((Math.random() * gameParams.bounds.width));
-        const randY = Math.floor((Math.random() * gameParams.bounds.height));
+        const randX = Math.floor((Math.random() * game.params.bounds.width));
+        const randY = Math.floor((Math.random() * game.params.bounds.height));
         character.body.moveTo(randX, randY);
         const characterSprite = new Sprite(SPRITE_TYPE.CHARACTER, character);
         game.addCharacter(character, characterSprite);
     }
-};
 
-setInterval(() => {
-    game.update();
-}, 1000 / 60);
+    // game loop (run ~60 times per second)
+    setInterval(() => {
+        game.update();
+    }, 1000 / 60);
 
-seedCharacters();
-gameSetup();
+})();
 

@@ -4,25 +4,13 @@ import { Character } from './entities/Character';
 import { Sprite, SPRITE_TYPE } from './entities/Sprite';
 import { World } from './entities/World';
 
-// TODO: make params passed in to constructor
-export const gameParams = {
-    bounds: {
-        width: 15,
-        height: 15,
-    },
-    player: {
-        startPosition: {
-            x: 7,
-            y: 7,
-        },
-    },
-};
-
 // TODO: make character speed
 const PLAYER_MOVEMENT_SPEED = 0.1;
 
 export class Game {
-    constructor() {
+    constructor(params) {
+        this.params = params;
+
         this.sprites = [];
         this.characters = [];
 
@@ -33,7 +21,7 @@ export class Game {
     }
 
     initWorld() {
-        this.world = new World(gameParams.bounds);
+        this.world = new World(this.params.bounds);
         this.worldElement = Sprite.createWorld(this.world);
         document.body.appendChild(this.worldElement);
     }
@@ -43,7 +31,7 @@ export class Game {
         const playerSprite = new Sprite(SPRITE_TYPE.PLAYER, this.player);
         this.addCharacter(this.player, playerSprite);
 
-        const { x, y } = gameParams.player.startPosition;
+        const { x, y } = this.params.player.startPosition;
         this.player.body.moveTo(x, y);
     }
 
