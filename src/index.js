@@ -9,7 +9,6 @@ import { Sprite, SPRITE_TYPE } from './classes/entities/Sprite';
         - inelastic collisions with another circle / rectangle
             - implement "sliding" or "glancing" 
         - investigate weird "jumping" / teleporting behavior when moving immobile elastic entities
-        - apply force instead of just setting velocity in move()
 */
 
 const GAME_MODES = {
