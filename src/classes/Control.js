@@ -1,5 +1,9 @@
+import { Vectors } from "../utilities/Vectors";
+
 export class Control {
-    constructor() {
+    constructor(player) {
+        this.player = player;
+        
         document.onkeydown = this.onkeydown;
         document.onkeyup = this.onkeyup;
         this.pressedKeys = {};
@@ -26,5 +30,38 @@ export class Control {
 
     onkeyup = (keyboardEvent) => {
         delete this.pressedKeys[keyboardEvent.key];
+    }
+
+    update() {
+        this.updatePlayerInput();
+    }
+
+    updatePlayerInput() {
+        const movementVector = Vectors.create(0, 0);
+
+        if (this.isPressed('ArrowUp')) {
+            movementVector.y = -1;
+            if (this.isPressed('ArrowLeft')) {
+                movementVector.x = -1;
+            } else if (this.isPressed('ArrowRight')) {
+                movementVector.x = 1;
+            }
+        } else if (this.isPressed('ArrowRight')) {
+            movementVector.x = 1;
+            if (this.isPressed('ArrowDown')) {
+                movementVector.y = 1;
+            }
+        } else if (this.isPressed('ArrowDown')) {
+            movementVector.y = 1;
+            if (this.isPressed('ArrowLeft')) {
+                movementVector.x = -1;
+            }
+        } else if (this.isPressed('ArrowLeft')) {
+            movementVector.x = -1;
+        }
+
+        if (Vectors.magnitude(movementVector)) {
+            this.player.move(movementVector);
+        }
     }
 }

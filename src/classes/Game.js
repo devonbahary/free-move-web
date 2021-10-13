@@ -1,4 +1,3 @@
-import { Vectors } from '../utilities/Vectors';
 import { Control } from './Control';
 import { Character } from './entities/Character';
 import { Element } from './entities/Element';
@@ -19,7 +18,7 @@ export class Game {
         
         this.initGameLoop();
 
-        this.control = new Control();
+        this.control = new Control(this.player);
     }
 
     initWorld() {
@@ -61,7 +60,7 @@ export class Game {
 
     update() {
         if (!this.isPaused) {
-            this.updatePlayerInput();
+            this.control.update();
             this.world.update();
         }
         this.updateSprites();
@@ -69,35 +68,6 @@ export class Game {
 
     togglePlayPause() {
         this.isPaused = !this.isPaused;
-    }
-
-    updatePlayerInput() {
-        const movementVector = Vectors.create(0, 0);
-
-        if (this.control.isPressed('ArrowUp')) {
-            movementVector.y = -1;
-            if (this.control.isPressed('ArrowLeft')) {
-                movementVector.x = -1;
-            } else if (this.control.isPressed('ArrowRight')) {
-                movementVector.x = 1;
-            }
-        } else if (this.control.isPressed('ArrowRight')) {
-            movementVector.x = 1;
-            if (this.control.isPressed('ArrowDown')) {
-                movementVector.y = 1;
-            }
-        } else if (this.control.isPressed('ArrowDown')) {
-            movementVector.y = 1;
-            if (this.control.isPressed('ArrowLeft')) {
-                movementVector.x = -1;
-            }
-        } else if (this.control.isPressed('ArrowLeft')) {
-            movementVector.x = -1;
-        }
-
-        if (Vectors.magnitude(movementVector)) {
-            this.player.move(movementVector);
-        }
     }
 
     updateSprites() {
