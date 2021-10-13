@@ -3,6 +3,7 @@ import { Control } from './Control';
 import { Character } from './entities/Character';
 import { Element } from './entities/Element';
 import { PlayerSprite } from './entities/sprites/PlayerSprite';
+import { PlayPauseButtonSprite } from './entities/sprites/PlayPauseButtonSprite';
 import { World } from './entities/World';
 
 export class Game {
@@ -15,6 +16,7 @@ export class Game {
         this.initWorld();
         this.initPlayPauseButton();
         this.initPlayer();
+        
         this.initGameLoop();
 
         this.control = new Control();
@@ -27,10 +29,9 @@ export class Game {
     }
 
     initPlayPauseButton() {
-        this.playPauseButton = Element.create('button', undefined, 'play-pause-button'); 
-        this.playPauseButton.innerHTML = '<ion-icon name="pause"></ion-icon>';
-        this.playPauseButton.onclick = () => this.togglePlayPause();
-        document.body.appendChild(this.playPauseButton);
+        this.playPauseButton = new PlayPauseButtonSprite(this);
+        document.body.appendChild(this.playPauseButton.element);
+        this.sprites.push(this.playPauseButton);
     }
 
     initPlayer() {
@@ -43,7 +44,9 @@ export class Game {
     }
 
     initGameLoop() {
-        this.gameLoopInterval = setInterval(() => {
+        this.isPaused = false;
+        
+        setInterval(() => {
             this.update();
         }, 1000 / 60); // 60/s
     }
@@ -57,34 +60,15 @@ export class Game {
     }
 
     update() {
-        this.updatePlayerInput();
-        this.world.update();
+        if (!this.isPaused) {
+            this.updatePlayerInput();
+            this.world.update();
+        }
         this.updateSprites();
     }
 
     togglePlayPause() {
-        if (this.isPaused()) {
-            this.resume();
-            this.playPauseButton.innerHTML = '<ion-icon name="pause"></ion-icon>';
-        } else {
-            this.pause();
-            this.playPauseButton.innerHTML = '<ion-icon name="play"></ion-icon>';
-        }
-    }
-
-    pause() {
-        clearInterval(this.gameLoopInterval);
-        this.gameLoopInterval = null;
-    }
-
-    resume() {
-        if (!this.gameLoopInterval) {
-            this.initGameLoop();
-        }
-    }
-
-    isPaused() {
-        return !Boolean(this.gameLoopInterval);
+        this.isPaused = !this.isPaused;
     }
 
     updatePlayerInput() {
