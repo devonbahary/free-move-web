@@ -6,6 +6,7 @@ body {
     width: 100vw;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
 }
 
 #world {
@@ -36,4 +37,8 @@ body {
 
 #player {
     background: red;
+}
+
+#play-pause-button {
+    margin-top: 12px;
 }

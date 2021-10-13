@@ -9,8 +9,7 @@ export class Sprite {
     constructor(type, gameEntity) {
         switch (type) {
             case SPRITE_TYPE.PLAYER:
-                this.element = Sprite.createElement('span', 'character');
-                this.element.setAttribute('id', 'player');
+                this.element = Sprite.createElement('span', 'character', 'player');
                 Sprite.setElementDimensions(this.element, gameEntity.body.radius * 2, gameEntity.body.radius * 2);
                 break;
             case SPRITE_TYPE.CHARACTER:
@@ -37,15 +36,15 @@ export class Sprite {
         this.element.style.top = Sprite.convertSizeToPixels(y0);
     }
 
-    static createElement(htmlElement, elementClass) {
+    static createElement(htmlElement, elementClass, elementId) {
         const element = document.createElement(htmlElement);
         if (elementClass) element.classList.add(elementClass);
+        if (elementId) element.setAttribute('id', elementId);
         return element;
     }
     
     static createWorld(world) {
-        const worldElement = Sprite.createElement('div');
-        worldElement.setAttribute('id', 'world');
+        const worldElement = Sprite.createElement('div', undefined, 'world');
 
         const { width, height } = world;
         

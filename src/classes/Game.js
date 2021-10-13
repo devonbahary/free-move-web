@@ -12,6 +12,7 @@ export class Game {
         this.characters = [];
 
         this.initWorld();
+        this.initPlayPauseButton();
         this.initPlayer();
         this.initGameLoop();
 
@@ -22,6 +23,13 @@ export class Game {
         this.world = new World(this.params.bounds);
         this.worldElement = Sprite.createWorld(this.world);
         document.body.appendChild(this.worldElement);
+    }
+
+    initPlayPauseButton() {
+        this.playPauseButton = Sprite.createElement('button', undefined, 'play-pause-button'); 
+        this.playPauseButton.innerHTML = '<ion-icon name="pause"></ion-icon>';
+        this.playPauseButton.onclick = () => this.togglePlayPause();
+        document.body.appendChild(this.playPauseButton);
     }
 
     initPlayer() {
@@ -51,6 +59,31 @@ export class Game {
         this.updatePlayerInput();
         this.world.update();
         this.updateSprites();
+    }
+
+    togglePlayPause() {
+        if (this.isPaused()) {
+            this.resume();
+            this.playPauseButton.innerHTML = '<ion-icon name="pause"></ion-icon>';
+        } else {
+            this.pause();
+            this.playPauseButton.innerHTML = '<ion-icon name="play"></ion-icon>';
+        }
+    }
+
+    pause() {
+        clearInterval(this.gameLoopInterval);
+        this.gameLoopInterval = null;
+    }
+
+    resume() {
+        if (!this.gameLoopInterval) {
+            this.initGameLoop();
+        }
+    }
+
+    isPaused() {
+        return !Boolean(this.gameLoopInterval);
     }
 
     updatePlayerInput() {
