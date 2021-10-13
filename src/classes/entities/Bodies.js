@@ -3,29 +3,17 @@ import { Vectors } from "../../utilities/Vectors";
 
 const isCircle = (body) => body.hasOwnProperty('radius');
 
-// abstract for now
+// should be abstract -- cannot work with an object if we don't know if it's
+// a circle or rectangle
 export class Body {
     constructor() {
+        this.x = 0;
+        this.y = 0;
+
         this.velocity = Vectors.create(0, 0);        
         this.mass = 1;
         // TODO: implement restitution
         this.isElastic = true;
-    }
-
-    get x0() {
-        return this.x;
-    }
-
-    get x1() {
-        return this.x + this.radius * 2;
-    }
-
-    get y0() {
-        return this.y;
-    }
-
-    get y1() {
-        return this.y + this.radius * 2;
     }
 
     isMoving() {
@@ -47,14 +35,56 @@ export class Body {
     }
 }
 
-export class CircleBody extends Body {
-    constructor() {
+export class RectangleBody extends Body {
+    constructor(width, height) {
         super();
-        this.radius = 0.5;
+        this.width = width;
+        this.height = height;
+    }
+
+    get x0() {
+        return this.x;
+    }
+
+    get x1() {
+        return this.x + this.width;
+    }
+
+    get y0() {
+        return this.y;
+    }
+
+    get y1() {
+        return this.y + this.height;
+    }
+
+    update() {}
+}
+
+export class CircleBody extends Body {
+    constructor(radius = 0.5) {
+        super();
+        this.radius = radius;
     }
 
     get center() {
         return { x: this.x + this.radius, y: this.y + this.radius };
+    }
+
+    get x0() {
+        return this.x;
+    }
+
+    get x1() {
+        return this.x + this.radius * 2;
+    }
+
+    get y0() {
+        return this.y;
+    }
+
+    get y1() {
+        return this.y + this.radius * 2;
     }
 
     update(world) {

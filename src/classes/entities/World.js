@@ -1,3 +1,5 @@
+import { RectangleBody } from "./Bodies";
+
 export class World {
     constructor(bounds) {
         const { width, height } = bounds; 
@@ -13,10 +15,18 @@ export class World {
     }
 
     initBoundaries() {
-        const topBoundary = { x0: 0, y0: 0, x1: this.width, y1: 0 };
-        const rightBoundary = { x0: this.width, y0: 0, x1: this.width, y1: this.height };
-        const bottomBoundary = { x0: 0, y0: this.height, x1: this.width, y1: this.height };
-        const leftBoundary = { x0: 0, y0: 0, x1: 0, y1: this.height };
+        const topBoundary = new RectangleBody(this.width, 0); // { x0: 0, y0: 0, x1: this.width, y1: 0 };
+        topBoundary.moveTo(0, 0);
+
+        const rightBoundary = new RectangleBody(0, this.height); // { x0: this.width, y0: 0, x1: this.width, y1: this.height };
+        rightBoundary.moveTo(this.width, 0);
+
+        const bottomBoundary = new RectangleBody(this.width, 0); // { x0: 0, y0: this.height, x1: this.width, y1: this.height };
+        bottomBoundary.moveTo(0, this.height);
+
+        const leftBoundary = new RectangleBody(0, this.height); // { x0: 0, y0: 0, x1: 0, y1: this.height };
+        leftBoundary.moveTo(0, 0);
+
 
         this.bodies.push(
             topBoundary,
@@ -28,8 +38,7 @@ export class World {
 
     update() {
         for (const body of this.bodies) {
-            // TODO
-            if (body.update) body.update(this);
+            body.update(this);
         }
     }
 }
