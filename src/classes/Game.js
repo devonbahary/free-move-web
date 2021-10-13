@@ -36,9 +36,12 @@ class Game {
     }
 
     initPlayer() {
-        this.player = new Player(gameParams.player.startPosition);
+        this.player = new Player();
         const playerSprite = new Sprite(SPRITE_TYPE.PLAYER, this.player);
         this.addCharacter(this.player, playerSprite);
+
+        const { x, y } = gameParams.player.startPosition;
+        this.player.body.moveTo(x, y);
     }
 
     addCharacter(character, characterSprite) {
