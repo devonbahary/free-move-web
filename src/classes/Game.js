@@ -2,7 +2,7 @@ import { Vectors } from '../utilities/Vectors';
 import { Control } from './Control';
 import { Character } from './entities/Character';
 import { Element } from './entities/Element';
-import { Sprite, SPRITE_TYPE } from './entities/Sprite';
+import { PlayerSprite } from './entities/sprites/PlayerSprite';
 import { World } from './entities/World';
 
 export class Game {
@@ -35,7 +35,7 @@ export class Game {
 
     initPlayer() {
         this.player = new Character();
-        const playerSprite = new Sprite(SPRITE_TYPE.PLAYER, this.player);
+        const playerSprite = new PlayerSprite(this.player);
         this.addCharacter(this.player, playerSprite);
 
         const { x, y } = this.params.player.startPosition;

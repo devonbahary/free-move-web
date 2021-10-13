@@ -1,8 +1,8 @@
 import { Character } from './classes/entities/Character';
 import { Game } from './classes/Game';
 import { Vectors } from './utilities/Vectors';
-import { Sprite, SPRITE_TYPE } from './classes/entities/Sprite';
 import './main.css';
+import { CharacterSprite } from './classes/entities/sprites/CharacterSprite';
 
 /*
     to-do list:
@@ -54,7 +54,7 @@ const GAME_MODES = {
         const randX = Math.floor((Math.random() * game.params.bounds.width));
         const randY = Math.floor((Math.random() * game.params.bounds.height));
         character.body.moveTo(randX, randY);
-        const characterSprite = new Sprite(SPRITE_TYPE.CHARACTER, character);
+        const characterSprite = new CharacterSprite(character);
         game.addCharacter(character, characterSprite);
     }
 

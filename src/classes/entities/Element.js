@@ -38,4 +38,9 @@ export class Element {
     }
 
     static convertSizeToPixels = (size) => `${size * PIXELS_IN_SQUARE}px`;
+
+    static moveToGameCoordinates = (element, x, y) => {
+        element.style.left = Element.convertSizeToPixels(x);
+        element.style.top = Element.convertSizeToPixels(y);
+    }
 }
