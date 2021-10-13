@@ -2,7 +2,7 @@ import { Control } from './Control';
 import { Character } from './entities/Character';
 import { Element } from './entities/Element';
 import { PlayerSprite } from './entities/sprites/PlayerSprite';
-import { PlayPauseButtonSprite } from './entities/sprites/PlayPauseButtonSprite';
+import { GameLoopControlsSprite } from './entities/sprites/GameLoopControlsSprite';
 import { World } from './entities/World';
 
 export class Game {
@@ -13,7 +13,7 @@ export class Game {
         this.characters = [];
 
         this.initWorld();
-        this.initPlayPauseButton();
+        this.initGameLoopControls();
         this.initPlayer();
         
         this.initGameLoop();
@@ -27,10 +27,10 @@ export class Game {
         document.body.appendChild(this.worldElement);
     }
 
-    initPlayPauseButton() {
-        this.playPauseButton = new PlayPauseButtonSprite(this);
-        document.body.appendChild(this.playPauseButton.element);
-        this.sprites.push(this.playPauseButton);
+    initGameLoopControls() {
+        this.gameLoopControls = new GameLoopControlsSprite(this);
+        document.body.appendChild(this.gameLoopControls.element);
+        this.sprites.push(this.gameLoopControls);
     }
 
     initPlayer() {
