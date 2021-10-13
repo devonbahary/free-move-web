@@ -1,5 +1,5 @@
 import { Character } from './classes/entities/Character';
-import { game, gameParams} from './classes/Game';
+import { Game, gameParams} from './classes/Game';
 import { Vectors } from './utilities/Vectors';
 import './main.css';
 import { Sprite, SPRITE_TYPE } from './classes/entities/Sprite';
@@ -19,6 +19,8 @@ const GAME_MODES = {
 
 const gameMode = GAME_MODES.NORMAL;
 
+const game = new Game();
+
 const gameSetup = () => {
     switch (gameMode) {
         case GAME_MODES.NORMAL:
@@ -32,7 +34,6 @@ const gameSetup = () => {
         default:
             break;
     }
-    console.log(game);
 };
 
 const seedCharacters = () => {
