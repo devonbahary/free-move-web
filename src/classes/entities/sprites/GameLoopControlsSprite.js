@@ -12,9 +12,9 @@ export class GameLoopControlsSprite {
     static get pauseButtonHTML() { return '<ion-icon name="pause"></ion-icon>'; };
 
     initElement() {
-        this.element = Element.create('div');
+        this.element = Element.create('div', undefined, 'game-loop-controls');
         
-        this.playPauseButtonElement = Element.create('button', undefined, 'play-pause-button'); 
+        this.playPauseButtonElement = Element.create('button'); 
         this.playPauseButtonElement.onclick = () => this.togglePlayPause();
 
         this.element.appendChild(this.playPauseButtonElement);
