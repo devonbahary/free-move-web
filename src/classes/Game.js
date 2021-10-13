@@ -4,9 +4,6 @@ import { Character } from './entities/Character';
 import { Sprite, SPRITE_TYPE } from './entities/Sprite';
 import { World } from './entities/World';
 
-// TODO: make character speed
-const PLAYER_MOVEMENT_SPEED = 0.1;
-
 export class Game {
     constructor(params) {
         this.params = params;
@@ -74,7 +71,7 @@ export class Game {
         }
 
         if (Vectors.magnitude(movementVector)) {
-            this.player.body.move(Vectors.rescale(movementVector, PLAYER_MOVEMENT_SPEED));
+            this.player.move(movementVector);
         }
     }
 
