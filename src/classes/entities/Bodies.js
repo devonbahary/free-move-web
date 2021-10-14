@@ -6,7 +6,7 @@ const isCircle = (body) => body.hasOwnProperty('radius');
 
 // should be abstract -- cannot work with an object if we don't know if it's
 // a circle or rectangle
-export class Body {
+class Body {
     constructor() {
         this.id = uuid();
         this.x = 0;
