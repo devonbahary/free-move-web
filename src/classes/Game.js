@@ -110,7 +110,7 @@ export class Game {
         for (const bodyState of frameBodiesState) {
             const body = this.world.bodies.find(body => body.id === bodyState.id);
             body.moveTo(bodyState.x, bodyState.y);
-            body.move(bodyState.velocity);
+            body.setVelocity(bodyState.velocity);
         }
     }
 

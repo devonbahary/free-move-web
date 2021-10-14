@@ -41,7 +41,7 @@ const GAME_MODES = {
             break;
         case GAME_MODES.CHAOS:
             for (const character of game.world.characters) {
-                character.body.move(Vectors.create(Math.random() * 1, Math.random() * 1));
+                character.body.setVelocity(Vectors.create(Math.random() * 1, Math.random() * 1));
             }
             break;
         default:

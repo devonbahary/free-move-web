@@ -22,9 +22,8 @@ export class Body {
         return Vectors.magnitude(this.velocity);
     }
 
-    move(movementVector) {
-        const diffVelocity = Vectors.subtract(movementVector, this.velocity);
-        this.applyForce(Vectors.mult(diffVelocity, this.mass));
+    setVelocity(movementVector) {
+        this.velocity = movementVector;
     }
 
     moveTo(x, y) {
@@ -130,8 +129,8 @@ export class CircleBody extends Body {
                                 bodyFinalVelocity,
                             ] = Collisions.resolveElasticCircleOnCircleCollision(this, body);
 
-                            this.move(finalVelocity);
-                            body.move(bodyFinalVelocity);
+                            this.setVelocity(finalVelocity);
+                            body.setVelocity(bodyFinalVelocity);
                         }
 
                         wasCollision = true;
@@ -148,7 +147,7 @@ export class CircleBody extends Body {
 
                         if (this.isElastic) { // assume all rectangles are inelastic
                             const newVector = Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, body);
-                            this.move(newVector);
+                            this.setVelocity(newVector);
                         }
                         
                         wasCollision = true;
