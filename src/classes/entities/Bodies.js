@@ -16,6 +16,15 @@ class Body {
         this.mass = 1;
         // TODO: implement restitution
         this.isElastic = true;
+
+        // TODO: make this the responsibility of world.update?
+        /*
+            when somebody collides into me, we calculate new velocities.
+            on my next update, don't reconsider that same collision body
+            as a collision, rather take that new velocity and explore
+            other collisions or move uninhibited
+        */
+        this.collisionPartner = null; 
     }
 
     isMoving() {
@@ -109,7 +118,7 @@ export class CircleBody extends Body {
 
         // TODO: what if multiple collisions possible in movement and should react to closest?
         for (const body of world.bodies) {
-            if (body === this) {
+            if (body === this || body === this.collisionPartner) {
                 continue;
             }
 
@@ -131,10 +140,12 @@ export class CircleBody extends Body {
 
                             this.setVelocity(finalVelocity);
                             body.setVelocity(bodyFinalVelocity);
+
+                            body.collisionPartner = this;
                         }
 
                         wasCollision = true;
-                        continue;
+                        break;
                     }
                     
                 }
@@ -151,7 +162,7 @@ export class CircleBody extends Body {
                         }
                         
                         wasCollision = true;
-                        continue;
+                        break;
                     }
                 }
             }
@@ -161,5 +172,7 @@ export class CircleBody extends Body {
             this.x = this.x + this.velocity.x;
             this.y = this.y + this.velocity.y;
         }
+
+        this.collisionPartner = null;
     }
 }
