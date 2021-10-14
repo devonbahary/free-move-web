@@ -97,7 +97,7 @@ export class CircleBody extends Body {
             return;
         }
 
-        const movePartiallyTowardsVelocity = (timeOfCollision) => {
+        const moveToPointOfCollision = (timeOfCollision) => {
             const dx = this.velocity.x * timeOfCollision;
             const dy = this.velocity.y * timeOfCollision;
             this.moveTo(this.x + dx, this.y + dy);
@@ -121,7 +121,7 @@ export class CircleBody extends Body {
                     const timeOfCollision = Collisions.getTimeOfCircleOnCircleCollision(this, body);
 
                     if (timeOfCollision !== null) {
-                        movePartiallyTowardsVelocity(timeOfCollision);
+                        moveToPointOfCollision(timeOfCollision);
 
                         if (this.isElastic && body.isElastic) {
                             const [
@@ -143,7 +143,7 @@ export class CircleBody extends Body {
                     const timeOfCollision = Collisions.getTimeOfCircleOnRectangleCollision(this, body);
 
                     if (timeOfCollision !== null) {
-                        movePartiallyTowardsVelocity(timeOfCollision);
+                        moveToPointOfCollision(timeOfCollision);
 
                         if (this.isElastic) { // assume all rectangles are inelastic
                             const newVector = Collisions.resolveElasticCircleOnInelasticRectangleCollision(this, body);
