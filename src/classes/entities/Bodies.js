@@ -13,15 +13,6 @@ export class Body {
         this.mass = 1;
         // TODO: implement restitution
         this.isElastic = true;
-
-        // TODO: make this the responsibility of world.update?
-        /*
-            when somebody collides into me, we calculate new velocities.
-            on my next update, don't reconsider that same collision body
-            as a collision, rather take that new velocity and explore
-            other collisions or move uninhibited
-        */
-        this.collisionPartner = null; 
     }
 
     static isCircle(body) {

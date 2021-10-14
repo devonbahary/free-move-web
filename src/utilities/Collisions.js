@@ -35,7 +35,7 @@ export class Collisions {
         return Math.min(...validRoots);
     };
 
-    static getTimeOfCircleOnCircleCollision = (A, B) => {
+    static getTimeOfCircleVsCircleCollision = (A, B) => {
         const { center: centerA, radius: radiusA, velocity } = A;
         const { x: Ax, y: Ay } = centerA;
         const { x: dx, y: dy } = velocity;
@@ -72,7 +72,7 @@ export class Collisions {
     }
 
     // only pass in circles A, B when their position (center) has been set for the * time * of collision
-    static resolveElasticCircleOnCircleCollision = (A, B) => {
+    static getCircleVsCircleCollisionVelocities = (A, B) => {
         /*
             2D Elastic Collision (angle-free)
             https://stackoverflow.com/questions/35211114/2d-elastic-ball-collision-physics
@@ -127,7 +127,7 @@ export class Collisions {
         );
     };
 
-    static getTimeOfCircleOnRectangleCollision = (circle, rect) => {
+    static getTimeOfCircleVsRectangleCollision = (circle, rect) => {
         const { center, radius, velocity } = circle;
         const { x: x1, y: y1 } = center;
         const { x: dx, y: dy } = velocity;
@@ -150,7 +150,7 @@ export class Collisions {
         if the circle approaches an "x" boundary, flip x and conserve y
                               ... a "y" boundary, flip y and conserve x
     */
-    static resolveElasticCircleOnInelasticRectangleCollision = (circle, rect) => {
+    static getElasticCircleVsInelasticRectangleCollisionVelocity = (circle, rect) => {
         const { x, y } = circle.velocity;
         if (isVerticalLine(rect)) {
             return Vectors.create(-x, y);
@@ -158,4 +158,55 @@ export class Collisions {
             return Vectors.create(x, -y);
         }
     }
+
+    static moveBodyToPointOfCollision = (body, timeOfCollision) => {
+        const dx = body.velocity.x * timeOfCollision;
+        const dy = body.velocity.y * timeOfCollision;
+        body.moveTo(body.x + dx, body.y + dy);
+    };
+    
+    static resolveCircleVsCircleCollision = (circle, movementBoundingBox, otherCircle) => {
+        const vectorToRect = Vectors.getClosestVectorToRectFromCircle(otherCircle, movementBoundingBox);
+        const distanceToRectangle = Vectors.magnitude(vectorToRect);
+
+        const timeOfCollision = 
+            Collisions.isCircleCollidedWithRectangle(distanceToRectangle, circle.radius) 
+                ? Collisions.getTimeOfCircleVsCircleCollision(circle, otherCircle)
+                : null;
+    
+        if (timeOfCollision === null) return false;
+        
+        Collisions.moveBodyToPointOfCollision(circle, timeOfCollision);
+    
+        if (circle.isElastic && otherCircle.isElastic) {
+            const [
+                finalVelocity,
+                bodyFinalVelocity,
+            ] = Collisions.getCircleVsCircleCollisionVelocities(circle, otherCircle);
+    
+            circle.setVelocity(finalVelocity);
+            otherCircle.setVelocity(bodyFinalVelocity);
+        }
+    
+        return true;
+    };
+    
+    static resolveCircleVsRectangleCollision = (circle, movementBoundingBox, rectangle) => {
+        const timeOfCollision = 
+            Collisions.areRectanglesColliding(movementBoundingBox, rectangle)
+                ? Collisions.getTimeOfCircleVsRectangleCollision(circle, rectangle)
+                : null;
+                        
+        if (timeOfCollision === null) return false;
+    
+        Collisions.moveBodyToPointOfCollision(circle, timeOfCollision);
+    
+        if (circle.isElastic) { // assume all rectangles are inelastic
+            const newVector = Collisions.getElasticCircleVsInelasticRectangleCollisionVelocity(circle, rectangle);
+            circle.setVelocity(newVector);
+        }
+    
+        return true;
+    };
+
 }
