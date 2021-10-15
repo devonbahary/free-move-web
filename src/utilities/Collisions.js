@@ -165,27 +165,27 @@ export class Collisions {
         body.moveTo(body.x + dx, body.y + dy);
     };
     
-    static resolveCircleVsCircleCollision = (circle, movementBoundingBox, otherCircle) => {
-        const vectorToRect = Vectors.getClosestVectorToRectFromCircle(otherCircle, movementBoundingBox);
+    static resolveCircleVsCircleCollision = (circleA, movementBoundingBox, circleB) => {
+        const vectorToRect = Vectors.getClosestVectorToRectFromCircle(circleB, movementBoundingBox);
         const distanceToRectangle = Vectors.magnitude(vectorToRect);
 
         const timeOfCollision = 
-            Collisions.isCircleCollidedWithRectangle(distanceToRectangle, circle.radius) 
-                ? Collisions.getTimeOfCircleVsCircleCollision(circle, otherCircle)
+            Collisions.isCircleCollidedWithRectangle(distanceToRectangle, circleA.radius) 
+                ? Collisions.getTimeOfCircleVsCircleCollision(circleA, circleB)
                 : null;
     
         if (timeOfCollision === null) return false;
         
-        Collisions.moveBodyToPointOfCollision(circle, timeOfCollision);
+        Collisions.moveBodyToPointOfCollision(circleA, timeOfCollision);
     
-        if (circle.isElastic && otherCircle.isElastic) {
+        if (circleA.isElastic && circleB.isElastic) {
             const [
-                finalVelocity,
-                bodyFinalVelocity,
-            ] = Collisions.getCircleVsCircleCollisionVelocities(circle, otherCircle);
+                finalVelocityA,
+                finalVelocityB,
+            ] = Collisions.getCircleVsCircleCollisionVelocities(circleA, circleB);
     
-            circle.setVelocity(finalVelocity);
-            otherCircle.setVelocity(bodyFinalVelocity);
+            circleA.setVelocity(finalVelocityA);
+            circleB.setVelocity(finalVelocityB);
         }
     
         return true;
