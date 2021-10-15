@@ -66,7 +66,7 @@ export class World {
                     : Collisions.resolveCircleVsRectangleCollision(actingBody, movementBoundingBox, otherBody);
 
             if (wasCollision) {
-                // don't recognize the same collision twice between any consecutive updates between
+                // don't recognize the same collision twice between any consecutive updates of
                 // a colliding pair or else they cancel
                 this.resolvedCollisionsMemory[otherBody.id] = actingBody.id;
                 return;
