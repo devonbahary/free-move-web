@@ -22,7 +22,7 @@ export class Collisions {
         };
     }
 
-    // returns 0 > t > 1 or null, where t is the distance along movement where collision happens
+    // returns 0 < t < 1 or null, where t is the distance along movement where collision happens
     static getTimeOfCollision = (a, b, c) => {
         const roots = quadratic(a, b, c);
 
