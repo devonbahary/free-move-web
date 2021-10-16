@@ -14,13 +14,13 @@ import { CharacterSprite } from './classes/entities/sprites/CharacterSprite';
 
 const GAME_PARAMS = {
     bounds: {
-        width: 15,
-        height: 15,
+        width: 7,
+        height: 7,
     },
     player: {
         startPosition: {
-            x: 7,
-            y: 7,
+            x: 3,
+            y: 3,
         },
     },
 };
