@@ -26,7 +26,9 @@ export class Collisions {
     static getTimeOfCollision = (a, b, c) => {
         const roots = quadratic(a, b, c);
 
-        const validRoots = roots.filter(t => t <= 1);
+        // roots can be outside the range of 0 < t < 1 because our broad approximations can be 
+        // wrong; only when 0 < t < 1 will a collision actually occur
+        const validRoots = roots.filter(t => t >= 0 && t <= 1);
 
         if (!validRoots.length) {
             return null;
