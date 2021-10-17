@@ -35,6 +35,16 @@ export class Body {
     applyForce(force) {
         this.velocity = Vectors.add(this.velocity, Vectors.divide(force, this.mass));
     }
+
+    toSaveableState() {
+        const { id, x, y, velocity } = this;
+        return {
+            id,
+            x,
+            y,
+            velocity: { ...velocity },
+        };
+    }
 }
 
 export class RectangleBody extends Body {

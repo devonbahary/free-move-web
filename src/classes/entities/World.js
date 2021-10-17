@@ -77,4 +77,18 @@ export class World {
         const { x, y, velocity } = actingBody;
         actingBody.moveTo(x + velocity.x, y + velocity.y);
     }
+
+    getSaveableWorldState() {
+        return {
+            bodies: this.bodies.map(body => body.toSaveableState()),
+        };
+    }
+
+    loadWorldState(saveableWorldState) {
+        for (const saveableBody of saveableWorldState.bodies) {
+            const body = this.bodies.find(body => body.id === saveableBody.id);
+            body.moveTo(saveableBody.x, saveableBody.y);
+            body.setVelocity(saveableBody.velocity);
+        }
+    }
 }

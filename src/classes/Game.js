@@ -10,16 +10,6 @@ const MAX_FRAME_STATES_TO_SAVE = 1000;
 const STEP_FORWARD_FRAMES = 1;
 const STEP_BACKWARD_FRAMES = 5;
 
-const toSaveableBodyState = (body) => {
-    const { id, x, y, velocity } = body;
-    return {
-        id,
-        x,
-        y,
-        velocity: { ...velocity }, 
-    };
-};
-
 export class Game {
     constructor(params) {
         this.params = params;
@@ -59,7 +49,7 @@ export class Game {
 
     initGameLoop() {
         this.frameCount = BEGIN_FRAME;
-        this.frameToBodiesState = {};
+        this.frameToWorldState = {};
         this.isPaused = false;
         
         setInterval(() => {
@@ -80,7 +70,7 @@ export class Game {
             this.frameCount += 1;
             this.control.update();
             this.world.update();
-            this.updateFrameState();
+            this.updateFrameWorldState();
         }
         this.updateSprites();
     }
@@ -95,23 +85,19 @@ export class Game {
         }
     }
 
-    updateFrameState() {
+    updateFrameWorldState() {
         const framesAgo = this.frameCount - MAX_FRAME_STATES_TO_SAVE;
         if (framesAgo >= BEGIN_FRAME) {
-            delete this.frameToBodiesState[framesAgo];
+            delete this.frameToWorldState[framesAgo];
         }
 
-        this.frameToBodiesState[this.frameCount] = this.world.bodies.map(toSaveableBodyState);
+        this.frameToWorldState[this.frameCount] = this.world.getSaveableWorldState();
     }
 
     stepBackward() {
         this.frameCount -= STEP_BACKWARD_FRAMES;
-        const frameBodiesState = this.frameToBodiesState[this.frameCount];
-        for (const bodyState of frameBodiesState) {
-            const body = this.world.bodies.find(body => body.id === bodyState.id);
-            body.moveTo(bodyState.x, bodyState.y);
-            body.setVelocity(bodyState.velocity);
-        }
+        const frameWorldState = this.frameToWorldState[this.frameCount];
+        this.world.loadWorldState(frameWorldState);
     }
 
     stepForward() {
