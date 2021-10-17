@@ -73,7 +73,7 @@ export class World {
             }
         }
         
-        // progress velocity
+        // no collisions; progress velocity
         const { x, y, velocity } = actingBody;
         actingBody.moveTo(x + velocity.x, y + velocity.y);
     }
