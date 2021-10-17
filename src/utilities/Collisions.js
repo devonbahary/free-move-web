@@ -167,8 +167,10 @@ export class Collisions {
     
     static resolveCircleVsCircleCollision = (circleA, movementBoundingBox, circleB) => {
         const vectorToRect = Vectors.getClosestVectorToRectFromCircle(circleB, movementBoundingBox);
-        const distanceToRectangle = Vectors.magnitude(vectorToRect);
+        const distanceToRectangle = Vectors.magnitude(vectorToRect) - circleB.radius;
 
+        // collision of circleB with circleA's movementBoundingBox is a broad approximation to 
+        // prevent tunneling through objects
         const timeOfCollision = 
             Collisions.isCircleCollidedWithRectangle(distanceToRectangle, circleA.radius) 
                 ? Collisions.getTimeOfCircleVsCircleCollision(circleA, circleB)
@@ -192,6 +194,8 @@ export class Collisions {
     };
     
     static resolveCircleVsRectangleCollision = (circle, movementBoundingBox, rectangle) => {
+        // collision of rectangle with circle's movementBoundingBox is a broad approximation to 
+        // prevent tunneling through objects
         const timeOfCollision = 
             Collisions.areRectanglesColliding(movementBoundingBox, rectangle)
                 ? Collisions.getTimeOfCircleVsRectangleCollision(circle, rectangle)
