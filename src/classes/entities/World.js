@@ -9,8 +9,6 @@ export class World {
 
         this.bodies = [];
         this.initBoundaries();
-
-        this.resolvedCollisionsMemory = {};
     }
     
     addBody(body) {
@@ -42,7 +40,6 @@ export class World {
     update() {
         for (const body of this.bodies) {
             this.updateBody(body);
-            delete this.resolvedCollisionsMemory[body.id];
         }
     }
 
@@ -54,23 +51,14 @@ export class World {
         // TODO: implement quadtree to prevent O(n^2)
         // TODO: what if multiple collisions possible in movement and should react to closest?
         for (const otherBody of this.bodies) {
-            if (
-                otherBody === actingBody || otherBody.id === this.resolvedCollisionsMemory[actingBody.id]
-            ) {
-                continue;
-            }
+            if (otherBody === actingBody) continue;
 
             const wasCollision = 
                 Body.isCircle(otherBody)
                     ? Collisions.resolveCircleVsCircleCollision(actingBody, movementBoundingBox, otherBody)
                     : Collisions.resolveCircleVsRectangleCollision(actingBody, movementBoundingBox, otherBody);
 
-            if (wasCollision) {
-                // don't recognize the same collision twice between any consecutive updates of
-                // a colliding pair or else they cancel
-                this.resolvedCollisionsMemory[otherBody.id] = actingBody.id;
-                return;
-            }
+            if (wasCollision) return;
         }
         
         // no collisions; progress velocity
