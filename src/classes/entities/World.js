@@ -55,7 +55,7 @@ export class World {
         for (const otherBody of this.bodies) {
             if (otherBody === actingBody) continue;
 
-            if (otherBody.hasOwnProperty('radius')) { // isCircle TODO: where to put this logic?
+            if (otherBody.isCircle) {
                 const timeOfCollision = 
                     // broad phase to prevent actingBody from tunneling through objects
                     Collisions.isCircleCollidedWithRectangle(otherBody, movementBoundingBox) 

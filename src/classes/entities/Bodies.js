@@ -43,6 +43,8 @@ class Point {
         this.y = 0;
     }
 
+    get isCircle() { return false; }
+
     moveTo(x, y) {
         this.x = x;
         this.y = y;
@@ -85,6 +87,8 @@ export class Circle extends Point {
         super();
         this.radius = radius;
     }
+
+    get isCircle() { return true; }
 
     get center() {
         return { 
