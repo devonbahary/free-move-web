@@ -8,6 +8,8 @@ export class World {
         this.height = height;
 
         this.bodies = [];
+        this.collisionPartnerMap = {}; 
+        
         this.initBoundaries();
     }
     
@@ -63,8 +65,15 @@ export class World {
 
                 if (timeOfCollision === null) continue; 
 
+                // if otherBody is actingBody's collision partner, that means no movement or 
+                // collision (change to velocity) has occurred and therefore we shouldn't 
+                // resolve the collision back-to-back (this is a bug of infinite reversal)
+                if (this.isCollisionPartner(actingBody, otherBody)) return;
+
                 Collisions.resolveCircleVsCircleCollision(actingBody, otherBody, timeOfCollision);
 
+                this.addCollisionPartner(actingBody, otherBody);
+                
                 return;
             } else { // isRectangle
                 const timeOfCollision = 
@@ -76,7 +85,14 @@ export class World {
 
                 if (timeOfCollision === null) continue;
 
+                // if otherBody is actingBody's collision partner, that means no movement or 
+                // collision (change to velocity) has occurred and therefore we shouldn't 
+                // resolve the collision back-to-back (this is a bug of infinite reversal)
+                if (this.isCollisionPartner(actingBody, otherBody)) return;
+
                 Collisions.resolveCircleVsRectangleCollision(actingBody, otherBody, timeOfCollision);
+
+                this.addCollisionPartner(actingBody, otherBody);
 
                 return;
             }
@@ -85,6 +101,31 @@ export class World {
         // no collisions; progress velocity
         const { x, y, velocity } = actingBody;
         actingBody.moveTo(x + velocity.x, y + velocity.y);
+
+        // actingBody's collision partner can now safely collide into actingBody again
+        this.removeCollisionPartner(actingBody);
+    }
+
+    addCollisionPartner(bodyA, bodyB) {
+        // bodies can only ever have one partner
+        // if a body already has a partner and it collides into another, the body has 
+        // updated its velocity and therefore can safely collide with its former partner again
+        this.removeCollisionPartner(bodyA);
+        this.removeCollisionPartner(bodyB); 
+
+        this.collisionPartnerMap[bodyA.id] = bodyB.id;
+        this.collisionPartnerMap[bodyB.id] = bodyA.id;
+    }
+
+    isCollisionPartner(bodyA, bodyB) {
+        return this.collisionPartnerMap[bodyA.id] === bodyB.id;
+    }
+
+    removeCollisionPartner(body) {
+        // collision partners must always point to one another or no one
+        const collisionPartnerBodyId = this.collisionPartnerMap[body.id];
+        delete this.collisionPartnerMap[body.id];
+        delete this.collisionPartnerMap[collisionPartnerBodyId];
     }
 
     getSaveableWorldState() {
