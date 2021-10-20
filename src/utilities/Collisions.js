@@ -11,8 +11,8 @@ const quadratic = (a, b, c) => {
 const isVerticalLine = (rect) => rect.x0 === rect.x1;
 
 export class Collisions {
-    static getMovementBoundingBox = (character) => {
-        const { center, x0, x1, y0, y1, velocity } = character;
+    static getMovementBoundingBox = (body) => {
+        const { center, x0, x1, y0, y1, velocity } = body;
         const { x: dx, y: dy } = velocity;
 
         const rectX0 = dx === 0 ? x0 : dx > 0 ? center.x : x0 + dx;
