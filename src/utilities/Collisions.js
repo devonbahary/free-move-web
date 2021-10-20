@@ -194,16 +194,7 @@ export class Collisions {
         body.moveTo(body.x + dx, body.y + dy);
     };
     
-    static resolveCircleVsCircleCollision = (circleA, movementBoundingBox, circleB) => {
-        // collision of circleB with circleA's movementBoundingBox is a broad approximation to 
-        // prevent tunneling through objects
-        const timeOfCollision = 
-            Collisions.isCircleCollidedWithRectangle(circleB, movementBoundingBox) 
-                ? Collisions.getTimeOfCircleVsCircleCollision(circleA, circleB)
-                : null;
-    
-        if (timeOfCollision === null) return false;
-        
+    static resolveCircleVsCircleCollision = (circleA, circleB, timeOfCollision) => {
         Collisions.moveBodyToPointOfCollision(circleA, timeOfCollision);
     
         if (circleA.isElastic && circleB.isElastic) {
@@ -215,28 +206,15 @@ export class Collisions {
             circleA.setVelocity(finalVelocityA);
             circleB.setVelocity(finalVelocityB);
         }
-    
-        return true;
     };
     
-    static resolveCircleVsRectangleCollision = (circle, movementBoundingBox, rectangle) => {
-        // collision of rectangle with circle's movementBoundingBox is a broad approximation to 
-        // prevent tunneling through objects
-        const timeOfCollision = 
-            Collisions.areRectanglesColliding(movementBoundingBox, rectangle)
-                ? Collisions.getTimeOfCircleVsRectangleCollision(circle, rectangle)
-                : null;
-                        
-        if (timeOfCollision === null) return false;
-    
+    static resolveCircleVsRectangleCollision = (circle, rectangle, timeOfCollision) => {
         Collisions.moveBodyToPointOfCollision(circle, timeOfCollision);
     
         if (circle.isElastic) { // assume all rectangles are inelastic
             const newVector = Collisions.getElasticCircleVsInelasticRectangleCollisionVelocity(circle, rectangle);
             circle.setVelocity(newVector);
         }
-    
-        return true;
     };
 
 }

@@ -53,12 +53,33 @@ export class World {
         for (const otherBody of this.bodies) {
             if (otherBody === actingBody) continue;
 
-            const wasCollision = 
-                otherBody.hasOwnProperty('radius') // isCircle TODO: where to put this logic?
-                    ? Collisions.resolveCircleVsCircleCollision(actingBody, movementBoundingBox, otherBody)
-                    : Collisions.resolveCircleVsRectangleCollision(actingBody, movementBoundingBox, otherBody);
+            if (otherBody.hasOwnProperty('radius')) { // isCircle TODO: where to put this logic?
+                const timeOfCollision = 
+                    // broad phase to prevent actingBody from tunneling through objects
+                    Collisions.isCircleCollidedWithRectangle(otherBody, movementBoundingBox) 
+                        // narrow phase to actually get time of collision
+                        ? Collisions.getTimeOfCircleVsCircleCollision(actingBody, otherBody)
+                        : null;
 
-            if (wasCollision) return;
+                if (timeOfCollision === null) continue; 
+
+                Collisions.resolveCircleVsCircleCollision(actingBody, otherBody, timeOfCollision);
+
+                return;
+            } else { // isRectangle
+                const timeOfCollision = 
+                    // broad phase to prevent actingBody from tunneling through objects
+                    Collisions.areRectanglesColliding(movementBoundingBox, otherBody)
+                        // narrow phase to actually get time of collision
+                        ? Collisions.getTimeOfCircleVsRectangleCollision(actingBody, otherBody)
+                        : null;
+
+                if (timeOfCollision === null) continue;
+
+                Collisions.resolveCircleVsRectangleCollision(actingBody, otherBody, timeOfCollision);
+
+                return;
+            }
         }
         
         // no collisions; progress velocity
