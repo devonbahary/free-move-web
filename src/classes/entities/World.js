@@ -45,65 +45,71 @@ export class World {
         }
     }
 
-    updateBody(actingBody) {
-        if (!actingBody.isMoving()) return;
+    updateBody(body) {
+        if (!body.isMoving()) return;
 
-        const movementBoundingBox = Collisions.getMovementBoundingBox(actingBody);
+        const movementBoundingBox = Collisions.getMovementBoundingBox(body);
+
+        const [ closestCollisionBody, timeOfCollision ] = this.getClosestCollisionBodyAndTimeOfCollision(body, movementBoundingBox);
+
+        if (closestCollisionBody) {
+            // if closestCollisionBody is body's collision partner, that means no movement or 
+            // collision (change to velocity) has occurred and therefore we shouldn't 
+            // resolve the collision back-to-back (this is a bug of infinite reversal)
+            if (this.isCollisionPartner(body, closestCollisionBody)) return;
+
+            const resolveCollision = closestCollisionBody.isCircle
+                ? Collisions.resolveCircleVsCircleCollision
+                : Collisions.resolveCircleVsRectangleCollision;
+
+            resolveCollision(body, closestCollisionBody, timeOfCollision);
+            
+            this.addCollisionPartner(body, closestCollisionBody);
+        } else {
+            // no collisions; progress velocity
+            const { x, y, velocity } = body;
+            body.moveTo(x + velocity.x, y + velocity.y);
+
+            // body's collision partner can now safely collide into body again
+            this.removeCollisionPartner(body);
+        }
+    }
+
+    getClosestCollisionBodyAndTimeOfCollision(body, movementBoundingBox) {
+        let closestCollisionBody = null;
+        let closestCollisionTimeOfCollision = null;
 
         // TODO: implement quadtree to prevent O(n^2)
-        // TODO: what if multiple collisions possible in movement and should react to closest?
         for (const otherBody of this.bodies) {
-            if (otherBody === actingBody) continue;
+            if (body === otherBody) continue;
 
-            if (otherBody.isCircle) {
-                const timeOfCollision = 
-                    // broad phase to prevent actingBody from tunneling through objects
-                    Collisions.isCircleCollidedWithRectangle(otherBody, movementBoundingBox) 
-                        // narrow phase to actually get time of collision
-                        ? Collisions.getTimeOfCircleVsCircleCollision(actingBody, otherBody)
-                        : null;
+            // broad phase to prevent actingBody from tunneling through objects
+            const isCollidingWithMovementPath = otherBody.isCircle 
+                ? Collisions.isCircleCollidedWithRectangle 
+                : Collisions.areRectanglesColliding;
+            // narrow phase to actually get time of collision
+            const getTimeOfCollision = otherBody.isCircle
+                ? Collisions.getTimeOfCircleVsCircleCollision
+                : Collisions.getTimeOfCircleVsRectangleCollision;
 
-                if (timeOfCollision === null) continue; 
+            const timeOfCollision = isCollidingWithMovementPath(otherBody, movementBoundingBox) 
+                ? getTimeOfCollision(body, otherBody) 
+                : null;
 
-                // if otherBody is actingBody's collision partner, that means no movement or 
-                // collision (change to velocity) has occurred and therefore we shouldn't 
-                // resolve the collision back-to-back (this is a bug of infinite reversal)
-                if (this.isCollisionPartner(actingBody, otherBody)) return;
-
-                Collisions.resolveCircleVsCircleCollision(actingBody, otherBody, timeOfCollision);
-
-                this.addCollisionPartner(actingBody, otherBody);
+            if (timeOfCollision === null) continue;
                 
-                return;
-            } else { // isRectangle
-                const timeOfCollision = 
-                    // broad phase to prevent actingBody from tunneling through objects
-                    Collisions.areRectanglesColliding(movementBoundingBox, otherBody)
-                        // narrow phase to actually get time of collision
-                        ? Collisions.getTimeOfCircleVsRectangleCollision(actingBody, otherBody)
-                        : null;
+            if (timeOfCollision === 0) {
+                // can't get any closer than already touching
+                return [ otherBody, timeOfCollision ];
+            }
 
-                if (timeOfCollision === null) continue;
-
-                // if otherBody is actingBody's collision partner, that means no movement or 
-                // collision (change to velocity) has occurred and therefore we shouldn't 
-                // resolve the collision back-to-back (this is a bug of infinite reversal)
-                if (this.isCollisionPartner(actingBody, otherBody)) return;
-
-                Collisions.resolveCircleVsRectangleCollision(actingBody, otherBody, timeOfCollision);
-
-                this.addCollisionPartner(actingBody, otherBody);
-
-                return;
+            if (!closestCollisionTimeOfCollision || timeOfCollision < closestCollisionTimeOfCollision) {
+                closestCollisionBody = otherBody;
+                closestCollisionTimeOfCollision = timeOfCollision;
             }
         }
-        
-        // no collisions; progress velocity
-        const { x, y, velocity } = actingBody;
-        actingBody.moveTo(x + velocity.x, y + velocity.y);
 
-        // actingBody's collision partner can now safely collide into actingBody again
-        this.removeCollisionPartner(actingBody);
+        return [ closestCollisionBody, closestCollisionTimeOfCollision ];
     }
 
     addCollisionPartner(bodyA, bodyB) {
