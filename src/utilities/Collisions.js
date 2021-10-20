@@ -1,3 +1,4 @@
+import { Rectangle } from "../classes/entities/Bodies";
 import { Vectors } from "./Vectors";
 
 const quadratic = (a, b, c) => {
@@ -14,12 +15,18 @@ export class Collisions {
         const { center, x0, x1, y0, y1, velocity } = character;
         const { x: dx, y: dy } = velocity;
 
-        return {
-            x0: dx === 0 ? x0 : dx > 0 ? center.x : x0 + dx,
-            x1: dx === 0 ? x1 : dx > 0 ? x1 + dx : center.x,
-            y0: dy === 0 ? y0 : dy > 0 ? center.y : y0 + dy,
-            y1: dy === 0 ? y1 : dy > 0 ? y1 + dy : center.y,
-        };
+        const rectX0 = dx === 0 ? x0 : dx > 0 ? center.x : x0 + dx;
+        const rectX1 = dx === 0 ? x1 : dx > 0 ? x1 + dx : center.x;
+        const rectY0 = dy === 0 ? y0 : dy > 0 ? center.y : y0 + dy;
+        const rectY1 = dy === 0 ? y1 : dy > 0 ? y1 + dy : center.y;
+
+        const width = rectX1 - rectX0;
+        const height = rectY1 - rectY0;
+
+        const rect = new Rectangle(width, height);
+        rect.moveTo(rectX0, rectY0);
+
+        return rect;
     }
 
     // returns 0 < t < 1 or null, where t is the distance along movement where collision happens
@@ -116,8 +123,28 @@ export class Collisions {
         return [ finalVelocityA, finalVelocityB ];
     }
 
-    static isCircleCollidedWithRectangle = (distanceToRectangle, circleRadius) => {
-        return distanceToRectangle < circleRadius;
+    // https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
+    static isCircleCollidedWithRectangle = (circle, rect) => {
+        // use relative reference points
+        const circleDistanceX = Math.abs(circle.center.x - rect.center.x);
+        const circleDistanceY = Math.abs(circle.center.y - rect.center.y);
+
+        const rectHalfWidth = rect.width / 2;
+        const rectHalfHeight = rect.height / 2;
+
+        // easy case where cirlce is too far from rectangle (either x- or y-axis)
+        if (circleDistanceX > (rectHalfWidth + circle.radius)) return false;
+        if (circleDistanceY > (rectHalfHeight + circle.radius)) return false;
+
+        // easy case where circle is close enough to rectangle
+        if (circleDistanceX <= (rectHalfWidth)) return true; 
+        if (circleDistanceY <= (rectHalfHeight)) return true;
+
+        // difficult case where circle may intersect corner of rectangle
+        const cornerDistance = (circleDistanceX - rectHalfWidth) ** 2 + (circleDistanceY - rectHalfHeight) ** 2;
+
+        return cornerDistance <= (circle.radius ** 2);
+
     }
 
     static areRectanglesColliding = (A, B) => {
@@ -168,13 +195,10 @@ export class Collisions {
     };
     
     static resolveCircleVsCircleCollision = (circleA, movementBoundingBox, circleB) => {
-        const vectorToRect = Vectors.getClosestVectorToRectFromCircle(circleB, movementBoundingBox);
-        const distanceToRectangle = Vectors.magnitude(vectorToRect) - circleB.radius;
-
         // collision of circleB with circleA's movementBoundingBox is a broad approximation to 
         // prevent tunneling through objects
         const timeOfCollision = 
-            Collisions.isCircleCollidedWithRectangle(distanceToRectangle, circleA.radius) 
+            Collisions.isCircleCollidedWithRectangle(circleB, movementBoundingBox) 
                 ? Collisions.getTimeOfCircleVsCircleCollision(circleA, circleB)
                 : null;
     

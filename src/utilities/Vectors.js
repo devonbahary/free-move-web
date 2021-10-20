@@ -17,14 +17,6 @@ export class Vectors {
         return (A.x * B.x) + (A.y * B.y);
     }
 
-    static getClosestVectorToRectFromCircle = (circle, rect) => {
-        const closestXToRect = Math.max(rect.x0, Math.min(rect.x1, circle.center.x));
-        const closestYToRect = Math.max(rect.y0, Math.min(rect.y1, circle.center.y));
-        
-        const closestPositionOnRect = { x: closestXToRect, y: closestYToRect };
-        return Vectors.subtract(circle.center, closestPositionOnRect);
-    }
-
     static magnitude = ({ x, y }) => Math.sqrt(x ** 2 + y ** 2);
 
     static mult = ({ x, y }, scalar) => ({ x: x * scalar, y: y * scalar });
