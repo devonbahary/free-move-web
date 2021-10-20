@@ -1,5 +1,5 @@
 import { Collisions } from "../../utilities/Collisions";
-import { Body, RectangleBody } from "./Bodies";
+import { RectangleBody } from "./Bodies";
 
 export class World {
     constructor(bounds) {
@@ -54,7 +54,7 @@ export class World {
             if (otherBody === actingBody) continue;
 
             const wasCollision = 
-                Body.isCircle(otherBody)
+                otherBody.hasOwnProperty('radius') // isCircle TODO: where to put this logic?
                     ? Collisions.resolveCircleVsCircleCollision(actingBody, movementBoundingBox, otherBody)
                     : Collisions.resolveCircleVsRectangleCollision(actingBody, movementBoundingBox, otherBody);
 

@@ -3,20 +3,15 @@ import { Vectors } from "../../utilities/Vectors";
 
 // should be abstract -- cannot work with an object if we don't know if it's
 // a circle or rectangle
-export class Body {
-    constructor() {
+const BodyMixin = superclass => class extends superclass {
+    constructor(...args) {
+        super(...args);
+        
         this.id = uuid();
-        this.x = 0;
-        this.y = 0;
-
         this.velocity = Vectors.create(0, 0);        
         this.mass = 1;
         // TODO: implement restitution
         this.isElastic = true;
-    }
-
-    static isCircle(body) {
-        return body.hasOwnProperty('radius');
     }
 
     isMoving() {
@@ -25,11 +20,6 @@ export class Body {
 
     setVelocity(movementVector) {
         this.velocity = movementVector;
-    }
-
-    moveTo(x, y) {
-        this.x = x;
-        this.y = y;
     }
 
     applyForce(force) {
@@ -47,11 +37,30 @@ export class Body {
     }
 }
 
-export class RectangleBody extends Body {
+class Point {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+    }
+
+    moveTo(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+export class Rectangle extends Point {
     constructor(width, height) {
         super();
         this.width = width;
         this.height = height;
+    }
+
+    get center() {
+        return { 
+            x: this.x + this.width / 2, 
+            y: this.y + this.height / 2,
+        };
     }
 
     get x0() {
@@ -69,16 +78,19 @@ export class RectangleBody extends Body {
     get y1() {
         return this.y + this.height;
     }
-}
+};
 
-export class CircleBody extends Body {
+export class Circle extends Point {
     constructor(radius = 0.5) {
         super();
         this.radius = radius;
     }
 
     get center() {
-        return { x: this.x + this.radius, y: this.y + this.radius };
+        return { 
+            x: this.x + this.radius, 
+            y: this.y + this.radius,
+        };
     }
 
     get x0() {
@@ -96,4 +108,8 @@ export class CircleBody extends Body {
     get y1() {
         return this.y + this.radius * 2;
     }
-}
+};
+
+export class RectangleBody extends BodyMixin(Rectangle) {}
+
+export class CircleBody extends BodyMixin(Circle) {}
