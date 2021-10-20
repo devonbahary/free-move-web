@@ -131,14 +131,19 @@ export class World {
     getSaveableWorldState() {
         return {
             bodies: this.bodies.map(body => body.toSaveableState()),
+            collisionPartnerMap: this.collisionPartnerMap,
         };
     }
 
     loadWorldState(saveableWorldState) {
-        for (const saveableBody of saveableWorldState.bodies) {
+        const { bodies, collisionPartnerMap } = saveableWorldState;
+
+        for (const saveableBody of bodies) {
             const body = this.bodies.find(body => body.id === saveableBody.id);
             body.moveTo(saveableBody.x, saveableBody.y);
             body.setVelocity(saveableBody.velocity);
         }
+        
+        this.collisionPartnerMap = collisionPartnerMap;
     }
 }
