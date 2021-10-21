@@ -1,5 +1,5 @@
-import { Vectors } from './free-move/Vectors';
-import { CircleBody } from './free-move/Bodies';
+import { Vectors } from '../free-move/Vectors';
+import { CircleBody } from '../free-move/Bodies';
 
 let characterCode = 65; // 'A'
 

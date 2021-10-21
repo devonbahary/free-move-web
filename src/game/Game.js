@@ -1,9 +1,9 @@
 import { Control } from './Control';
 import { Character } from './Character';
-import { Element } from './Element';
-import { PlayerSprite } from './sprites/PlayerSprite';
-import { GameLoopControlsSprite } from './sprites/GameLoopControlsSprite';
-import { World } from './free-move/World';
+import { Element } from './graphics/Element';
+import { PlayerSprite } from './graphics/sprites/PlayerSprite';
+import { GameLoopControlsSprite } from './graphics/sprites/GameLoopControlsSprite';
+import { World } from '../free-move/World';
 
 const BEGIN_FRAME = 0;
 const MAX_FRAME_STATES_TO_SAVE = 1000;

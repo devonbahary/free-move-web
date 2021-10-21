@@ -1,4 +1,4 @@
-import { Vectors } from "./free-move/Vectors";
+import { Vectors } from "../free-move/Vectors";
 
 export class Control {
     constructor(player) {

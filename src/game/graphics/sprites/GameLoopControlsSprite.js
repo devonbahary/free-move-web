@@ -1,5 +1,5 @@
 import { Element } from "../Element";
-import { observer } from '../utilities/observer';
+import { observer } from '../../utilities/observer';
 
 export class GameLoopControlsSprite {
     constructor(game) {

@@ -1,7 +1,7 @@
-import { Character } from './Character';
-import { Game } from './Game';
+import { Character } from './game/Character';
+import { Game } from './game/Game';
 import { Vectors } from './free-move/Vectors';
-import { CharacterSprite } from './sprites/CharacterSprite';
+import { CharacterSprite } from './game/graphics/sprites/CharacterSprite';
 import './main.css';
 
 /*
