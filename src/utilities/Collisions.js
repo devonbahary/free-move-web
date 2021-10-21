@@ -145,7 +145,6 @@ export class Collisions {
         const cornerDistance = (circleDistanceX - rectHalfWidth) ** 2 + (circleDistanceY - rectHalfHeight) ** 2;
 
         return cornerDistance <= (circle.radius ** 2);
-
     }
 
     static areRectanglesColliding = (A, B) => {
@@ -157,6 +156,8 @@ export class Collisions {
         );
     };
 
+    // TODO: this won't apply to all rectangles, only works for boundary lines
+    // either rename or rework to work globally for all rectangles
     static getTimeOfCircleVsRectangleCollision = (circle, rect) => {
         const { center, radius, velocity } = circle;
         const { x: x1, y: y1 } = center;
