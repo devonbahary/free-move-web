@@ -40,6 +40,7 @@ export class Game {
 
     initPlayer() {
         this.player = new Character();
+        this.player.body.name = 'player';
         const playerSprite = new PlayerSprite(this.player);
         this.addCharacter(this.player, playerSprite);
 

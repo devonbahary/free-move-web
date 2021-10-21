@@ -20,15 +20,19 @@ export class World {
     initBoundaries() {
         const topBoundary = new RectangleBody(this.width, 0);
         topBoundary.moveTo(0, 0);
+        topBoundary.name = 'top boundary';
 
         const rightBoundary = new RectangleBody(0, this.height);
         rightBoundary.moveTo(this.width, 0);
+        rightBoundary.name = 'right boundary';
 
         const bottomBoundary = new RectangleBody(this.width, 0);
         bottomBoundary.moveTo(0, this.height);
+        bottomBoundary.name = 'bottom boundary';
 
         const leftBoundary = new RectangleBody(0, this.height);
         leftBoundary.moveTo(0, 0);
+        leftBoundary.name = 'left boundary';
 
 
         this.bodies.push(
