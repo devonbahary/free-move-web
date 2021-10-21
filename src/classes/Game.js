@@ -41,6 +41,7 @@ export class Game {
     initPlayer() {
         this.player = new Character();
         this.player.body.name = 'player';
+        this.player.body.mass = 5;
         const playerSprite = new PlayerSprite(this.player);
         this.addCharacter(this.player, playerSprite);
 
