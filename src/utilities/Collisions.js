@@ -29,6 +29,7 @@ export class Collisions {
         return rect;
     }
 
+    // TODO: this function would be more clear if it didn't ALSO include the logic of filtering undesired values
     // returns 0 < t < 1 or null, where t is the distance along movement where collision happens
     static getTimeOfCollision = (a, b, c) => {
         const roots = quadratic(a, b, c);
