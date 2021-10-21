@@ -1,3 +1,5 @@
+const round = (val) => Math.round(val * 1000) / 1000;
+
 export class Vectors {
     static create = (x, y) => ({ x, y });
 
@@ -43,4 +45,6 @@ export class Vectors {
     }
 
     static subtract = (v1, v2) => ({ x: v1.x - v2.x, y: v1.y - v2.y });
+
+    static format = (vector) => `(${round(vector.x)}, ${round(vector.y)})`;
 }
