@@ -52,9 +52,7 @@ export class World {
     updateBody(body) {
         if (!body.isMoving()) return;
 
-        const movementBoundingBox = Collisions.getMovementBoundingBox(body);
-
-        const [ closestCollisionBody, timeOfCollision ] = this.getClosestCollisionBodyAndTimeOfCollision(body, movementBoundingBox);
+        const [ closestCollisionBody, timeOfCollision ] = this.getClosestCollisionBodyAndTimeOfCollision(body);
 
         if (closestCollisionBody) {
             // if closestCollisionBody is body's collision partner, that means no movement or 
@@ -79,7 +77,9 @@ export class World {
         }
     }
 
-    getClosestCollisionBodyAndTimeOfCollision(body, movementBoundingBox) {
+    getClosestCollisionBodyAndTimeOfCollision(body) {
+        const movementBoundingBox = Collisions.getMovementBoundingBox(body);
+        
         let closestCollisionBody = null;
         let closestCollisionTimeOfCollision = null;
 
