@@ -12,7 +12,14 @@ import { CharacterSprite } from './classes/entities/sprites/CharacterSprite';
         - investigate why player mass of 500 would make collisions "stick" to it
 */
 
+const GAME_MODES = {
+    NORMAL: 'NORMAL',
+    ONE: 'ONE',
+    CHAOS: 'CHAOS',
+};
+
 const GAME_PARAMS = {
+    mode: GAME_MODES.CHAOS,
     bounds: {
         width: 5,
         height: 5,
@@ -25,9 +32,10 @@ const GAME_PARAMS = {
     },
 };
 
-const GAME_MODES = {
-    NORMAL: 'NORMAL',
-    CHAOS: 'CHAOS',
+const getRandomCoordinates = () => {
+    const randX = Math.floor((Math.random() * GAME_PARAMS.bounds.width));
+    const randY = Math.floor((Math.random() * GAME_PARAMS.bounds.height));
+    return [ randX, randY ];
 };
 
 (() => {
@@ -35,28 +43,29 @@ const GAME_MODES = {
     console.log(game);
 
     // game setup
-    const mode = GAME_MODES.NORMAL;
-    switch (mode) {
+    switch (GAME_PARAMS.mode) {
         case GAME_MODES.NORMAL:
             break;
+        case GAME_MODES.ONE:
+            const character = new Character();
+            character.body.moveTo(...getRandomCoordinates());
+            const characterASprite = new CharacterSprite(character);
+            game.addCharacter(character, characterASprite);
+            break;
         case GAME_MODES.CHAOS:
-            for (const character of game.world.characters) {
-                character.body.setVelocity(Vectors.create(Math.random() * 1, Math.random() * 1));
+            // seed characters
+            for (let i = 0; i < 6; i++) {
+                const character = new Character();
+
+                character.body.moveTo(...getRandomCoordinates());
+                character.move(Vectors.create(Math.random(), Math.random()));
+                
+                const characterSprite = new CharacterSprite(character);
+                game.addCharacter(character, characterSprite);
             }
             break;
         default:
             break;
     }
-
-    // seed characters
-    for (let i = 0; i < 5; i++) {
-        const character = new Character();
-        const randX = Math.floor((Math.random() * game.params.bounds.width));
-        const randY = Math.floor((Math.random() * game.params.bounds.height));
-        character.body.moveTo(randX, randY);
-        const characterSprite = new CharacterSprite(character);
-        game.addCharacter(character, characterSprite);
-    }
-
 })();
 
