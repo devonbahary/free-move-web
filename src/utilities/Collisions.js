@@ -38,19 +38,27 @@ export class Collisions {
     }
 
     // TODO: this function would be more clear if it didn't ALSO include the logic of filtering undesired values
-    // returns 0 < t < 1 or null, where t is the distance along movement where collision happens
+    // returns ~0 < t < 1 or null, where t is the distance along movement where collision happens
     static getTimeOfCollision = (a, b, c) => {
         const roots = quadratic(a, b, c);
 
         // roots can be outside the range of 0 < t < 1 because our broad approximations can be 
         // wrong; only when 0 < t < 1 will a collision actually occur
-        const validRoots = roots.filter(t => t >= 0 && t <= 1);
+        return roots.reduce((timeOfCollision, root) => {
+            if (root > 1) return timeOfCollision;
 
-        if (!validRoots.length) {
-            return null;
-        }
-        
-        return Math.min(...validRoots);
+            // treat floating point errors like collisions so that they are not ignored (e.g., -7.082604849269798e-7)
+            const roundedRoot = Math.round(root * 1000) / 1000;
+
+            if (
+                roundedRoot >= 0 && 
+                (timeOfCollision === null || roundedRoot < timeOfCollision)
+            ) {
+                return root;
+            }
+
+            return timeOfCollision;
+        }, null);
     };
 
     static getTimeOfCircleVsCircleCollision = (A, B) => {
