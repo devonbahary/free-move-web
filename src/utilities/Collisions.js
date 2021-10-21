@@ -227,4 +227,20 @@ export class Collisions {
         }
     };
 
+    static isMovingTowardsBody = (bodyA, bodyB) => {
+        if (bodyB.isCircle) {
+            // https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other
+            const diffVelocity = Vectors.neg(bodyA.velocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
+            const diffPosition = Vectors.subtract(bodyB.center, bodyA.center);
+            return Vectors.dot(diffVelocity, diffPosition) < 0;
+        }
+
+        const vectorToRect = Collisions.getClosestVectorToRectFromCircle(bodyA, bodyB);
+        const { velocity: velocityA } = bodyA;
+        return Boolean(
+            (velocityA.x && vectorToRect.x && Math.sign(velocityA.x) !== Math.sign(vectorToRect.x)) ||
+            (velocityA.y && vectorToRect.y && Math.sign(velocityA.y) !== Math.sign(vectorToRect.y))
+        );
+    }
+
 }

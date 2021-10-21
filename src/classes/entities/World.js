@@ -60,11 +60,11 @@ export class World {
             // resolve the collision back-to-back (this is a bug of infinite reversal)
             if (this.isCollisionPartner(body, closestCollisionBody)) return;
 
-            const resolveCollision = closestCollisionBody.isCircle
-                ? Collisions.resolveCircleVsCircleCollision
-                : Collisions.resolveCircleVsRectangleCollision;
-
-            resolveCollision(body, closestCollisionBody, timeOfCollision);
+            if (closestCollisionBody.isCircle) {
+                Collisions.resolveCircleVsCircleCollision(body, closestCollisionBody, timeOfCollision);
+            } else {
+                Collisions.resolveCircleVsRectangleCollision(body, closestCollisionBody, timeOfCollision);
+            }
             
             this.addCollisionPartner(body, closestCollisionBody);
         } else {
@@ -78,8 +78,6 @@ export class World {
     }
 
     getClosestCollisionBodyAndTimeOfCollision(body) {
-        const movementBoundingBox = Collisions.getMovementBoundingBox(body);
-        
         let closestCollisionBody = null;
         let closestCollisionTimeOfCollision = null;
 
@@ -87,18 +85,15 @@ export class World {
         for (const otherBody of this.bodies) {
             if (body === otherBody) continue;
 
-            // broad phase to prevent actingBody from tunneling through objects
-            const isCollidingWithMovementPath = otherBody.isCircle 
-                ? Collisions.isCircleCollidedWithRectangle 
-                : Collisions.areRectanglesColliding;
+            // broad phase collision detection
+            if (!Collisions.isMovingTowardsBody(body, otherBody)) continue;
+
             // narrow phase to actually get time of collision
             const getTimeOfCollision = otherBody.isCircle
                 ? Collisions.getTimeOfCircleVsCircleCollision
                 : Collisions.getTimeOfCircleVsRectangleCollision;
-
-            const timeOfCollision = isCollidingWithMovementPath(otherBody, movementBoundingBox) 
-                ? getTimeOfCollision(body, otherBody) 
-                : null;
+    
+            const timeOfCollision = getTimeOfCollision(body, otherBody);
 
             if (timeOfCollision === null) continue;
                 
