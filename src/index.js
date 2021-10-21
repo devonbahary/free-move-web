@@ -1,8 +1,8 @@
 import { Character } from './Character';
 import { Game } from './Game';
 import { Vectors } from './free-move/Vectors';
-import './main.css';
 import { CharacterSprite } from './sprites/CharacterSprite';
+import './main.css';
 
 /*
     to-do list:
