@@ -8,10 +8,16 @@ export class World {
         this.height = height;
 
         this.bodies = [];
-        this.collisionPartnerMap = {}; 
+        this.collisionResolutionMem = {}; 
         
         this.initBoundaries();
     }
+
+    static getCollisionResolutionMemId = (bodyA, bodyB) => {
+        const { center: cA, velocity: vA } = bodyA;
+        const { id, center: cB, velocity: vB } = bodyB;
+        return `${cA.x}-${cA.y}-${vA.x}-${vA.y}-${id}-${cB.x}-${cB.y}-${vB.x}-${vB.y}`;
+    };
     
     addBody(body) {
         this.bodies.push(body);
@@ -55,10 +61,10 @@ export class World {
         const [ closestCollisionBody, timeOfCollision ] = this.getClosestCollisionBodyAndTimeOfCollision(body);
 
         if (closestCollisionBody) {
-            // if closestCollisionBody is body's collision partner, that means no movement or 
-            // collision (change to velocity) has occurred and therefore we shouldn't 
-            // resolve the collision back-to-back (this is a bug of infinite reversal)
-            if (this.isCollisionPartner(body, closestCollisionBody)) return;
+            // prevent resolving the same collision back-to-back (causes bug of infinite reversal)
+            if (this.hasAlreadyProcessedCollision(body, closestCollisionBody)) {
+                return;
+            }
 
             if (closestCollisionBody.isCircle) {
                 Collisions.resolveCircleVsCircleCollision(body, closestCollisionBody, timeOfCollision);
@@ -66,14 +72,15 @@ export class World {
                 Collisions.resolveCircleVsRectangleCollision(body, closestCollisionBody, timeOfCollision);
             }
             
-            this.addCollisionPartner(body, closestCollisionBody);
+            this.rememberCollision(body, closestCollisionBody);
         } else {
             // no collisions; progress velocity
             const { x, y, velocity } = body;
             body.moveTo(x + velocity.x, y + velocity.y);
 
-            // body's collision partner can now safely collide into body again
-            this.removeCollisionPartner(body);
+            // because this body has moved, any new collision is inherently different and should
+            // be processed
+            this.forgetCollision(body);
         }
     }
 
@@ -102,7 +109,7 @@ export class World {
                 return [ otherBody, timeOfCollision ];
             }
 
-            if (!closestCollisionTimeOfCollision || timeOfCollision < closestCollisionTimeOfCollision) {
+            if (closestCollisionTimeOfCollision === null || timeOfCollision < closestCollisionTimeOfCollision) {
                 closestCollisionBody = otherBody;
                 closestCollisionTimeOfCollision = timeOfCollision;
             }
@@ -111,37 +118,30 @@ export class World {
         return [ closestCollisionBody, closestCollisionTimeOfCollision ];
     }
 
-    addCollisionPartner(bodyA, bodyB) {
-        // bodies can only ever have one partner
-        // if a body already has a partner and it collides into another, the body has 
-        // updated its velocity and therefore can safely collide with its former partner again
-        this.removeCollisionPartner(bodyA);
-        this.removeCollisionPartner(bodyB); 
-
-        this.collisionPartnerMap[bodyA.id] = bodyB.id;
-        this.collisionPartnerMap[bodyB.id] = bodyA.id;
+    rememberCollision(bodyA, bodyB) {
+        // both bodyA and bodyB are likely to encounter one another again after collision 
+        // resolution; important that both remember they already processed collision
+        this.collisionResolutionMem[bodyA.id] = World.getCollisionResolutionMemId(bodyA, bodyB);
+        this.collisionResolutionMem[bodyB.id] = World.getCollisionResolutionMemId(bodyB, bodyA);
     }
 
-    isCollisionPartner(bodyA, bodyB) {
-        return this.collisionPartnerMap[bodyA.id] === bodyB.id;
+    hasAlreadyProcessedCollision(bodyA, bodyB) {
+        return this.collisionResolutionMem[bodyA.id] === World.getCollisionResolutionMemId(bodyA, bodyB);
     }
 
-    removeCollisionPartner(body) {
-        // collision partners must always point to one another or no one
-        const collisionPartnerBodyId = this.collisionPartnerMap[body.id];
-        delete this.collisionPartnerMap[body.id];
-        delete this.collisionPartnerMap[collisionPartnerBodyId];
+    forgetCollision(body) {
+        delete this.collisionResolutionMem[body.id];
     }
 
     getSaveableWorldState() {
         return {
             bodies: this.bodies.map(body => body.toSaveableState()),
-            collisionPartnerMap: this.collisionPartnerMap,
+            collisionResolutionMem: this.collisionResolutionMem,
         };
     }
 
     loadWorldState(saveableWorldState) {
-        const { bodies, collisionPartnerMap } = saveableWorldState;
+        const { bodies, collisionResolutionMem } = saveableWorldState;
 
         for (const saveableBody of bodies) {
             const body = this.bodies.find(body => body.id === saveableBody.id);
@@ -149,6 +149,6 @@ export class World {
             body.setVelocity(saveableBody.velocity);
         }
         
-        this.collisionPartnerMap = collisionPartnerMap;
+        this.collisionResolutionMem = collisionResolutionMem;
     }
 }
