@@ -29,6 +29,14 @@ export class Collisions {
         return rect;
     }
 
+    static getClosestVectorToRectFromCircle = (circle, rect) => {
+        const closestXToRect = Math.max(rect.x0, Math.min(rect.x1, circle.center.x));
+        const closestYToRect = Math.max(rect.y0, Math.min(rect.y1, circle.center.y));
+        
+        const closestPositionOnRect = { x: closestXToRect, y: closestYToRect };
+        return Vectors.subtract(circle.center, closestPositionOnRect);
+    }
+
     // TODO: this function would be more clear if it didn't ALSO include the logic of filtering undesired values
     // returns 0 < t < 1 or null, where t is the distance along movement where collision happens
     static getTimeOfCollision = (a, b, c) => {
