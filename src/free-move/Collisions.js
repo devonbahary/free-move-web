@@ -1,4 +1,4 @@
-import { Rectangle } from "../classes/entities/Bodies";
+import { Rectangle } from "./Bodies";
 import { Vectors } from "./Vectors";
 
 const quadratic = (a, b, c) => {

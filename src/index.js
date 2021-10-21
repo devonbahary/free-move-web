@@ -1,8 +1,8 @@
-import { Character } from './classes/entities/Character';
-import { Game } from './classes/Game';
-import { Vectors } from './utilities/Vectors';
+import { Character } from './Character';
+import { Game } from './Game';
+import { Vectors } from './free-move/Vectors';
 import './main.css';
-import { CharacterSprite } from './classes/entities/sprites/CharacterSprite';
+import { CharacterSprite } from './sprites/CharacterSprite';
 
 /*
     to-do list:
@@ -19,7 +19,7 @@ const GAME_MODES = {
 };
 
 const GAME_PARAMS = {
-    mode: GAME_MODES.CHAOS,
+    mode: GAME_MODES.NORMAL,
     bounds: {
         width: 5,
         height: 5,

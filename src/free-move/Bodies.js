@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { Vectors } from "../../utilities/Vectors";
+import { Vectors } from "./Vectors";
 
 // should be abstract -- cannot work with an object if we don't know if it's
 // a circle or rectangle

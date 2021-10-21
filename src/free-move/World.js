@@ -1,4 +1,4 @@
-import { Collisions } from "../../utilities/Collisions";
+import { Collisions } from "./Collisions";
 import { RectangleBody } from "./Bodies";
 
 export class World {
