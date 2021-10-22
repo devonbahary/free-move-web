@@ -67,8 +67,8 @@ export class Game {
         this.worldElement.appendChild(characterSprite.element);
     }
 
-    update(force = false) {
-        if (!this.isPaused || force) {
+    update(ignorePause = false) {
+        if (!this.isPaused || ignorePause) {
             this.frameCount += 1;
             this.control.update();
             this.world.update();
