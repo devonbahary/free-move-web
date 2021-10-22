@@ -13,4 +13,8 @@ export class Character {
     move(movementVector) {
         this.body.setVelocity(Vectors.rescale(movementVector, this.movementSpeed));
     }
+
+    moveTo(x, y) {
+        this.body.moveTo(x, y);
+    }
 }

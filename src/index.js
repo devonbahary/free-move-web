@@ -48,7 +48,7 @@ const getRandomCoordinates = () => {
             break;
         case GAME_MODES.ONE:
             const character = new Character();
-            character.body.moveTo(...getRandomCoordinates());
+            character.moveTo(...getRandomCoordinates());
             const characterASprite = new CharacterSprite(character);
             game.addCharacter(character, characterASprite);
             break;
@@ -57,7 +57,7 @@ const getRandomCoordinates = () => {
             for (let i = 0; i < 6; i++) {
                 const character = new Character();
 
-                character.body.moveTo(...getRandomCoordinates());
+                character.moveTo(...getRandomCoordinates());
                 character.move(Vectors.create(Math.random(), Math.random()));
                 
                 const characterSprite = new CharacterSprite(character);
