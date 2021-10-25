@@ -35,6 +35,12 @@ body {
     border-radius: 50%;
 }
 
+.rectangle {
+    position: absolute;
+    background: white;
+    opacity: 0.8;
+}
+
 #player {
     background: red;
 }

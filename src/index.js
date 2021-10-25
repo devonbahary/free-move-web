@@ -3,6 +3,8 @@ import { Game } from './game/Game';
 import { Vectors } from './free-move/Vectors';
 import { CharacterSprite } from './game/graphics/sprites/CharacterSprite';
 import './main.css';
+import { RectangleSprite } from './game/graphics/sprites/RectangleSprite';
+import { RectangleBody } from './free-move/Bodies';
 
 /*
     to-do list:
@@ -16,10 +18,11 @@ const GAME_MODES = {
     NORMAL: 'NORMAL',
     ONE: 'ONE',
     CHAOS: 'CHAOS',
+    TERRAIN: 'TERRAIN',
 };
 
 const GAME_PARAMS = {
-    mode: GAME_MODES.NORMAL,
+    mode: GAME_MODES.TERRAIN,
     bounds: {
         width: 5,
         height: 5,
@@ -49,7 +52,7 @@ const getRandomCoordinates = () => {
         case GAME_MODES.ONE:
             const character = new Character();
             character.moveTo(...getRandomCoordinates());
-            const characterASprite = new CharacterSprite(character);
+            const characterASprite = new CharacterSprite(character.body);
             game.addCharacter(character, characterASprite);
             break;
         case GAME_MODES.CHAOS:
@@ -60,9 +63,15 @@ const getRandomCoordinates = () => {
                 character.moveTo(...getRandomCoordinates());
                 character.move(Vectors.create(Math.random(), Math.random()));
                 
-                const characterSprite = new CharacterSprite(character);
+                const characterSprite = new CharacterSprite(character.body);
                 game.addCharacter(character, characterSprite);
             }
+            break;
+        case GAME_MODES.TERRAIN:
+            const rectBody = new RectangleBody(1, 1);
+            rectBody.moveTo(4, 2);
+            const rectSprite = new RectangleSprite(rectBody);
+            game.addBody(rectBody, rectSprite);
             break;
         default:
             break;

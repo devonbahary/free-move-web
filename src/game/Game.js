@@ -42,7 +42,7 @@ export class Game {
         this.player = new Character();
         this.player.body.name = 'player';
         this.player.body.mass = 5;
-        const playerSprite = new PlayerSprite(this.player);
+        const playerSprite = new PlayerSprite(this.player.body);
         this.addCharacter(this.player, playerSprite);
 
         const { x, y } = this.params.player.startPosition;
@@ -61,10 +61,13 @@ export class Game {
 
     addCharacter(character, characterSprite) {
         this.characters.push(character);
-        this.world.addBody(character.body);
+        this.addBody(character.body, characterSprite);        
+    }
 
-        this.sprites.push(characterSprite);
-        this.worldElement.appendChild(characterSprite.element);
+    addBody(body, sprite) {
+        this.world.addBody(body);
+        this.sprites.push(sprite);
+        this.worldElement.appendChild(sprite.element);
     }
 
     update(ignorePause = false) {

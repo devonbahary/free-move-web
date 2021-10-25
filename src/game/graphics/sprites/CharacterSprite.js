@@ -1,8 +1,8 @@
 import { Element } from "../Element";
 
 export class CharacterSprite {
-    constructor(character) {
-        this.character = character;
+    constructor(characterBody) {
+        this.characterBody = characterBody;
         this.initElement();
     }
 
@@ -12,12 +12,12 @@ export class CharacterSprite {
     
     initElement() {
         this.element = this.getElement();
-        const { radius } = this.character.body;
+        const { radius } = this.characterBody;
         Element.setDimensions(this.element, radius * 2, radius * 2);
     }
 
     update() {
-        const { x0, y0 } = this.character.body;
+        const { x0, y0 } = this.characterBody;
         Element.moveToGameCoordinates(this.element, x0, y0);
     }
 }
