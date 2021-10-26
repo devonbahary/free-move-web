@@ -37,6 +37,14 @@ export class Collisions {
         return Vectors.subtract(circle.center, closestPositionOnRect);
     }
 
+    static isValidTimeOfCollision = (timeOfCollision) => {
+        return Boolean(
+            timeOfCollision !== null &&
+            timeOfCollision <= 1 && 
+            Math.round(timeOfCollision * 1000) / 1000 >= 0 // treat floating point errors like collisions so that they are not ignored (e.g., -7.082604849269798e-7)
+        );
+    }
+
     // TODO: this function would be more clear if it didn't ALSO include the logic of filtering undesired values
     // returns ~0 < t < 1 or null, where t is the distance along movement where collision happens
     static getTimeOfCollision = (a, b, c) => {
@@ -45,19 +53,9 @@ export class Collisions {
         // roots can be outside the range of 0 < t < 1 because our broad approximations can be 
         // wrong; only when 0 < t < 1 will a collision actually occur
         return roots.reduce((timeOfCollision, root) => {
-            if (root > 1) return timeOfCollision;
+            if (!Collisions.isValidTimeOfCollision(root)) return timeOfCollision;
 
-            // treat floating point errors like collisions so that they are not ignored (e.g., -7.082604849269798e-7)
-            const roundedRoot = Math.round(root * 1000) / 1000;
-
-            if (
-                roundedRoot >= 0 && 
-                (timeOfCollision === null || roundedRoot < timeOfCollision)
-            ) {
-                return root;
-            }
-
-            return timeOfCollision;
+            return timeOfCollision === null || root < timeOfCollision ? root : timeOfCollision;
         }, null);
     };
 
@@ -176,21 +174,53 @@ export class Collisions {
     // either rename or rework to work globally for all rectangles
     static getTimeOfCircleVsRectangleCollision = (circle, rect) => {
         const { center, radius, velocity } = circle;
-        const { x: x1, y: y1 } = center;
+        const { x, y } = center;
         const { x: dx, y: dy } = velocity;
 
-        let a, b, c;
-        if (isVerticalLine(rect)) {
-            a = dx ** 2;
-            b = 2 * x1 * dx - 2 * rect.x0 * dx;
-            c = rect.x0 ** 2 + x1 ** 2 - 2 * rect.x0 * x1 - radius ** 2;
-        } else {
-            a = dy ** 2;
-            b = 2 * y1 * dy - 2 * rect.y0 * dy;
-            c = rect.y0 ** 2 + y1 ** 2 - 2 * rect.y0 * y1 - radius ** 2;
+        const { x0, x1, y0, y1 } = rect;
+
+        const getTimeOfAxisAlignedCollision = (circleBoundary, rectBoundary, changeInAxis) => {
+            if (changeInAxis === 0) return null;
+
+            return (rectBoundary - circleBoundary) / changeInAxis;
+        };
+
+        const validTimesOfCollision = [];
+
+        // consider collision into rectangle against any of its sides
+        const timeOfX0Collision = getTimeOfAxisAlignedCollision(x + radius, x0, dx);
+        if (Collisions.isValidTimeOfCollision(timeOfX0Collision)) {
+            const yAtTimeOfCollision = y + dy * timeOfX0Collision;
+            if (yAtTimeOfCollision >= y0 && yAtTimeOfCollision <= y1) {
+                validTimesOfCollision.push(timeOfX0Collision);
+            }
         }
 
-        return Collisions.getTimeOfCollision(a, b, c);
+        const timeOfX1Collision = getTimeOfAxisAlignedCollision(x - radius, x1, dx);
+        if (Collisions.isValidTimeOfCollision(timeOfX1Collision)) {
+            const yAtTimeOfCollision = y + dy * timeOfX1Collision;
+            if (yAtTimeOfCollision >= y0 && yAtTimeOfCollision <= y1) {
+                validTimesOfCollision.push(timeOfX1Collision);
+            }
+        }
+
+        const timeOfY0Collision = getTimeOfAxisAlignedCollision(y + radius, y0, dy);
+        if (Collisions.isValidTimeOfCollision(timeOfY0Collision)) {
+            const xAtTimeOfCollision = x + dx * timeOfY0Collision;
+            if (xAtTimeOfCollision >= x0 && xAtTimeOfCollision <= x1) {
+                validTimesOfCollision.push(timeOfY0Collision);
+            }
+        }
+
+        const timeOfY1Collision = getTimeOfAxisAlignedCollision(y - radius, y1, dy);
+        if (Collisions.isValidTimeOfCollision(timeOfY1Collision)) {
+            const xAtTimeOfCollision = x + dx * timeOfY1Collision;
+            if (xAtTimeOfCollision >= x0 && xAtTimeOfCollision <= x1) {
+                validTimesOfCollision.push(timeOfY1Collision);
+            }
+        }
+
+        return validTimesOfCollision.sort()[0] || null;
     }
 
     /*
