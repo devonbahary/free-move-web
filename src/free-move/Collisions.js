@@ -170,8 +170,6 @@ export class Collisions {
         );
     };
 
-    // TODO: this won't apply to all rectangles, only works for boundary lines
-    // either rename or rework to work globally for all rectangles
     static getTimeOfCircleVsRectangleCollision = (circle, rect) => {
         const { center, radius, velocity } = circle;
         const { x, y } = center;
