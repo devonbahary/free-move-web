@@ -24,13 +24,13 @@ const GAME_MODES = {
 const GAME_PARAMS = {
     mode: GAME_MODES.TERRAIN,
     bounds: {
-        width: 5,
-        height: 5,
+        width: 7,
+        height: 7,
     },
     player: {
         startPosition: {
             x: 2,
-            y: 2,
+            y: 3,
         },
     },
 };
@@ -69,7 +69,7 @@ const getRandomCoordinates = () => {
             break;
         case GAME_MODES.TERRAIN:
             const rectBody = new RectangleBody(1, 1);
-            rectBody.moveTo(4, 2);
+            rectBody.moveTo(4, 3);
             const rectSprite = new RectangleSprite(rectBody);
             game.addBody(rectBody, rectSprite);
             break;
