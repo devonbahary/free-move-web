@@ -39,6 +39,7 @@ export class Collisions {
 
     static isValidTimeOfCollision = (timeOfCollision) => {
         return Boolean(
+            timeOfCollision !== NaN &&
             timeOfCollision !== null &&
             timeOfCollision <= 1 && 
             Math.round(timeOfCollision * 1000) / 1000 >= 0 // treat floating point errors like collisions so that they are not ignored (e.g., -7.082604849269798e-7)
