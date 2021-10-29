@@ -34,7 +34,7 @@ export class Collisions {
         const closestYToRect = Math.max(rect.y0, Math.min(rect.y1, circle.center.y));
         
         const closestPositionOnRect = { x: closestXToRect, y: closestYToRect };
-        return Vectors.subtract(circle.center, closestPositionOnRect);
+        return Vectors.subtract(closestPositionOnRect, circle.center);
     }
 
     static isValidTimeOfCollision = (timeOfCollision) => {
@@ -275,8 +275,8 @@ export class Collisions {
         const vectorToRect = Collisions.getClosestVectorToRectFromCircle(bodyA, bodyB);
         const { velocity: velocityA } = bodyA;
         return Boolean(
-            (velocityA.x && vectorToRect.x && Math.sign(velocityA.x) !== Math.sign(vectorToRect.x)) ||
-            (velocityA.y && vectorToRect.y && Math.sign(velocityA.y) !== Math.sign(vectorToRect.y))
+            (velocityA.x && vectorToRect.x && Math.sign(velocityA.x) === Math.sign(vectorToRect.x)) ||
+            (velocityA.y && vectorToRect.y && Math.sign(velocityA.y) === Math.sign(vectorToRect.y))
         );
     }
 
