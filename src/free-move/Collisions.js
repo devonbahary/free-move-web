@@ -219,6 +219,41 @@ export class Collisions {
             }
         }
 
+        // consider collision into rectangle into any of its corners
+        const corners = [
+            // top left
+            {
+                x: x0,
+                y: y0,
+            },
+            // top right
+            {
+                x: x1,
+                y: y0,
+            },
+            // bottom right
+            {
+                x: x1,
+                y: y1,
+            },
+            // bottom left
+            {
+                x: x0,
+                y: y1,
+            },
+        ];
+
+        for (const corner of corners) {
+            const diffPos = Vectors.subtract(corner, center);
+            const a = dx ** 2 + dy ** 2;
+            const b = 2 * diffPos.x * dx + 2 * diffPos.y * dy;
+            const c = diffPos.x ** 2 + diffPos.y ** 2 - radius ** 2;
+            
+            const timeOfCollision = Collisions.getTimeOfCollision(a, b, c);
+            
+            if (timeOfCollision) validTimesOfCollision.push(timeOfCollision);
+        }
+
         return validTimesOfCollision.sort()[0] || null;
     }
 
