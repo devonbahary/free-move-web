@@ -358,6 +358,7 @@ export class Collisions {
         collisionBody.setVelocity(finalVelocityB);
     }
     
+    // TODO: revisit, isn't working intuitively for rectangle vs any collisions
     static isMovingTowardsBody = (bodyA, bodyB) => {
         const { velocity: vA } = bodyA;
 
