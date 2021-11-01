@@ -8,6 +8,8 @@ import { RectangleBody } from './free-move/Bodies';
 
 /*
     to-do list:
+        - rethink fixed property not being able to have velocity, because we may want to be able to move "fixed" characters
+            - repercussions, what does it look like for a fixed character to move into a fixed character?
         - inelastic collisions with another circle / rectangle
             - implement "sliding" or "glancing" 
         - investigate weird "jumping" / teleporting behavior when moving immobile elastic entities

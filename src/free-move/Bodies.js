@@ -14,15 +14,25 @@ const BodyMixin = superclass => class extends superclass {
         this.isElastic = true;
     }
 
+    get isFixed() {
+        return this.mass === Infinity;
+    }
+
+    setFixed() {
+        this.mass = Infinity;
+    }
+
     isMoving() {
         return Vectors.magnitude(this.velocity);
     }
 
     setVelocity(movementVector) {
+        if (this.isFixed && Vectors.magnitude(movementVector)) throw new Error(`cannot set velocity for infinite-mass body`);
         this.velocity = movementVector;
     }
 
     applyForce(force) {
+        if (this.isFixed) return; // infinite-mass bodies can be subject to forces, even if nothing happens
         this.velocity = Vectors.add(this.velocity, Vectors.divide(force, this.mass));
     }
 
