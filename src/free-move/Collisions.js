@@ -1,4 +1,5 @@
 import { Rectangle } from "./Bodies";
+import { CollisionEvent } from "./CollisionEvent";
 import { Vectors } from "./Vectors";
 
 const quadratic = (a, b, c) => {
@@ -7,8 +8,6 @@ const quadratic = (a, b, c) => {
         (-b - Math.sqrt(b ** 2 - 4 * a * c)) / (2 * a),
     ];
 };
-
-const isVerticalLine = (rect) => rect.x0 === rect.x1;
 
 export class Collisions {
     static getMovementBoundingBox = (body) => {
@@ -27,14 +26,6 @@ export class Collisions {
         rect.moveTo(rectX0, rectY0);
 
         return rect;
-    }
-
-    static getClosestVectorToRectFromCircle = (circle, rect) => {
-        const closestXToRect = Math.max(rect.x0, Math.min(rect.x1, circle.center.x));
-        const closestYToRect = Math.max(rect.y0, Math.min(rect.y1, circle.center.y));
-        
-        const closestPositionOnRect = { x: closestXToRect, y: closestYToRect };
-        return Vectors.subtract(closestPositionOnRect, circle.center);
     }
 
     static isValidTimeOfCollision = (timeOfCollision) => {
@@ -96,82 +87,19 @@ export class Collisions {
         return Collisions.getTimeOfCollision(a, b, c);
     }
 
-    // only pass in circles A, B when their position (center) has been set for the * time * of collision
-    static getCircleVsCircleCollisionVelocities = (A, B) => {
-        /*
-            2D Elastic Collision (angle-free)
-            https://stackoverflow.com/questions/35211114/2d-elastic-ball-collision-physics
-
-                                mass scalar      dot product (scalar)        magnitude        pos diff vector
-                vA` = vA - (2mB / (mA + mB)) * (<vA - vB | xA - xB> / (|| xA - xB || ** 2)) * (xA - xB)
-                  where v = velocity
-                        m = mass
-                        x = position (at time of collision)
-        */
-
-        const { center: xA, mass: mA, velocity: vA } = A;
-        const { center: xB, mass: mB, velocity: vB } = B;
-
-        const massScalar = (2 * mB) / (mA + mB);
-
-        const diffVelocities = Vectors.subtract(vA, vB);
-        const diffPositions = Vectors.subtract(xA, xB);
-        const dotProduct = Vectors.dot(diffVelocities, diffPositions);
-
-        const magnitude = Vectors.magnitude(diffPositions) ** 2;
-
-        const coefficient = massScalar * (dotProduct / magnitude);
-        const finalVelocityA = Vectors.subtract(vA, Vectors.mult(diffPositions, coefficient));
-
-        /* 
-            conservation of momentum
-                mAvA` + mBvB` = mAvA + mBvB
-                             sum
-                vB` = (mAvA + mBvB - mAvA`) / mB
-        */
-            
-        const sum = Vectors.subtract(
-            Vectors.add(Vectors.mult(vA, mA), Vectors.mult(vB, mB)), 
-            Vectors.mult(finalVelocityA, mA)
-        );
-        const finalVelocityB = Vectors.divide(sum, mB);
+    static getCircleVsCircleCollisionEvent = (circleA, circleB) => {
+        const timeOfCollision = Collisions.getTimeOfCircleVsCircleCollision(circleA, circleB);
         
-        return [ finalVelocityA, finalVelocityB ];
-    }
-
-    // https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
-    static isCircleCollidedWithRectangle = (circle, rect) => {
-        // use relative reference points
-        const circleDistanceX = Math.abs(circle.center.x - rect.center.x);
-        const circleDistanceY = Math.abs(circle.center.y - rect.center.y);
-
-        const rectHalfWidth = rect.width / 2;
-        const rectHalfHeight = rect.height / 2;
-
-        // easy case where cirlce is too far from rectangle (either x- or y-axis)
-        if (circleDistanceX > (rectHalfWidth + circle.radius)) return false;
-        if (circleDistanceY > (rectHalfHeight + circle.radius)) return false;
-
-        // easy case where circle is close enough to rectangle
-        if (circleDistanceX <= (rectHalfWidth)) return true; 
-        if (circleDistanceY <= (rectHalfHeight)) return true;
-
-        // difficult case where circle may intersect corner of rectangle
-        const cornerDistance = (circleDistanceX - rectHalfWidth) ** 2 + (circleDistanceY - rectHalfHeight) ** 2;
-
-        return cornerDistance <= (circle.radius ** 2);
-    }
-
-    static areRectanglesColliding = (A, B) => {
-        return (
-            A.x0 < B.x0 + (B.x1 - B.x0) &&
-            A.x0 + (A.x1 - A.x0) > B.x0 &&
-            A.y0 < B.y0 + (B.y1 - B.y0) &&
-            A.y0 + (A.y1 - A.y0) > B.y0
+        if (!Collisions.isValidTimeOfCollision(timeOfCollision)) return null;
+        
+        return new CollisionEvent(
+            circleA,
+            circleB,
+            timeOfCollision,
         );
-    };
+    }
 
-    static getTimeOfCircleVsRectangleCollision = (circle, rect) => {
+    static getCircleVsRectangleCollisionEvents = (circle, rect) => {
         const { center, radius, velocity } = circle;
         const { x, y } = center;
         const { x: dx, y: dy } = velocity;
@@ -184,14 +112,20 @@ export class Collisions {
             return (rectBoundary - circleBoundary) / changeInAxis;
         };
 
-        const validTimesOfCollision = [];
+        const validCollisionEvents = [];
 
         // consider collision into rectangle against any of its sides
         const timeOfX0Collision = getTimeOfAxisAlignedCollision(x + radius, x0, dx);
         if (Collisions.isValidTimeOfCollision(timeOfX0Collision)) {
             const yAtTimeOfCollision = y + dy * timeOfX0Collision;
             if (yAtTimeOfCollision >= y0 && yAtTimeOfCollision <= y1) {
-                validTimesOfCollision.push(timeOfX0Collision);
+                const collisionEvent = new CollisionEvent(
+                    circle,
+                    rect,
+                    timeOfX0Collision,
+                    { x0 },
+                );
+                validCollisionEvents.push(collisionEvent);
             }
         }
 
@@ -199,7 +133,13 @@ export class Collisions {
         if (Collisions.isValidTimeOfCollision(timeOfX1Collision)) {
             const yAtTimeOfCollision = y + dy * timeOfX1Collision;
             if (yAtTimeOfCollision >= y0 && yAtTimeOfCollision <= y1) {
-                validTimesOfCollision.push(timeOfX1Collision);
+                const collisionEvent = new CollisionEvent(
+                    circle,
+                    rect,
+                    timeOfX1Collision,
+                    { x1 },
+                );
+                validCollisionEvents.push(collisionEvent);
             }
         }
 
@@ -207,7 +147,13 @@ export class Collisions {
         if (Collisions.isValidTimeOfCollision(timeOfY0Collision)) {
             const xAtTimeOfCollision = x + dx * timeOfY0Collision;
             if (xAtTimeOfCollision >= x0 && xAtTimeOfCollision <= x1) {
-                validTimesOfCollision.push(timeOfY0Collision);
+                const collisionEvent = new CollisionEvent(
+                    circle,
+                    rect,
+                    timeOfY0Collision,
+                    { y0 },
+                );
+                validCollisionEvents.push(collisionEvent);
             }
         }
 
@@ -215,59 +161,125 @@ export class Collisions {
         if (Collisions.isValidTimeOfCollision(timeOfY1Collision)) {
             const xAtTimeOfCollision = x + dx * timeOfY1Collision;
             if (xAtTimeOfCollision >= x0 && xAtTimeOfCollision <= x1) {
-                validTimesOfCollision.push(timeOfY1Collision);
+                const collisionEvent = new CollisionEvent(
+                    circle,
+                    rect,
+                    timeOfY1Collision,
+                    { y1 },
+                );
+                validCollisionEvents.push(collisionEvent);
             }
         }
 
-        // consider collision into rectangle into any of its corners
-        const corners = [
-            // top left
-            {
-                x: x0,
-                y: y0,
-            },
-            // top right
-            {
-                x: x1,
-                y: y0,
-            },
-            // bottom right
-            {
-                x: x1,
-                y: y1,
-            },
-            // bottom left
-            {
-                x: x0,
-                y: y1,
-            },
-        ];
+        // if a collision occurs with a side, then we don't need to check for corners
+        if (validCollisionEvents.length) {
+            return validCollisionEvents;
+        }
 
-        for (const corner of corners) {
-            const diffPos = Vectors.subtract(corner, center);
+        // consider collision into rectangle into any of its corners
+        
+        const getTimeOfCollisionWithCorner = (corner) => {
+            const diffPos = Vectors.subtract(center, corner);
             const a = dx ** 2 + dy ** 2;
             const b = 2 * diffPos.x * dx + 2 * diffPos.y * dy;
             const c = diffPos.x ** 2 + diffPos.y ** 2 - radius ** 2;
             
-            const timeOfCollision = Collisions.getTimeOfCollision(a, b, c);
-            
-            if (timeOfCollision) validTimesOfCollision.push(timeOfCollision);
+            return Collisions.getTimeOfCollision(a, b, c);
+        };
+
+        // top left
+        const topLeft = {
+            x: x0,
+            y: y0,
+        };
+
+        const topLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(topLeft);
+
+        if (topLeftCornerTimeOfCollision !== null) {
+            const dy = Math.abs(center.y - topLeft.y);
+            const dx = Math.abs(center.x - topLeft.x);
+
+            const collisionSide = dy > dx ? { y0 } : { x0 };
+
+            const collisionEvent = new CollisionEvent(
+                circle,
+                rect,
+                topLeftCornerTimeOfCollision,
+                collisionSide
+            );
+            validCollisionEvents.push(collisionEvent);
+        }
+        
+        // top right
+        const topRight = {
+            x: x1,
+            y: y0,
+        };
+        
+        const topRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(topRight);
+
+        if (topRightCornerTimeOfCollision !== null) {
+            const dy = Math.abs(center.y - topRight.y);
+            const dx = Math.abs(center.x - topRight.x);
+
+            const collisionSide = dy > dx ? { y0 } : { x1 };
+
+            const collisionEvent = new CollisionEvent(
+                circle,
+                rect,
+                topRightCornerTimeOfCollision,
+                collisionSide,
+            );
+            validCollisionEvents.push(collisionEvent);
         }
 
-        return validTimesOfCollision.sort()[0] || null;
-    }
+        // bottom right 
+        const bottomRight = {
+            x: x1,
+            y: y1,
+        };
 
-    /*
-        if the circle approaches an "x" boundary, flip x and conserve y
-                              ... a "y" boundary, flip y and conserve x
-    */
-    static getElasticCircleVsInelasticRectangleCollisionVelocity = (circle, rect) => {
-        const { x, y } = circle.velocity;
-        if (isVerticalLine(rect)) {
-            return Vectors.create(-x, y);
-        } else {
-            return Vectors.create(x, -y);
+        const bottomRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomRight);
+
+        if (bottomRightCornerTimeOfCollision !== null) {
+            const dy = Math.abs(center.y - bottomRight.y);
+            const dx = Math.abs(center.x - bottomRight.x);
+
+            const collisionSide = dy > dx ? { y1 } : { x1 };
+
+            const collisionEvent = new CollisionEvent(
+                circle,
+                rect,
+                bottomRightCornerTimeOfCollision,
+                collisionSide,
+            );
+            validCollisionEvents.push(collisionEvent);
         }
+        
+        // botom left
+        const bottomLeft = {
+            x: x0,
+            y: y1,
+        };
+
+        const bottomLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomLeft);
+
+        if (bottomLeftCornerTimeOfCollision !== null) {
+            const dy = Math.abs(center.y - bottomLeft.y);
+            const dx = Math.abs(center.x - bottomLeft.x);
+
+            const collisionSide = dy > dx ? { y1 } : { x0 };
+
+            const collisionEvent = new CollisionEvent(
+                circle,
+                rect,
+                bottomLeftCornerTimeOfCollision,
+                collisionSide,
+            );
+            validCollisionEvents.push(collisionEvent);
+        }
+
+        return validCollisionEvents;
     }
 
     static moveBodyToPointOfCollision = (body, timeOfCollision) => {
@@ -275,44 +287,97 @@ export class Collisions {
         const dy = body.velocity.y * timeOfCollision;
         body.moveTo(body.x + dx, body.y + dy);
     };
-    
-    static resolveCircleVsCircleCollision = (circleA, circleB, timeOfCollision) => {
-        Collisions.moveBodyToPointOfCollision(circleA, timeOfCollision);
-    
-        if (circleA.isElastic && circleB.isElastic) {
-            const [
-                finalVelocityA,
-                finalVelocityB,
-            ] = Collisions.getCircleVsCircleCollisionVelocities(circleA, circleB);
-    
-            circleA.setVelocity(finalVelocityA);
-            circleB.setVelocity(finalVelocityB);
-        }
-    };
-    
-    static resolveCircleVsRectangleCollision = (circle, rectangle, timeOfCollision) => {
-        Collisions.moveBodyToPointOfCollision(circle, timeOfCollision);
-    
-        if (circle.isElastic) { // assume all rectangles are inelastic
-            const newVector = Collisions.getElasticCircleVsInelasticRectangleCollisionVelocity(circle, rectangle);
-            circle.setVelocity(newVector);
-        }
-    };
 
+    static resolveCollision = (collisionEvent) => {
+        const { movingBody, collisionBody, timeOfCollision, contact } = collisionEvent;
+
+        /*
+            2D Elastic Collision (angle-free)
+            https://stackoverflow.com/questions/35211114/2d-elastic-ball-collision-physics
+
+                                mass scalar      dot product (scalar)        magnitude        pos diff vector
+                vA` = vA - (2mB / (mA + mB)) * (<vA - vB | xA - xB> / (|| xA - xB || ** 2)) * (xA - xB)
+                  where v = velocity
+                        m = mass
+                        x = position (at time of collision)
+        */
+
+        Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
+
+        const { center: xA, mass: mA, velocity: vA } = movingBody;
+        const { center: xB, mass: mB, velocity: vB } = collisionBody;
+
+        const diffVelocities = Vectors.subtract(vA, vB);
+        const diffPositions = Vectors.subtract(xA, xB);
+        const dotProduct = Vectors.dot(diffVelocities, diffPositions);
+        const magnitude = Vectors.magnitude(diffPositions) ** 2;
+
+        if (collisionBody.isFixed) {
+            if (collisionBody.isCircle) {
+                const redirectedVector = Vectors.subtract(movingBody.center, collisionBody.center);
+                movingBody.setVelocity(Vectors.rescale(redirectedVector, Vectors.magnitude(vA)));
+            } else {
+                if (!vA.x || !vA.y) {
+                    // typically we want to flip whatever axis the body is coming into contact with, but that does nothing for us
+                    // (sticks the movingBody in place) if that axis has no component in the velocity
+                    if (!vA.x) { 
+                        movingBody.setVelocity({ x: 0, y: -vA.y });
+                    } else if (!vA.y) {
+                        movingBody.setVelocity({ x: -vA.x, y: 0 });
+                    }
+                } else if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) { // collision with left / right side
+                    movingBody.setVelocity({ x: -vA.x, y: vA.y });
+                } else if (contact.hasOwnProperty('y0') || contact.hasOwnProperty('y1')) { // collision with top / bottom side
+                    movingBody.setVelocity({ x: vA.x, y: -vA.y });
+                } else {
+                    const redirectedVector = Vectors.subtract(vA, Vectors.mult(diffPositions, (dotProduct / magnitude )));
+                    movingBody.setVelocity(Vectors.rescale(redirectedVector, Vectors.magnitude(vA)));
+                }
+            }
+            
+            return;
+        }
+
+        const massScalar = (2 * mB) / (mA + mB);
+        const coefficient = massScalar * (dotProduct / magnitude);
+        
+        const finalVelocityA = Vectors.subtract(vA, Vectors.mult(diffPositions, coefficient));
+
+        /* 
+            conservation of momentum
+                mAvA` + mBvB` = mAvA + mBvB
+                                sum
+                vB` = (mAvA + mBvB - mAvA`) / mB
+        */
+            
+        const sum = Vectors.subtract(
+            Vectors.add(Vectors.mult(vA, mA), Vectors.mult(vB, mB)), 
+            Vectors.mult(finalVelocityA, mA)
+        );
+        const finalVelocityB = Vectors.divide(sum, mB);
+        
+        movingBody.setVelocity(finalVelocityA);
+        collisionBody.setVelocity(finalVelocityB);
+    }
+    
     static isMovingTowardsBody = (bodyA, bodyB) => {
-        if (bodyB.isCircle) {
+        const { velocity: vA } = bodyA;
+
+        if (!vA.x && !vA.y) return false;
+        
+        if (bodyA.isCircle && bodyB.isCircle) {
             // https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other
             const diffVelocity = Vectors.neg(bodyA.velocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
             const diffPosition = Vectors.subtract(bodyB.center, bodyA.center);
             return Vectors.dot(diffVelocity, diffPosition) < 0;
         }
 
-        const vectorToRect = Collisions.getClosestVectorToRectFromCircle(bodyA, bodyB);
-        const { velocity: velocityA } = bodyA;
-        return Boolean(
-            (velocityA.x && vectorToRect.x && Math.sign(velocityA.x) === Math.sign(vectorToRect.x)) ||
-            (velocityA.y && vectorToRect.y && Math.sign(velocityA.y) === Math.sign(vectorToRect.y))
-        );
+        if (vA.x > 0 && bodyA.center.x <= bodyB.x0) return true;
+        if (vA.x < 0 && bodyA.center.x >= bodyB.x1) return true;
+        if (vA.y > 0 && bodyA.center.y <= bodyB.y0) return true;
+        if (vA.y < 0 && bodyA.center.y >= bodyB.y1) return true;
+
+        return false;
     }
 
 }

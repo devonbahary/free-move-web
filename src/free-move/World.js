@@ -13,10 +13,12 @@ export class World {
         this.initBoundaries();
     }
 
-    static getCollisionResolutionMemId = (bodyA, bodyB) => {
-        const { center: cA, velocity: vA } = bodyA;
-        const { id, center: cB, velocity: vB } = bodyB;
-        return `${cA.x}-${cA.y}-${vA.x}-${vA.y}-${id}-${cB.x}-${cB.y}-${vB.x}-${vB.y}`;
+    static getCollisionResolutionMemId = (bodyA, bodyB, contact) => {
+        const { x: Ax, y: Ay, velocity: vA } = bodyA;
+        const { id, x: Bx, y: By, velocity: vB } = bodyB;
+        let collisionResolutionMemId = `${Ax}-${Ay}-${vA.x}-${vA.y}-${id}-${Bx}-${By}-${vB.x}-${vB.y}`;
+        if (contact) collisionResolutionMemId += `-${JSON.stringify(contact)}`;
+        return collisionResolutionMemId;
     };
     
     addBody(body) {
@@ -27,18 +29,22 @@ export class World {
         const topBoundary = new RectangleBody(this.width, 0);
         topBoundary.moveTo(0, 0);
         topBoundary.name = 'top boundary';
+        topBoundary.setFixed();
 
         const rightBoundary = new RectangleBody(0, this.height);
         rightBoundary.moveTo(this.width, 0);
         rightBoundary.name = 'right boundary';
+        rightBoundary.setFixed();
 
         const bottomBoundary = new RectangleBody(this.width, 0);
         bottomBoundary.moveTo(0, this.height);
         bottomBoundary.name = 'bottom boundary';
+        bottomBoundary.setFixed();
 
         const leftBoundary = new RectangleBody(0, this.height);
         leftBoundary.moveTo(0, 0);
         leftBoundary.name = 'left boundary';
+        leftBoundary.setFixed();
 
 
         this.bodies.push(
@@ -58,22 +64,11 @@ export class World {
     updateBody(body) {
         if (!body.isMoving()) return;
 
-        const [ closestCollisionBody, timeOfCollision ] = this.getClosestCollisionBodyAndTimeOfCollision(body);
+        const collisionEvents = this.getCollisionEvents(body);
 
-        if (closestCollisionBody) {
-            // prevent resolving the same collision back-to-back (causes bug of infinite reversal)
-            if (this.hasAlreadyProcessedCollision(body, closestCollisionBody)) {
-                return;
-            }
+        const sortedCollisionEvents = collisionEvents.sort((a, b) => a.timeOfCollision - b.timeOfCollision);
 
-            if (closestCollisionBody.isCircle) {
-                Collisions.resolveCircleVsCircleCollision(body, closestCollisionBody, timeOfCollision);
-            } else {
-                Collisions.resolveCircleVsRectangleCollision(body, closestCollisionBody, timeOfCollision);
-            }
-            
-            this.rememberCollision(body, closestCollisionBody);
-        } else {
+        if (!sortedCollisionEvents.length) {
             // no collisions; progress velocity
             const { x, y, velocity } = body;
             body.moveTo(x + velocity.x, y + velocity.y);
@@ -81,52 +76,56 @@ export class World {
             // because this body has moved, any new collision is inherently different and should
             // be processed
             this.forgetCollision(body);
+
+            return;
+        }
+
+        for (const collisionEvent of sortedCollisionEvents) {
+            // prevent resolving the same collision back-to-back (causes bug of infinite reversal)
+            if (this.hasAlreadyProcessedCollision(body, collisionEvent.collisionBody, collisionEvent.contact)) {
+                continue;
+            } 
+
+            Collisions.resolveCollision(collisionEvent);
+
+            this.rememberCollision(body, collisionEvent.collisionBody, collisionEvent.contact);
         }
     }
 
-    getClosestCollisionBodyAndTimeOfCollision(body) {
-        let closestCollisionBody = null;
-        let closestCollisionTimeOfCollision = null;
-
+    getCollisionEvents(body) {
         // TODO: implement quadtree to prevent O(n^2)
-        for (const otherBody of this.bodies) {
-            if (body === otherBody) continue;
+        return this.bodies.reduce((acc, otherBody) => {
+            if (body === otherBody) return acc;
 
             // broad phase collision detection
-            if (!Collisions.isMovingTowardsBody(body, otherBody)) continue;
-
-            // narrow phase to actually get time of collision
-            const getTimeOfCollision = otherBody.isCircle
-                ? Collisions.getTimeOfCircleVsCircleCollision
-                : Collisions.getTimeOfCircleVsRectangleCollision;
-    
-            const timeOfCollision = getTimeOfCollision(body, otherBody);
-
-            if (timeOfCollision === null) continue;
-                
-            if (timeOfCollision === 0) {
-                // can't get any closer than already touching
-                return [ otherBody, timeOfCollision ];
+            if (!Collisions.isMovingTowardsBody(body, otherBody)) {
+                return acc;
             }
 
-            if (closestCollisionTimeOfCollision === null || timeOfCollision < closestCollisionTimeOfCollision) {
-                closestCollisionBody = otherBody;
-                closestCollisionTimeOfCollision = timeOfCollision;
+            // TODO: implement such that the moving body can be rect
+            if (otherBody.isCircle) {
+                const collisionEvent = Collisions.getCircleVsCircleCollisionEvent(body, otherBody);
+                if (collisionEvent) {
+                    acc.push(collisionEvent);
+                }
+            } else {
+                const collisionEvents = Collisions.getCircleVsRectangleCollisionEvents(body, otherBody);
+                acc.push(...collisionEvents);
             }
-        }
 
-        return [ closestCollisionBody, closestCollisionTimeOfCollision ];
+            return acc;
+        }, []);
     }
 
-    rememberCollision(bodyA, bodyB) {
+    rememberCollision(bodyA, bodyB, contact) {
         // both bodyA and bodyB are likely to encounter one another again after collision 
         // resolution; important that both remember they already processed collision
-        this.collisionResolutionMem[bodyA.id] = World.getCollisionResolutionMemId(bodyA, bodyB);
-        this.collisionResolutionMem[bodyB.id] = World.getCollisionResolutionMemId(bodyB, bodyA);
+        this.collisionResolutionMem[bodyA.id] = World.getCollisionResolutionMemId(bodyA, bodyB, contact);
+        this.collisionResolutionMem[bodyB.id] = World.getCollisionResolutionMemId(bodyB, bodyA, contact);
     }
 
-    hasAlreadyProcessedCollision(bodyA, bodyB) {
-        return this.collisionResolutionMem[bodyA.id] === World.getCollisionResolutionMemId(bodyA, bodyB);
+    hasAlreadyProcessedCollision(bodyA, bodyB, contact) {
+        return this.collisionResolutionMem[bodyA.id] === World.getCollisionResolutionMemId(bodyA, bodyB, contact);
     }
 
     forgetCollision(body) {
