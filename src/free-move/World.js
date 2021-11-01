@@ -13,12 +13,10 @@ export class World {
         this.initBoundaries();
     }
 
-    static getCollisionResolutionMemId = (bodyA, bodyB, contact) => {
+    static getCollisionResolutionMemId = (bodyA, bodyB) => {
         const { x: Ax, y: Ay, velocity: vA } = bodyA;
         const { id, x: Bx, y: By, velocity: vB } = bodyB;
-        let collisionResolutionMemId = `${Ax}-${Ay}-${vA.x}-${vA.y}-${id}-${Bx}-${By}-${vB.x}-${vB.y}`;
-        if (contact) collisionResolutionMemId += `-${JSON.stringify(contact)}`;
-        return collisionResolutionMemId;
+        return `${Ax}-${Ay}-${vA.x}-${vA.y}-${id}-${Bx}-${By}-${vB.x}-${vB.y}`;
     };
     
     addBody(body) {
@@ -82,13 +80,13 @@ export class World {
 
         for (const collisionEvent of sortedCollisionEvents) {
             // prevent resolving the same collision back-to-back (causes bug of infinite reversal)
-            if (this.hasAlreadyProcessedCollision(body, collisionEvent.collisionBody, collisionEvent.contact)) {
+            if (this.hasAlreadyProcessedCollision(body, collisionEvent.collisionBody)) {
                 continue;
             } 
 
             Collisions.resolveCollision(collisionEvent);
 
-            this.rememberCollision(body, collisionEvent.collisionBody, collisionEvent.contact);
+            this.rememberCollision(body, collisionEvent.collisionBody);
         }
     }
 
@@ -102,30 +100,39 @@ export class World {
                 return acc;
             }
 
-            // TODO: implement such that the moving body can be rect
-            if (otherBody.isCircle) {
-                const collisionEvent = Collisions.getCircleVsCircleCollisionEvent(body, otherBody);
-                if (collisionEvent) {
-                    acc.push(collisionEvent);
+            if (body.isCircle) {
+                if (otherBody.isCircle) {
+                    const collisionEvent = Collisions.getCircleVsCircleCollisionEvent(body, otherBody);
+                    if (collisionEvent) {
+                        acc.push(collisionEvent);
+                    }
+                } else {
+                    const collisionEvents = Collisions.getCircleVsRectangleCollisionEvents(body, otherBody);
+                    acc.push(...collisionEvents);
                 }
             } else {
-                const collisionEvents = Collisions.getCircleVsRectangleCollisionEvents(body, otherBody);
-                acc.push(...collisionEvents);
+                if (otherBody.isCircle) {
+                    const collisionEvents = Collisions.getRectangleVsCircleCollisionEvents(body, otherBody);
+                    acc.push(...collisionEvents);
+                } else {
+                    const collisionEvents = Collisions.getRectangleVsRectangleCollisionEvents(body, otherBody);
+                    acc.push(...collisionEvents);
+                }
             }
 
             return acc;
         }, []);
     }
 
-    rememberCollision(bodyA, bodyB, contact) {
+    rememberCollision(bodyA, bodyB) {
         // both bodyA and bodyB are likely to encounter one another again after collision 
         // resolution; important that both remember they already processed collision
-        this.collisionResolutionMem[bodyA.id] = World.getCollisionResolutionMemId(bodyA, bodyB, contact);
-        this.collisionResolutionMem[bodyB.id] = World.getCollisionResolutionMemId(bodyB, bodyA, contact);
+        this.collisionResolutionMem[bodyA.id] = World.getCollisionResolutionMemId(bodyA, bodyB);
+        this.collisionResolutionMem[bodyB.id] = World.getCollisionResolutionMemId(bodyB, bodyA);
     }
 
-    hasAlreadyProcessedCollision(bodyA, bodyB, contact) {
-        return this.collisionResolutionMem[bodyA.id] === World.getCollisionResolutionMemId(bodyA, bodyB, contact);
+    hasAlreadyProcessedCollision(bodyA, bodyB) {
+        return this.collisionResolutionMem[bodyA.id] === World.getCollisionResolutionMemId(bodyA, bodyB);
     }
 
     forgetCollision(body) {
