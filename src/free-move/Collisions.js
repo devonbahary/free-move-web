@@ -317,18 +317,16 @@ export class Collisions {
                 const redirectedVector = Vectors.subtract(movingBody.center, collisionBody.center);
                 movingBody.setVelocity(Vectors.rescale(redirectedVector, Vectors.magnitude(vA)));
             } else {
-                if (!vA.x || !vA.y) {
-                    // typically we want to flip whatever axis the body is coming into contact with, but that does nothing for us
-                    // (sticks the movingBody in place) if that axis has no component in the velocity
-                    if (!vA.x) { 
-                        movingBody.setVelocity({ x: 0, y: -vA.y });
-                    } else if (!vA.y) {
-                        movingBody.setVelocity({ x: -vA.x, y: 0 });
-                    }
-                } else if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) { // collision with left / right side
+                if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) { // collision with left / right side
                     movingBody.setVelocity({ x: -vA.x, y: vA.y });
+                    if (Collisions.isMovingTowardsBody(movingBody, collisionBody)) {
+                        movingBody.setVelocity({ x: -vA.x, y: -vA.y });
+                    }
                 } else if (contact.hasOwnProperty('y0') || contact.hasOwnProperty('y1')) { // collision with top / bottom side
                     movingBody.setVelocity({ x: vA.x, y: -vA.y });
+                    if (Collisions.isMovingTowardsBody(movingBody, collisionBody)) {
+                        movingBody.setVelocity({ x: -vA.x, y: -vA.y });
+                    }
                 } else {
                     const redirectedVector = Vectors.subtract(vA, Vectors.mult(diffPositions, (dotProduct / magnitude )));
                     movingBody.setVelocity(Vectors.rescale(redirectedVector, Vectors.magnitude(vA)));
