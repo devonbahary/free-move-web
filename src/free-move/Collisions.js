@@ -395,8 +395,8 @@ export class Collisions {
             
             if (y0 <= y && y <= y1) {
                 const collisionEvent = new CollisionEvent(
-                    circle,
                     rect,
+                    circle,
                     timeOfX1Collision,
                 );
                 validCollisionEvents.push(collisionEvent);
@@ -411,8 +411,8 @@ export class Collisions {
             
             if (y0 <= y && y <= y1) {
                 const collisionEvent = new CollisionEvent(
-                    circle,
                     rect,
+                    circle,
                     timeOfX0Collision,
                 );
                 validCollisionEvents.push(collisionEvent);
@@ -427,8 +427,8 @@ export class Collisions {
             
             if (x0 <= x && x <= x1) {
                 const collisionEvent = new CollisionEvent(
-                    circle,
                     rect,
+                    circle,
                     timeOfY1Collision,
                 );
                 validCollisionEvents.push(collisionEvent);
@@ -443,8 +443,8 @@ export class Collisions {
             
             if (x0 <= x && x <= x1) {
                 const collisionEvent = new CollisionEvent(
-                    circle,
                     rect,
+                    circle,
                     timeOfY0Collision,
                 );
                 validCollisionEvents.push(collisionEvent);
@@ -477,8 +477,8 @@ export class Collisions {
 
         if (topLeftCornerTimeOfCollision !== null) {
             const collisionEvent = new CollisionEvent(
-                circle,
                 rect,
+                circle,
                 topLeftCornerTimeOfCollision,
             );
             validCollisionEvents.push(collisionEvent);
@@ -494,8 +494,8 @@ export class Collisions {
 
         if (topRightCornerTimeOfCollision !== null) {
             const collisionEvent = new CollisionEvent(
-                circle,
                 rect,
+                circle,
                 topRightCornerTimeOfCollision,
             );
             validCollisionEvents.push(collisionEvent);
@@ -511,8 +511,8 @@ export class Collisions {
 
         if (bottomRightCornerTimeOfCollision !== null) {
             const collisionEvent = new CollisionEvent(
-                circle,
                 rect,
+                circle,
                 bottomRightCornerTimeOfCollision,
             );
             validCollisionEvents.push(collisionEvent);
@@ -528,8 +528,8 @@ export class Collisions {
 
         if (bottomLeftCornerTimeOfCollision !== null) {
             const collisionEvent = new CollisionEvent(
-                circle,
                 rect,
+                circle,
                 bottomLeftCornerTimeOfCollision,
             );
             validCollisionEvents.push(collisionEvent);
