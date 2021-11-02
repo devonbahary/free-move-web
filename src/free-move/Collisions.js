@@ -450,7 +450,7 @@ export class Collisions {
             // x^2 - 2xh + h^2 - r^2 + (y - k)^2 = 0
             const b = -2 * h;
             const c = h ** 2 - r ** 2 + (y - k) ** 2;
-            return quadratic(1, b, c)[0];
+            return quadratic(1, b, c);
         };
         
         // rectangle right side into circle left-most point
