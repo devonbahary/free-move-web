@@ -14,6 +14,7 @@ export class CharacterSprite {
         this.element = this.getElement();
         const { radius } = this.characterBody;
         Element.setDimensions(this.element, radius * 2, radius * 2);
+        if (this.characterBody.name) this.element.innerHTML = this.characterBody.name;
     }
 
     update() {

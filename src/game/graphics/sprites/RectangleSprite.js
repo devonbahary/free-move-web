@@ -14,6 +14,7 @@ export class RectangleSprite {
         this.element = this.getElement();
         const { width, height } = this.rectangleBody;
         Element.setDimensions(this.element, width, height);
+        if (this.rectangleBody.name) this.element.innerHTML = this.rectangleBody.name;
     }
 
     update() {

@@ -33,12 +33,19 @@ body {
     background: white;
     display: inline-block;
     border-radius: 50%;
+    font-size: 6px;
+    text-align: center;
+    font-family: sans-serif;
 }
 
 .rectangle {
     position: absolute;
     background: white;
     opacity: 0.8;
+    font-size: 6px;
+    text-align: center;
+    color: black;
+    font-family: sans-serif;
 }
 
 #player {
