@@ -1,5 +1,6 @@
 const round = (val) => Math.round(val * 1000) / 1000;
 
+// TODO: rework to be an instantiable class new Vector(x, y) with static methods
 export class Vectors {
     static create = (x, y) => ({ x, y });
 
