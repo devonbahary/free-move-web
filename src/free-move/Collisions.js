@@ -701,9 +701,9 @@ export class Collisions {
 
         const diffPositions = Vectors.subtract(collisionBody.center, movingBody.center);
         const diffVelocities = Vectors.subtract(vA, vB);
+        
         const dotProduct = Vectors.dot(diffVelocities, diffPositions);
         const magnitude = Vectors.magnitude(diffPositions) ** 2;
-
         const massScalar = (2 * mB) / (mA + mB);
         const coefficient = massScalar * (dotProduct / magnitude);
         
