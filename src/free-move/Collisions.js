@@ -732,13 +732,47 @@ export class Collisions {
 
         if (!vA.x && !vA.y) return false;
         
-        if (bodyA.isCircle && bodyB.isCircle) {
+        if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
             // https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other
             const diffVelocity = Vectors.neg(bodyA.velocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
             const diffPosition = Vectors.subtract(bodyB.center, bodyA.center);
             return Vectors.dot(diffVelocity, diffPosition) < 0;
         }
 
+        if (Collisions.isRectangleVsRectangle(bodyA, bodyB)) {
+            const isMovingInXDirection = vA.x > 0
+                ? bodyA.x1 <= bodyB.x0
+                : bodyA.x0 >= bodyB.x1;
+            const isMovingInYDirection = vA.y > 0
+                ? bodyA.y1 <= bodyB.y0
+                : bodyA.y0 >= bodyB.y1;
+            const hasXOverlap = hasOverlap(bodyA.x0, bodyA.x1, bodyB.x0, bodyB.x1);
+            const hasYOverlap = hasOverlap(bodyA.y0, bodyA.y1, bodyB.y0, bodyB.y1);
+
+            if (!vA.x || !vA.y) {
+                if (!vA.x) {
+                    if (!hasXOverlap) return false;
+                    return isMovingInYDirection;
+                } else if (!vA.y) {
+                    if (!hasYOverlap) return false;
+                    return isMovingInXDirection;
+                }
+            }
+
+            if (hasXOverlap) {
+                if (vA.y > 0 && bodyA.y1 <= bodyB.y0) return true;
+                if (vA.y < 0 && bodyA.y0 >= bodyB.y1) return true;
+            }
+
+            if (hasYOverlap) {
+                if (vA.x > 0 && bodyA.x1 <= bodyB.x0) return true;
+                if (vA.x < 0 && bodyA.x0 >= bodyB.x1) return true;
+            }
+
+            return isMovingInXDirection && isMovingInYDirection;
+        }
+
+        // TODO: need to revisit rectangle vs circle / circle vs rectangle?
         if (vA.x > 0 && bodyA.center.x <= bodyB.x0) return true;
         if (vA.x < 0 && bodyA.center.x >= bodyB.x1) return true;
         if (vA.y > 0 && bodyA.center.y <= bodyB.y0) return true;
@@ -747,4 +781,11 @@ export class Collisions {
         return false;
     }
 
+    static isCircleVsCircle = (bodyA, bodyB) => {
+        return bodyA.isCircle && bodyB.isCircle;
+    }
+
+    static isRectangleVsRectangle = (bodyA, bodyB) => {
+        return !bodyA.isCircle && !bodyB.isCircle;
+    }
 }
