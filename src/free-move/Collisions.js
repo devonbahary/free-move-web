@@ -699,10 +699,7 @@ export class Collisions {
             return;
         }
 
-        const diffPositions = movingBody.isCircle && collisionBody.isCircle
-            ? Vectors.subtract(movingBody.center, collisionBody.center) // circle vs circle
-            : Vectors.subtract(movingBody.center, collisionPoint); // rectangle vs circle / circle vs rectangle
-
+        const diffPositions = Vectors.subtract(collisionBody.center, movingBody.center);
         const diffVelocities = Vectors.subtract(vA, vB);
         const dotProduct = Vectors.dot(diffVelocities, diffPositions);
         const magnitude = Vectors.magnitude(diffPositions) ** 2;
