@@ -7,7 +7,7 @@ export class Character {
     constructor() {
         this.body = new CircleBody();
         this.movementSpeed = 0.1;
-        this.body.name = `Character${String.fromCharCode(characterCode++)}`;
+        this.body.name = `Char${String.fromCharCode(characterCode++)}`;
     }
 
     move(movementVector) {
