@@ -31,6 +31,7 @@ body {
 .character {
     position: absolute;
     background: white;
+    color: black;
     display: inline-block;
     border-radius: 50%;
     font-size: 6px;
