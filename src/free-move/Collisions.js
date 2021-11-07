@@ -660,17 +660,6 @@ export class Collisions {
     static resolveCollision = (collisionEvent) => {
         const { movingBody, collisionBody, timeOfCollision, contact, collisionPoint } = collisionEvent;
 
-        /*
-            2D Elastic Collision (angle-free)
-            https://stackoverflow.com/questions/35211114/2d-elastic-ball-collision-physics
-
-                                mass scalar      dot product (scalar)        magnitude        pos diff vector
-                vA` = vA - (2mB / (mA + mB)) * (<vA - vB | xA - xB> / (|| xA - xB || ** 2)) * (xA - xB)
-                  where v = velocity
-                        m = mass
-                        x = position (at time of collision)
-        */
-
         Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
 
         const { mass: mA, velocity: vA } = movingBody;
@@ -698,6 +687,17 @@ export class Collisions {
             
             return;
         }
+
+        /*
+            2D Elastic Collision (angle-free)
+            https://stackoverflow.com/questions/35211114/2d-elastic-ball-collision-physics
+
+                                mass scalar      dot product (scalar)        magnitude        pos diff vector
+                vA` = vA - (2mB / (mA + mB)) * (<vA - vB | xA - xB> / (|| xA - xB || ** 2)) * (xA - xB)
+                  where v = velocity
+                        m = mass
+                        x = position (at time of collision)
+        */
 
         const diffPositions = Vectors.subtract(collisionBody.center, movingBody.center);
         const diffVelocities = Vectors.subtract(vA, vB);
