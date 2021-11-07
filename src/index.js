@@ -8,6 +8,9 @@ import { RectangleBody } from './free-move/Bodies';
 
 /*
     to-do list:
+        - rectangle vs any collisions can't use anything but the side of collision as a line of tangency for collision b/c anything else
+          leads to still colliding bodies after resolution, particularly because we don't account for angular rotation
+        - would tracking "contacts" on each body help prevent recalculating bodies already touching (and calculating bodies could collide into)?
         - rethink fixed property not being able to have velocity, because we may want to be able to move "fixed" characters
             - repercussions, what does it look like for a fixed character to move into a fixed character?
         - inelastic collisions with another circle / rectangle
