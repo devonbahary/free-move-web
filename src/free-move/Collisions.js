@@ -15,6 +15,11 @@ const hasOverlap = (a0, a1, b0, b1) => {
     return true;
 };
 
+ // treat floating point errors like collisions so that they are not ignored (e.g., -7.082604849269798e-7 should be 0)
+const roundFloatingPoint = (timeOfCollision) => {
+    return Math.round(timeOfCollision * 1000) / 1000;
+};
+
 export class Collisions {
     static getMovementBoundingBox = (body) => {
         const { center, x0, x1, y0, y1, velocity } = body;
@@ -39,7 +44,7 @@ export class Collisions {
             timeOfCollision !== NaN &&
             timeOfCollision !== null &&
             timeOfCollision <= 1 && 
-            Math.round(timeOfCollision * 1000) / 1000 >= 0 // treat floating point errors like collisions so that they are not ignored (e.g., -7.082604849269798e-7)
+            roundFloatingPoint(timeOfCollision) >= 0 // treat floating point errors like collisions so that they are not ignored (e.g., -7.082604849269798e-7)
         );
     }
 
@@ -726,6 +731,13 @@ export class Collisions {
         collisionBody.setVelocity(finalVelocityB);
     }
     
+    static isPointMovingTowardsPoint = (pointA, pointB, pointAVelocity) => {
+        // https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other
+        const diffVelocity = Vectors.neg(pointAVelocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
+        const diffPosition = Vectors.subtract(pointB, pointA);
+        return Vectors.dot(diffVelocity, diffPosition) < 0;
+    }
+
     // TODO: revisit, isn't working intuitively for rectangle vs any collisions
     static isMovingTowardsBody = (bodyA, bodyB) => {
         const { velocity: vA } = bodyA;
@@ -733,10 +745,7 @@ export class Collisions {
         if (!vA.x && !vA.y) return false;
         
         if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
-            // https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other
-            const diffVelocity = Vectors.neg(bodyA.velocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
-            const diffPosition = Vectors.subtract(bodyB.center, bodyA.center);
-            return Vectors.dot(diffVelocity, diffPosition) < 0;
+            return Collisions.isPointMovingTowardsPoint(bodyA.center, bodyB.center, bodyA.velocity);
         }
 
         if (Collisions.isRectangleVsRectangle(bodyA, bodyB)) {
@@ -772,7 +781,23 @@ export class Collisions {
             return isMovingInXDirection && isMovingInYDirection;
         }
 
-        // TODO: need to revisit rectangle vs circle / circle vs rectangle?
+        // account for bodies already in contact that the movingBody is not moving towards
+        if (bodyA.isCircle && !bodyB.isCircle) { // circle vs rectangle
+            const collisionEvents = Collisions.getCircleVsRectangleCollisionEvents(bodyA, bodyB);
+            const alreadyTouchingEvent = collisionEvents.find(event => roundFloatingPoint(event.timeOfCollision) === 0);
+            
+            if (alreadyTouchingEvent) {
+                return Collisions.isPointMovingTowardsPoint(bodyA.center, alreadyTouchingEvent.collisionPoint, bodyA.velocity);
+            }
+        } else if (!bodyA.isCircle && bodyB.isCircle) { // rectangle vs circle
+            const collisionEvents = Collisions.getRectangleVsCircleCollisionEvents(bodyA, bodyB);
+            const alreadyTouchingEvent = collisionEvents.find(event => roundFloatingPoint(event.timeOfCollision) === 0);
+            
+            if (alreadyTouchingEvent) {
+                return Collisions.isPointMovingTowardsPoint(alreadyTouchingEvent.collisionPoint, bodyB.center, bodyA.velocity);
+            }
+        }
+
         if (vA.x > 0 && bodyA.center.x <= bodyB.x0) return true;
         if (vA.x < 0 && bodyA.center.x >= bodyB.x1) return true;
         if (vA.y > 0 && bodyA.center.y <= bodyB.y0) return true;
