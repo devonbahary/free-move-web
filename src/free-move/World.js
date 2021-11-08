@@ -80,13 +80,12 @@ export class World {
 
         for (const collisionEvent of sortedCollisionEvents) {
             // prevent resolving the same collision back-to-back (causes bug of infinite reversal)
-            if (this.hasAlreadyProcessedCollision(body, collisionEvent.collisionBody)) {
-                continue;
-            } 
+            if (this.hasAlreadyProcessedCollision(body, collisionEvent.collisionBody)) continue;
 
             Collisions.resolveCollision(collisionEvent);
-
             this.rememberCollision(body, collisionEvent.collisionBody);
+
+            return;
         }
     }
 
