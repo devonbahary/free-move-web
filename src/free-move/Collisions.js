@@ -445,7 +445,7 @@ export class Collisions {
             // y^2 - 2yk + k^2 - r^2 + (x - h)^2 = 0
             const b = -2 * k;
             const c = k ** 2 - r ** 2 + (x - h) ** 2;
-            return quadratic(1, b, c);
+            return quadratic(1, b, c).filter(a => !isNaN(a));
         };
 
         const getCirclePointXsFromCircleY = (y) => {
@@ -455,7 +455,7 @@ export class Collisions {
             // x^2 - 2xh + h^2 - r^2 + (y - k)^2 = 0
             const b = -2 * h;
             const c = h ** 2 - r ** 2 + (y - k) ** 2;
-            return quadratic(1, b, c);
+            return quadratic(1, b, c).filter(a => !isNaN(a));
         };
         
         // rectangle right side into circle left-most point
@@ -469,18 +469,20 @@ export class Collisions {
                 const circleXAtTimeOfCollision = x1 + dx * timeOfX1Collision;
                 const [ circleYAtTimeOfCollision ] = getCirclePointYsFromCircleX(circleXAtTimeOfCollision);
                 
-                const collisionEvent = new CollisionEvent(
-                    rect,
-                    circle,
-                    timeOfX1Collision,
-                    undefined,
-                    {
-                        x: x1,
-                        y: circleYAtTimeOfCollision,
-                    },
-                );
-
-                validCollisionEvents.push(collisionEvent);
+                if (circleYAtTimeOfCollision !== undefined) {
+                    const collisionEvent = new CollisionEvent(
+                        rect,
+                        circle,
+                        timeOfX1Collision,
+                        { x1 },
+                        {
+                            x: x1,
+                            y: circleYAtTimeOfCollision,
+                        },
+                    );
+    
+                    validCollisionEvents.push(collisionEvent);
+                }
             }
         }
 
@@ -494,18 +496,20 @@ export class Collisions {
             if (y0 <= y && y <= y1) {
                 const circleXAtTimeOfCollision = x0 + dx * timeOfX0Collision;
                 const [ circleYAtTimeOfCollision ] = getCirclePointYsFromCircleX(circleXAtTimeOfCollision);
-
-                const collisionEvent = new CollisionEvent(
-                    rect,
-                    circle,
-                    timeOfX0Collision,
-                    undefined, 
-                    {
-                        x: circleXAtTimeOfCollision,
-                        y: circleYAtTimeOfCollision,
-                    },
-                );
-                validCollisionEvents.push(collisionEvent);
+                
+                if (circleYAtTimeOfCollision !== undefined) {
+                    const collisionEvent = new CollisionEvent(
+                        rect,
+                        circle,
+                        timeOfX0Collision,
+                        { x0 }, 
+                        {
+                            x: circleXAtTimeOfCollision,
+                            y: circleYAtTimeOfCollision,
+                        },
+                    );
+                    validCollisionEvents.push(collisionEvent);
+                }
             }
         }
 
@@ -520,18 +524,20 @@ export class Collisions {
                 const circleYAtTimeOfCollision = y1 + dy * timeOfY1Collision;
                 const [ circleXAtTimeOfCollision ] = getCirclePointXsFromCircleY(circleYAtTimeOfCollision);
                 
-                const collisionEvent = new CollisionEvent(
-                    rect,
-                    circle,
-                    timeOfY1Collision,
-                    undefined,
-                    {
-                        x: circleXAtTimeOfCollision,
-                        y: circleYAtTimeOfCollision,
-                    },
-                );
-
-                validCollisionEvents.push(collisionEvent);
+                if (circleXAtTimeOfCollision !== undefined) {
+                    const collisionEvent = new CollisionEvent(
+                        rect,
+                        circle,
+                        timeOfY1Collision,
+                        { y1 },
+                        {
+                            x: circleXAtTimeOfCollision,
+                            y: circleYAtTimeOfCollision,
+                        },
+                    );
+    
+                    validCollisionEvents.push(collisionEvent);
+                }
             }
         }
 
@@ -545,19 +551,21 @@ export class Collisions {
             if (x0 <= x && x <= x1) {
                 const circleYAtTimeOfCollision = y0 + dy * timeOfY0Collision;
                 const [ circleXAtTimeOfCollision ] = getCirclePointXsFromCircleY(circleYAtTimeOfCollision);
-
-                const collisionEvent = new CollisionEvent(
-                    rect,
-                    circle,
-                    timeOfY0Collision,
-                    undefined,
-                    {
-                        x: circleXAtTimeOfCollision,
-                        y: circleYAtTimeOfCollision,
-                    },
-                );
-
-                validCollisionEvents.push(collisionEvent);
+                
+                if (circleXAtTimeOfCollision !== undefined) {
+                    const collisionEvent = new CollisionEvent(
+                        rect,
+                        circle,
+                        timeOfY0Collision,
+                        { y0 },
+                        {
+                            x: circleXAtTimeOfCollision,
+                            y: circleYAtTimeOfCollision,
+                        },
+                    );
+    
+                    validCollisionEvents.push(collisionEvent);
+                }
             }
         }
 
@@ -586,13 +594,17 @@ export class Collisions {
         const topLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(topLeft);
 
         if (topLeftCornerTimeOfCollision !== null) {
+            const isCloserOnXAxis = Math.abs(circle.center.x - x0) < Math.abs(circle.center.y - y0);
+            const contact = isCloserOnXAxis ? { x0 } : { y0 };
+            
             const collisionEvent = new CollisionEvent(
                 rect,
                 circle,
                 topLeftCornerTimeOfCollision,
-                undefined,
+                contact,
                 topLeft,
             );
+
             validCollisionEvents.push(collisionEvent);
         }
         
@@ -605,13 +617,17 @@ export class Collisions {
         const topRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(topRight);
 
         if (topRightCornerTimeOfCollision !== null) {
+            const isCloserOnXAxis = Math.abs(circle.center.x - x1) < Math.abs(circle.center.y - y0);
+            const contact = isCloserOnXAxis ? { x1 } : { y0 };
+
             const collisionEvent = new CollisionEvent(
                 rect,
                 circle,
                 topRightCornerTimeOfCollision,
-                undefined,
+                contact,
                 topRight,
             );
+
             validCollisionEvents.push(collisionEvent);
         }
 
@@ -624,13 +640,17 @@ export class Collisions {
         const bottomRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomRight);
 
         if (bottomRightCornerTimeOfCollision !== null) {
+            const isCloserOnXAxis = Math.abs(circle.center.x - x1) < Math.abs(circle.center.y - y1);
+            const contact = isCloserOnXAxis ? { x1 } : { y1 };
+
             const collisionEvent = new CollisionEvent(
                 rect,
                 circle,
                 bottomRightCornerTimeOfCollision,
-                undefined,
+                contact,
                 bottomRight,
             );
+
             validCollisionEvents.push(collisionEvent);
         }
         
@@ -643,17 +663,47 @@ export class Collisions {
         const bottomLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomLeft);
 
         if (bottomLeftCornerTimeOfCollision !== null) {
+            const isCloserOnXAxis = Math.abs(circle.center.x - x0) < Math.abs(circle.center.y - y1);
+            const contact = isCloserOnXAxis ? { x0 } : { y1 };
+
             const collisionEvent = new CollisionEvent(
                 rect,
                 circle,
                 bottomLeftCornerTimeOfCollision,
-                undefined,
+                contact,
                 bottomLeft,
             );
             validCollisionEvents.push(collisionEvent);
         }
         
         return validCollisionEvents;
+    }
+
+    static getCollisionRelativePositionVector = (bodyA, bodyB, collisionEvent) => {
+        const { contact, collisionPoint } = collisionEvent;
+
+        if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
+            return Vectors.subtract(bodyA.center, bodyB.center);
+        }
+
+        if (bodyA.isCircle && !bodyB.isCircle) { // circle vs rectangle
+            return Vectors.subtract(bodyA.center, collisionPoint);
+        } else if (!bodyA.isCircle && bodyB.isCircle) { // rectangle vs circle
+            return Vectors.subtract(collisionPoint, bodyB.center);
+        }
+
+        // rectangle vs rectangle 
+        const { x0, x1, y0, y1 } = contact;
+        // either x-aligned or y-aligned collision
+        if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) {
+            const x = contact.hasOwnProperty('x0') ? x0 : x1;
+            return Vectors.create(bodyA.center.x - x, 0);
+        } else if (contact.hasOwnProperty('y0') || contact.hasOwnProperty('y1')) {
+            const y = contact.hasOwnProperty('y0') ? y0 : y1;
+            return Vectors.create(0, bodyA.center.y - y);
+        } 
+
+        throw new Error(`cannot resolve rectangle vs rectangle collision with contact ${JSON.stringify(contact)}`);
     }
 
     static moveBodyToPointOfCollision = (body, timeOfCollision) => {
@@ -663,30 +713,25 @@ export class Collisions {
     };
 
     static resolveCollision = (collisionEvent) => {
-        const { movingBody, collisionBody, timeOfCollision, contact, collisionPoint } = collisionEvent;
+        const { movingBody, collisionBody, timeOfCollision } = collisionEvent;
 
         Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
 
+        const diffPositions = Collisions.getCollisionRelativePositionVector(movingBody, collisionBody, collisionEvent);
         const { mass: mA, velocity: vA } = movingBody;
         const { mass: mB, velocity: vB } = collisionBody;
 
+
         if (collisionBody.isFixed) {
-            if (collisionBody.isCircle) {
-                const redirectedVector = Vectors.subtract(movingBody.center, collisionBody.center);
-                movingBody.setVelocity(Vectors.rescale(redirectedVector, Vectors.magnitude(vA)));
+            if (Collisions.isCircleVsCircle(movingBody, collisionBody)) {
+                movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(vA)));   
             } else {
-                if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) { // collision with left / right side
-                    movingBody.setVelocity({ x: -vA.x, y: vA.y });
-                    if (Collisions.isMovingTowardsBody(movingBody, collisionBody)) {
-                        movingBody.setVelocity({ x: -vA.x, y: -vA.y });
-                    }
-                } else if (contact.hasOwnProperty('y0') || contact.hasOwnProperty('y1')) { // collision with top / bottom side
+                if (roundFloatingPoint(diffPositions.x) === 0) {
                     movingBody.setVelocity({ x: vA.x, y: -vA.y });
-                    if (Collisions.isMovingTowardsBody(movingBody, collisionBody)) {
-                        movingBody.setVelocity({ x: -vA.x, y: -vA.y });
-                    }
+                } else if (roundFloatingPoint(diffPositions.y === 0)) {
+                    movingBody.setVelocity({ x: -vA.x, y: vA.y });
                 } else {
-                    throw new Error(`cannot resolve collision against rectangle without contact`);
+                    movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(vA)));
                 }
             }
             
@@ -704,7 +749,6 @@ export class Collisions {
                         x = position (at time of collision)
         */
 
-        const diffPositions = Vectors.subtract(collisionBody.center, movingBody.center);
         const diffVelocities = Vectors.subtract(vA, vB);
         
         const dotProduct = Vectors.dot(diffVelocities, diffPositions);
