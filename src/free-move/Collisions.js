@@ -4,6 +4,14 @@ import { Maths } from "./Maths";
 import { Vectors } from "./Vectors";
 
 export class Collisions {
+    static isCircleVsCircle = (bodyA, bodyB) => {
+        return bodyA.isCircle && bodyB.isCircle;
+    }
+
+    static isRectangleVsRectangle = (bodyA, bodyB) => {
+        return !bodyA.isCircle && !bodyB.isCircle;
+    }
+
     // TODO: use in quad-tree optimization
     static getMovementBoundingBox = (body) => {
         const { center, x0, x1, y0, y1, velocity } = body;
@@ -22,39 +30,6 @@ export class Collisions {
 
         return rect;
     }
-
-    static getCollisionRelativePositionVector = (bodyA, bodyB, collisionEvent) => {
-        const { contact, collisionPoint } = collisionEvent;
-
-        if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
-            return Vectors.subtract(bodyA.center, bodyB.center);
-        }
-
-        if (bodyA.isCircle && !bodyB.isCircle) { // circle vs rectangle
-            return Vectors.subtract(bodyA.center, collisionPoint);
-        } else if (!bodyA.isCircle && bodyB.isCircle) { // rectangle vs circle
-            return Vectors.subtract(collisionPoint, bodyB.center);
-        }
-
-        // rectangle vs rectangle 
-        const { x0, x1, y0, y1 } = contact;
-        // either x-aligned or y-aligned collision
-        if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) {
-            const x = contact.hasOwnProperty('x0') ? x0 : x1;
-            return Vectors.create(bodyA.center.x - x, 0);
-        } else if (contact.hasOwnProperty('y0') || contact.hasOwnProperty('y1')) {
-            const y = contact.hasOwnProperty('y0') ? y0 : y1;
-            return Vectors.create(0, bodyA.center.y - y);
-        } 
-
-        throw new Error(`cannot resolve rectangle vs rectangle collision with contact ${JSON.stringify(contact)}`);
-    }
-
-    static moveBodyToPointOfCollision = (body, timeOfCollision) => {
-        const dx = body.velocity.x * timeOfCollision;
-        const dy = body.velocity.y * timeOfCollision;
-        body.moveTo(body.x + dx, body.y + dy);
-    };
 
     static resolveCollision = (collisionEvent) => {
         const { movingBody, collisionBody, timeOfCollision } = collisionEvent;
@@ -118,6 +93,39 @@ export class Collisions {
         movingBody.setVelocity(finalVelocityA);
         collisionBody.setVelocity(finalVelocityB);
     }
+    
+    static getCollisionRelativePositionVector = (bodyA, bodyB, collisionEvent) => {
+        const { contact, collisionPoint } = collisionEvent;
+
+        if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
+            return Vectors.subtract(bodyA.center, bodyB.center);
+        }
+
+        if (bodyA.isCircle && !bodyB.isCircle) { // circle vs rectangle
+            return Vectors.subtract(bodyA.center, collisionPoint);
+        } else if (!bodyA.isCircle && bodyB.isCircle) { // rectangle vs circle
+            return Vectors.subtract(collisionPoint, bodyB.center);
+        }
+
+        // rectangle vs rectangle 
+        const { x0, x1, y0, y1 } = contact;
+        // either x-aligned or y-aligned collision
+        if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) {
+            const x = contact.hasOwnProperty('x0') ? x0 : x1;
+            return Vectors.create(bodyA.center.x - x, 0);
+        } else if (contact.hasOwnProperty('y0') || contact.hasOwnProperty('y1')) {
+            const y = contact.hasOwnProperty('y0') ? y0 : y1;
+            return Vectors.create(0, bodyA.center.y - y);
+        } 
+
+        throw new Error(`cannot resolve rectangle vs rectangle collision with contact ${JSON.stringify(contact)}`);
+    }
+
+    static moveBodyToPointOfCollision = (body, timeOfCollision) => {
+        const dx = body.velocity.x * timeOfCollision;
+        const dy = body.velocity.y * timeOfCollision;
+        body.moveTo(body.x + dx, body.y + dy);
+    };
     
     static isPointMovingTowardsPoint = (pointA, pointB, pointAVelocity) => {
         // https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other
@@ -192,13 +200,5 @@ export class Collisions {
         if (vA.y < 0 && bodyA.center.y >= bodyB.y1) return true;
 
         return false;
-    }
-
-    static isCircleVsCircle = (bodyA, bodyB) => {
-        return bodyA.isCircle && bodyB.isCircle;
-    }
-
-    static isRectangleVsRectangle = (bodyA, bodyB) => {
-        return !bodyA.isCircle && !bodyB.isCircle;
     }
 }
