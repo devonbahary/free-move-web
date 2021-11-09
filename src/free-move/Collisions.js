@@ -123,6 +123,15 @@ export class Collisions {
             return (rectBoundary - circleBoundary) / changeInAxis;
         };
 
+        const createCircleVsRectangleCollisionEvent = (timeOfCollision, collisionPoint) => {
+            return new CircleVsRectangleCollisionEvent({
+                movingBody: circle,
+                collisionBody: rect,
+                timeOfCollision,
+                collisionPoint,
+            });
+        }
+
         const validCollisionEvents = [];
 
         // consider collision into rectangle against any of circle's 4 axis-aligned "corners"
@@ -135,17 +144,12 @@ export class Collisions {
             if (yAtTimeOfCollision >= y0 && yAtTimeOfCollision <= y1) {
                 const circleX1AtTimeOfCollision = circle.x1 + dx * timeOfX0Collision;
                 const circleCenterYAtTimeOfCollision = circle.center.y + dy * timeOfX0Collision;
+                const collisionPoint = { 
+                    x: circleX1AtTimeOfCollision, 
+                    y: circleCenterYAtTimeOfCollision,
+                };
 
-                const collisionEvent = new CircleVsRectangleCollisionEvent({
-                    movingBody: circle,
-                    collisionBody: rect,
-                    timeOfCollision: timeOfX0Collision,
-                    collisionPoint: { 
-                        x: circleX1AtTimeOfCollision, 
-                        y: circleCenterYAtTimeOfCollision,
-                    },
-                });
-
+                const collisionEvent = createCircleVsRectangleCollisionEvent(timeOfX0Collision, collisionPoint);
                 validCollisionEvents.push(collisionEvent);
             }
         }
@@ -158,17 +162,12 @@ export class Collisions {
             if (yAtTimeOfCollision >= y0 && yAtTimeOfCollision <= y1) {
                 const circleX0AtTimeOfCollision = circle.x0 + dx * timeOfX1Collision;
                 const circleCenterYAtTimeOfCollision = circle.center.y + dy * timeOfX1Collision;
+                const collisionPoint = {
+                    x: circleX0AtTimeOfCollision,
+                    y: circleCenterYAtTimeOfCollision,
+                };
 
-                const collisionEvent = new CircleVsRectangleCollisionEvent({
-                    movingBody: circle,
-                    collisionBody: rect,
-                    timeOfCollision: timeOfX1Collision,
-                    collisionPoint: {
-                        x: circleX0AtTimeOfCollision,
-                        y: circleCenterYAtTimeOfCollision,
-                    },
-                });
-                
+                const collisionEvent = createCircleVsRectangleCollisionEvent(timeOfX1Collision, collisionPoint);
                 validCollisionEvents.push(collisionEvent);
             }
         }
@@ -181,17 +180,12 @@ export class Collisions {
             if (xAtTimeOfCollision >= x0 && xAtTimeOfCollision <= x1) {
                 const circleCenterXAtTimeOfCollision = circle.center.x + dx * timeOfY0Collision;
                 const circleY1AtTimeOfCollision = circle.y1 + dy * timeOfY0Collision;
+                const collisionPoint = {
+                    x: circleCenterXAtTimeOfCollision,
+                    y: circleY1AtTimeOfCollision,
+                };
 
-                const collisionEvent = new CircleVsRectangleCollisionEvent({
-                    movingBody: circle,
-                    collisionBody: rect,
-                    timeOfCollision: timeOfY0Collision,
-                    collisionPoint: {
-                        x: circleCenterXAtTimeOfCollision,
-                        y: circleY1AtTimeOfCollision,
-                    },
-                });
-                
+                const collisionEvent = createCircleVsRectangleCollisionEvent(timeOfY0Collision, collisionPoint);
                 validCollisionEvents.push(collisionEvent);
             }
         }
@@ -204,17 +198,12 @@ export class Collisions {
             if (xAtTimeOfCollision >= x0 && xAtTimeOfCollision <= x1) {
                 const circleCenterXAtTimeOfCollision = circle.center.x + dx * timeOfY1Collision;
                 const circleY0AtTimeOfCollision = circle.y0 + dy * timeOfY1Collision;
+                const collisionPoint = {
+                    x: circleCenterXAtTimeOfCollision,
+                    y: circleY0AtTimeOfCollision,
+                };
 
-                const collisionEvent = new CircleVsRectangleCollisionEvent({
-                    movingBody: circle,
-                    collisionBody: rect,
-                    timeOfCollision: timeOfY1Collision,
-                    collisionPoint: {
-                        x: circleCenterXAtTimeOfCollision,
-                        y: circleY0AtTimeOfCollision,
-                    },
-                });
-
+                const collisionEvent = createCircleVsRectangleCollisionEvent(timeOfY1Collision, collisionPoint);
                 validCollisionEvents.push(collisionEvent);
             }
         }
@@ -244,12 +233,7 @@ export class Collisions {
         const topLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(topLeft);
 
         if (topLeftCornerTimeOfCollision !== null) {
-            const collisionEvent = new CircleVsRectangleCollisionEvent({
-                movingBody: circle,
-                collisionBody: rect,
-                timeOfCollision: topLeftCornerTimeOfCollision,
-                collisionPoint: topLeft,
-            });
+            const collisionEvent = createCircleVsRectangleCollisionEvent(topLeftCornerTimeOfCollision, topLeft);
             validCollisionEvents.push(collisionEvent);
         }
 
@@ -262,12 +246,7 @@ export class Collisions {
         const topRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(topRight);
 
         if (topRightCornerTimeOfCollision !== null) {
-            const collisionEvent = new CircleVsRectangleCollisionEvent({
-                movingBody: circle,
-                collisionBody: rect,
-                timeOfCollision: topRightCornerTimeOfCollision,
-                collisionPoint: topRight,
-            });
+            const collisionEvent = createCircleVsRectangleCollisionEvent(topRightCornerTimeOfCollision, topRight);
             validCollisionEvents.push(collisionEvent);
         }
 
@@ -280,12 +259,7 @@ export class Collisions {
         const bottomRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomRight);
 
         if (bottomRightCornerTimeOfCollision !== null) {
-            const collisionEvent = new CircleVsRectangleCollisionEvent({
-                movingBody: circle,
-                collisionBody: rect,
-                timeOfCollision: bottomRightCornerTimeOfCollision,
-                collisionPoint: bottomRight,
-            });
+            const collisionEvent = createCircleVsRectangleCollisionEvent(bottomRightCornerTimeOfCollision, bottomRight);
             validCollisionEvents.push(collisionEvent);
         }
         
@@ -298,12 +272,7 @@ export class Collisions {
         const bottomLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomLeft);
 
         if (bottomLeftCornerTimeOfCollision !== null) {
-            const collisionEvent = new CircleVsRectangleCollisionEvent({
-                movingBody: circle,
-                collisionBody: rect,
-                timeOfCollision: bottomLeftCornerTimeOfCollision,
-                collisionPoint: bottomLeft,
-            });
+            const collisionEvent = createCircleVsRectangleCollisionEvent(bottomLeftCornerTimeOfCollision, bottomLeft);
             validCollisionEvents.push(collisionEvent);
         }
 
@@ -319,6 +288,15 @@ export class Collisions {
             return (rectBoundaryB - rectBoundaryA) / changeInAxis;
         };
 
+        const createRectangleVsRectangleCollisionEvent = (timeOfCollision, contact) => {
+            return new RectangleVsRectangleCollisionEvent({
+                movingBody: rectA,
+                collisionBody: rectB,
+                timeOfCollision,
+                contact,
+            });
+        };
+
         const validCollisionEvents = [];
 
         // consider collision into rectangle against any of its sides
@@ -329,12 +307,7 @@ export class Collisions {
             const y1 = rectA.y1 + changeInY;
 
             if (hasOverlap(y0, y1, rectB.y0, rectB.y1)) {
-                const collisionEvent = new RectangleVsRectangleCollisionEvent({
-                    movingBody: rectA,
-                    collisionBody: rectB,
-                    timeOfCollision: timeOfX0Collision,
-                    contact: { x0: rectB.x0 },
-                });
+                const collisionEvent = createRectangleVsRectangleCollisionEvent(timeOfX0Collision, { x0: rectB.x0 });
                 validCollisionEvents.push(collisionEvent);
             }
         }
@@ -346,12 +319,7 @@ export class Collisions {
             const y1 = rectA.y1 + changeInY;
 
             if (hasOverlap(y0, y1, rectB.y0, rectB.y1)) {
-                const collisionEvent = new RectangleVsRectangleCollisionEvent({
-                    movingBody: rectA,
-                    collisionBody: rectB,
-                    timeOfCollision: timeOfX1Collision,
-                    contact: { x1: rectB.x1 },
-                });
+                const collisionEvent = createRectangleVsRectangleCollisionEvent(timeOfX1Collision, { x1: rectB.x1 });
                 validCollisionEvents.push(collisionEvent);
             }
         }
@@ -363,12 +331,7 @@ export class Collisions {
             const x1 = rectA.x1 + changeInX;
 
             if (hasOverlap(x0, x1, rectB.x0, rectB.x1)) {
-                const collisionEvent = new RectangleVsRectangleCollisionEvent({
-                    movingBody: rectA,
-                    collisionBody: rectB,
-                    timeOfCollision: timeOfY0Collision,
-                    contact: { y0: rectB.y0 },
-                });
+                const collisionEvent = createRectangleVsRectangleCollisionEvent(timeOfY0Collision, { y0: rectB.y0 });
                 validCollisionEvents.push(collisionEvent);
             }
         }
@@ -380,12 +343,7 @@ export class Collisions {
             const x1 = rectA.x1 + changeInX;
 
             if (hasOverlap(x0, x1, rectB.x0, rectB.x1)) {
-                const collisionEvent = new RectangleVsRectangleCollisionEvent({
-                    movingBody: rectA,
-                    collisionBody: rectB,
-                    timeOfCollision: timeOfY1Collision,
-                    contact: { y1: rectB.y1 },
-                });
+                const collisionEvent = createRectangleVsRectangleCollisionEvent(timeOfY1Collision, { y1: rectB.y1 });
                 validCollisionEvents.push(collisionEvent);
             }
         }
@@ -404,6 +362,15 @@ export class Collisions {
             if (changeInAxis === 0) return null;
 
             return (circleBoundary - rectBoundary) / changeInAxis;
+        };
+
+        const createRectangleVsCircleCollisionEvent = (timeOfCollision, collisionPoint) => {
+            return new CircleVsRectangleCollisionEvent({
+                movingBody: rect,
+                collisionBody: circle,
+                timeOfCollision,
+                collisionPoint,
+            });
         };
 
         const validCollisionEvents = [];
@@ -442,16 +409,12 @@ export class Collisions {
                 const [ circleYAtTimeOfCollision ] = getCirclePointYsFromCircleX(circleXAtTimeOfCollision);
                 
                 if (circleYAtTimeOfCollision !== undefined) {
-                    const collisionEvent = new CircleVsRectangleCollisionEvent({
-                        movingBody: rect,
-                        collisionBody: circle,
-                        timeOfCollision: timeOfX1Collision,
-                        collisionPoint: {
-                            x: x1,
-                            y: circleYAtTimeOfCollision,
-                        },
-                    });
-    
+                    const collisionPoint = {
+                        x: x1,
+                        y: circleYAtTimeOfCollision,
+                    };
+
+                    const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfX1Collision, collisionPoint);
                     validCollisionEvents.push(collisionEvent);
                 }
             }
@@ -469,15 +432,12 @@ export class Collisions {
                 const [ circleYAtTimeOfCollision ] = getCirclePointYsFromCircleX(circleXAtTimeOfCollision);
                 
                 if (circleYAtTimeOfCollision !== undefined) {
-                    const collisionEvent = new CircleVsRectangleCollisionEvent({
-                        movingBody: rect,
-                        collisionBody: circle,
-                        timeOfCollision: timeOfX0Collision,
-                        collisionPoint: {
-                            x: circleXAtTimeOfCollision,
-                            y: circleYAtTimeOfCollision,
-                        },
-                    });
+                    const collisionPoint = {
+                        x: circleXAtTimeOfCollision,
+                        y: circleYAtTimeOfCollision,
+                    };
+
+                    const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfX0Collision, collisionPoint);
                     validCollisionEvents.push(collisionEvent);
                 }
             }
@@ -495,16 +455,12 @@ export class Collisions {
                 const [ circleXAtTimeOfCollision ] = getCirclePointXsFromCircleY(circleYAtTimeOfCollision);
                 
                 if (circleXAtTimeOfCollision !== undefined) {
-                    const collisionEvent = new CircleVsRectangleCollisionEvent({
-                        movingBody: rect,
-                        collisionBody: circle,
-                        timeOfCollision: timeOfY1Collision,
-                        collisionPoint: {
-                            x: circleXAtTimeOfCollision,
-                            y: circleYAtTimeOfCollision,
-                        },
-                    });
-    
+                    const collisionPoint = {
+                        x: circleXAtTimeOfCollision,
+                        y: circleYAtTimeOfCollision,
+                    };
+
+                    const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfY1Collision, collisionPoint);
                     validCollisionEvents.push(collisionEvent);
                 }
             }
@@ -522,16 +478,12 @@ export class Collisions {
                 const [ circleXAtTimeOfCollision ] = getCirclePointXsFromCircleY(circleYAtTimeOfCollision);
                 
                 if (circleXAtTimeOfCollision !== undefined) {
-                    const collisionEvent = new CircleVsRectangleCollisionEvent({
-                        movingBody: rect,
-                        collisionBody: circle,
-                        timeOfCollision: timeOfY0Collision,
-                        collisionPoint: {
-                            x: circleXAtTimeOfCollision,
-                            y: circleYAtTimeOfCollision,
-                        },
-                    });
-    
+                    const collisionPoint = {
+                        x: circleXAtTimeOfCollision,
+                        y: circleYAtTimeOfCollision,
+                    };
+
+                    const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfY0Collision, collisionPoint);
                     validCollisionEvents.push(collisionEvent);
                 }
             }
@@ -562,13 +514,7 @@ export class Collisions {
         const topLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(topLeft);
 
         if (topLeftCornerTimeOfCollision !== null) {
-            const collisionEvent = new CircleVsRectangleCollisionEvent({
-                movingBody: rect,
-                collisionBody: circle,
-                timeOfCollision: topLeftCornerTimeOfCollision,
-                collisionPoint: topLeft,
-            });
-
+            const collisionEvent = createRectangleVsCircleCollisionEvent(topLeftCornerTimeOfCollision, topLeft);
             validCollisionEvents.push(collisionEvent);
         }
         
@@ -581,13 +527,7 @@ export class Collisions {
         const topRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(topRight);
 
         if (topRightCornerTimeOfCollision !== null) {
-            const collisionEvent = new CircleVsRectangleCollisionEvent({
-                movingBody: rect,
-                collisionBody: circle,
-                timeOfCollision: topRightCornerTimeOfCollision,
-                collisionPoint: topRight,
-            });
-
+            const collisionEvent = createRectangleVsCircleCollisionEvent(topRightCornerTimeOfCollision, topRight);
             validCollisionEvents.push(collisionEvent);
         }
 
@@ -600,13 +540,7 @@ export class Collisions {
         const bottomRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomRight);
 
         if (bottomRightCornerTimeOfCollision !== null) {
-            const collisionEvent = new CircleVsRectangleCollisionEvent({
-                movingBody: rect,
-                collisionBody: circle,
-                timeOfCollision: bottomRightCornerTimeOfCollision,
-                collisionPoint: bottomRight,
-            });
-
+            const collisionEvent = createRectangleVsCircleCollisionEvent(bottomRightCornerTimeOfCollision, bottomRight);
             validCollisionEvents.push(collisionEvent);
         }
         
@@ -619,12 +553,7 @@ export class Collisions {
         const bottomLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomLeft);
 
         if (bottomLeftCornerTimeOfCollision !== null) {
-            const collisionEvent = new CircleVsRectangleCollisionEvent({
-                movingBody: rect,
-                collisionBody: circle,
-                timeOfCollision: bottomLeftCornerTimeOfCollision,
-                collisionPoint: bottomLeft,
-            });
+            const collisionEvent = createRectangleVsCircleCollisionEvent(bottomLeftCornerTimeOfCollision, bottomLeft);
             validCollisionEvents.push(collisionEvent);
         }
         
