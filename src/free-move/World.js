@@ -1,5 +1,6 @@
 import { Collisions } from "./Collisions";
 import { RectangleBody } from "./Bodies";
+import { CollisionEvents } from "./CollisionEvents";
 
 export class World {
     constructor(bounds) {
@@ -101,20 +102,20 @@ export class World {
 
             if (body.isCircle) {
                 if (otherBody.isCircle) {
-                    const collisionEvent = Collisions.getCircleVsCircleCollisionEvent(body, otherBody);
+                    const collisionEvent = CollisionEvents.getCircleVsCircleCollisionEvent(body, otherBody);
                     if (collisionEvent) {
                         acc.push(collisionEvent);
                     }
                 } else {
-                    const collisionEvents = Collisions.getCircleVsRectangleCollisionEvents(body, otherBody);
+                    const collisionEvents = CollisionEvents.getCircleVsRectangleCollisionEvents(body, otherBody);
                     acc.push(...collisionEvents);
                 }
             } else {
                 if (otherBody.isCircle) {
-                    const collisionEvents = Collisions.getRectangleVsCircleCollisionEvents(body, otherBody);
+                    const collisionEvents = CollisionEvents.getRectangleVsCircleCollisionEvents(body, otherBody);
                     acc.push(...collisionEvents);
                 } else {
-                    const collisionEvents = Collisions.getRectangleVsRectangleCollisionEvents(body, otherBody);
+                    const collisionEvents = CollisionEvents.getRectangleVsRectangleCollisionEvents(body, otherBody);
                     acc.push(...collisionEvents);
                 }
             }
