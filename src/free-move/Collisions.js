@@ -4,6 +4,7 @@ import { Maths } from "./Maths";
 import { Vectors } from "./Vectors";
 
 export class Collisions {
+    // TODO: use in quad-tree optimization
     static getMovementBoundingBox = (body) => {
         const { center, x0, x1, y0, y1, velocity } = body;
         const { x: dx, y: dy } = velocity;
