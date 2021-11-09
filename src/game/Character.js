@@ -6,7 +6,7 @@ let characterCode = 65; // 'A'
 export class Character {
     constructor() {
         this.body = new CircleBody();
-        this.movementSpeed = 0.1;
+        this.movementSpeed = 0.05;
         this.body.name = `Char${String.fromCharCode(characterCode++)}`;
     }
 
