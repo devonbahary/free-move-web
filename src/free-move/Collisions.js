@@ -98,10 +98,23 @@ export class Collisions {
         return Collisions.getTimeOfCollision(a, b, c);
     }
 
+    static getTimeOfCircleCollisionWithRectangleCorner = (circle, corner) => {
+        const { center, radius, velocity } = circle;
+        const { x: dx, y: dy } = velocity;
+
+        const diffPos = Vectors.subtract(center, corner);
+        
+        const a = dx ** 2 + dy ** 2;
+        const b = 2 * diffPos.x * dx + 2 * diffPos.y * dy;
+        const c = diffPos.x ** 2 + diffPos.y ** 2 - radius ** 2;
+        
+        return Collisions.getTimeOfCollision(a, b, c);
+    }
+
     static getCircleVsCircleCollisionEvent = (circleA, circleB) => {
         const timeOfCollision = Collisions.getTimeOfCircleVsCircleCollision(circleA, circleB);
         
-        if (!Collisions.isValidTimeOfCollision(timeOfCollision)) return null;
+        if (timeOfCollision === null) return null;
         
         return new CircleVsCircleCollisionEvent({
             movingBody: circleA,
@@ -110,18 +123,18 @@ export class Collisions {
         });
     }
 
+    static getTimeOfAxisAlignedCollision = (movingBoundary, approachingBoundary, changeInAxis) => {
+        if (changeInAxis === 0) return null;
+
+        return (approachingBoundary - movingBoundary) / changeInAxis;
+    }
+
     static getCircleVsRectangleCollisionEvents = (circle, rect) => {
         const { center, radius, velocity } = circle;
         const { x, y } = center;
         const { x: dx, y: dy } = velocity;
 
         const { x0, x1, y0, y1 } = rect;
-
-        const getTimeOfAxisAlignedCollision = (circleBoundary, rectBoundary, changeInAxis) => {
-            if (changeInAxis === 0) return null;
-
-            return (rectBoundary - circleBoundary) / changeInAxis;
-        };
 
         const createCircleVsRectangleCollisionEvent = (timeOfCollision, collisionPoint) => {
             return new CircleVsRectangleCollisionEvent({
@@ -137,7 +150,7 @@ export class Collisions {
         // consider collision into rectangle against any of circle's 4 axis-aligned "corners"
 
         // circle right-most point into rectangle left side
-        const timeOfX0Collision = getTimeOfAxisAlignedCollision(x + radius, x0, dx);
+        const timeOfX0Collision = Collisions.getTimeOfAxisAlignedCollision(x + radius, x0, dx);
         if (Collisions.isValidTimeOfCollision(timeOfX0Collision)) {
             const yAtTimeOfCollision = y + dy * timeOfX0Collision;
             
@@ -155,7 +168,7 @@ export class Collisions {
         }
 
         // circle left-most point into rectangle right side
-        const timeOfX1Collision = getTimeOfAxisAlignedCollision(x - radius, x1, dx);
+        const timeOfX1Collision = Collisions.getTimeOfAxisAlignedCollision(x - radius, x1, dx);
         if (Collisions.isValidTimeOfCollision(timeOfX1Collision)) {
             const yAtTimeOfCollision = y + dy * timeOfX1Collision;
             
@@ -173,7 +186,7 @@ export class Collisions {
         }
 
         // circle bottom-most point into rectangle top side
-        const timeOfY0Collision = getTimeOfAxisAlignedCollision(y + radius, y0, dy);
+        const timeOfY0Collision = Collisions.getTimeOfAxisAlignedCollision(y + radius, y0, dy);
         if (Collisions.isValidTimeOfCollision(timeOfY0Collision)) {
             const xAtTimeOfCollision = x + dx * timeOfY0Collision;
             
@@ -191,7 +204,7 @@ export class Collisions {
         }
 
         // circle top-most point into rectangle bottom side
-        const timeOfY1Collision = getTimeOfAxisAlignedCollision(y - radius, y1, dy);
+        const timeOfY1Collision = Collisions.getTimeOfAxisAlignedCollision(y - radius, y1, dy);
         if (Collisions.isValidTimeOfCollision(timeOfY1Collision)) {
             const xAtTimeOfCollision = x + dx * timeOfY1Collision;
             
@@ -208,72 +221,24 @@ export class Collisions {
             }
         }
 
-        // if a collision occurs with a rectangle side, then we don't need to check for rectangle corners
+        // if a circle axis-aligned collision with a rectangle side occurs, we don't need to check for corners
         if (validCollisionEvents.length) {
             return validCollisionEvents;
         }
 
-        // consider collision into rectangle into any of its corners
-        
-        const getTimeOfCollisionWithCorner = (corner) => {
-            const diffPos = Vectors.subtract(center, corner);
-            const a = dx ** 2 + dy ** 2;
-            const b = 2 * diffPos.x * dx + 2 * diffPos.y * dy;
-            const c = diffPos.x ** 2 + diffPos.y ** 2 - radius ** 2;
-            
-            return Collisions.getTimeOfCollision(a, b, c);
-        };
+        const corners = [
+            { x: x0, y: y0 }, // top left
+            { x: x1, y: y0 }, // top right
+            { x: x1, y: y1 }, // bottom right
+            { x: x0, y: y1 }, // bottom left
+        ];
 
-        // top left
-        const topLeft = {
-            x: x0,
-            y: y0,
-        };
-
-        const topLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(topLeft);
-
-        if (topLeftCornerTimeOfCollision !== null) {
-            const collisionEvent = createCircleVsRectangleCollisionEvent(topLeftCornerTimeOfCollision, topLeft);
-            validCollisionEvents.push(collisionEvent);
-        }
-
-        // top right
-        const topRight = {
-            x: x1,
-            y: y0,
-        };
-        
-        const topRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(topRight);
-
-        if (topRightCornerTimeOfCollision !== null) {
-            const collisionEvent = createCircleVsRectangleCollisionEvent(topRightCornerTimeOfCollision, topRight);
-            validCollisionEvents.push(collisionEvent);
-        }
-
-        // bottom right 
-        const bottomRight = {
-            x: x1,
-            y: y1,
-        };
-
-        const bottomRightCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomRight);
-
-        if (bottomRightCornerTimeOfCollision !== null) {
-            const collisionEvent = createCircleVsRectangleCollisionEvent(bottomRightCornerTimeOfCollision, bottomRight);
-            validCollisionEvents.push(collisionEvent);
-        }
-        
-        // botom left
-        const bottomLeft = {
-            x: x0,
-            y: y1,
-        };
-
-        const bottomLeftCornerTimeOfCollision = getTimeOfCollisionWithCorner(bottomLeft);
-
-        if (bottomLeftCornerTimeOfCollision !== null) {
-            const collisionEvent = createCircleVsRectangleCollisionEvent(bottomLeftCornerTimeOfCollision, bottomLeft);
-            validCollisionEvents.push(collisionEvent);
+        for (const corner of corners) {
+            const cornerTimeOfCollision = Collisions.getTimeOfCircleCollisionWithRectangleCorner(circle, corner);
+            if (cornerTimeOfCollision !== null) {
+                const collisionEvent = createCircleVsRectangleCollisionEvent(cornerTimeOfCollision, corner);
+                validCollisionEvents.push(collisionEvent);
+            }   
         }
 
         return validCollisionEvents;
