@@ -46,14 +46,22 @@ export class CollisionEvents {
         }, null);
     };
 
-    static getTimeOfCircleCollisionWithRectangleCorner = (movingPoint, collisionPoint, circleRadius, velocity) => {
-        const { x: dx, y: dy } = velocity;
+    static getTimeOfCircleVsRectangleCornerCollision = (circle, corner) => {
+        const diffPos = Vectors.subtract(circle.center, corner);
+        return CollisionEvents.getTimeOfCircleVsPointCollision(diffPos, circle.radius, circle.velocity);
+    }
 
-        const diffPos = Vectors.subtract(movingPoint, collisionPoint);
-        
+    static getTimeOfRectangleCornerVsCircleCollision = (corner, circle, rectVelocity) => {
+        const diffPos = Vectors.subtract(corner, circle.center);
+        return CollisionEvents.getTimeOfCircleVsPointCollision(diffPos, circle.radius, rectVelocity);
+    }
+
+    static getTimeOfCircleVsPointCollision = (diffPos, radius, velocity) => {
+        const { x: dx, y: dy} = velocity;
+
         const a = dx ** 2 + dy ** 2;
         const b = 2 * diffPos.x * dx + 2 * diffPos.y * dy;
-        const c = diffPos.x ** 2 + diffPos.y ** 2 - circleRadius ** 2;
+        const c = diffPos.x ** 2 + diffPos.y ** 2 - radius ** 2;
         
         return CollisionEvents.getTimeOfCollision(a, b, c);
     }
@@ -217,7 +225,7 @@ export class CollisionEvents {
         ];
 
         for (const corner of corners) {
-            const cornerTimeOfCollision = CollisionEvents.getTimeOfCircleCollisionWithRectangleCorner(circle.center, corner, circle.radius, circle.velocity);
+            const cornerTimeOfCollision = CollisionEvents.getTimeOfCircleVsRectangleCornerCollision(circle, corner);
             if (cornerTimeOfCollision !== null) {
                 const collisionEvent = createCircleVsRectangleCollisionEvent(cornerTimeOfCollision, corner);
                 validCollisionEvents.push(collisionEvent);
@@ -358,7 +366,7 @@ export class CollisionEvents {
         ];
 
         for (const corner of corners) {
-            const timeOfCollision = CollisionEvents.getTimeOfCircleCollisionWithRectangleCorner(corner, circle.center, circle.radius, rect.velocity);
+            const timeOfCollision = CollisionEvents.getTimeOfRectangleCornerVsCircleCollision(corner, circle, rect.velocity);
             if (timeOfCollision !== null) {
                 const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfCollision, corner);
                 validCollisionEvents.push(collisionEvent);
