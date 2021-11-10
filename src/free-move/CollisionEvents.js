@@ -26,7 +26,6 @@ export class RectangleVsRectangleCollisionEvent extends CircleVsCircleCollisionE
 export class CollisionEvents {
     static isValidTimeOfCollision = (timeOfCollision) => {
         return Boolean(
-            timeOfCollision !== NaN &&
             timeOfCollision !== null &&
             timeOfCollision <= 1 && 
             Maths.roundFloatingPoint(timeOfCollision) >= 0 // treat floating point errors like collisions so that they are not ignored (e.g., -7.082604849269798e-7)
@@ -253,26 +252,6 @@ export class CollisionEvents {
         const validCollisionEvents = [];
 
         // consider collision into circle against any of it's 4 axis-aligned "corners"
-
-        const getCirclePointYsFromCircleX = (x) => {
-            // (x  - h)^2 + (y - k)^2 = r^2
-            const { center, radius: r } = circle;
-            const { x: h, y: k } = center;
-            // y^2 - 2yk + k^2 - r^2 + (x - h)^2 = 0
-            const b = -2 * k;
-            const c = k ** 2 - r ** 2 + (x - h) ** 2;
-            return Maths.quadratic(1, b, c).filter(a => !isNaN(a));
-        };
-
-        const getCirclePointXsFromCircleY = (y) => {
-            // (x  - h)^2 + (y - k)^2 = r^2
-            const { center, radius: r } = circle;
-            const { x: h, y: k } = center;
-            // x^2 - 2xh + h^2 - r^2 + (y - k)^2 = 0
-            const b = -2 * h;
-            const c = h ** 2 - r ** 2 + (y - k) ** 2;
-            return Maths.quadratic(1, b, c).filter(a => !isNaN(a));
-        };
         
         // rectangle right side into circle left-most point
         const timeOfX1Collision = getTimeOfAxisAlignedCollision(x1, x - radius, dx);
@@ -283,7 +262,7 @@ export class CollisionEvents {
             
             if (y0 <= y && y <= y1) {
                 const circleXAtTimeOfCollision = x1 + dx * timeOfX1Collision;
-                const [ circleYAtTimeOfCollision ] = getCirclePointYsFromCircleX(circleXAtTimeOfCollision);
+                const [ circleYAtTimeOfCollision ] = circle.getYValuesForX(circleXAtTimeOfCollision);
                 
                 if (circleYAtTimeOfCollision !== undefined) {
                     const collisionPoint = {
@@ -306,7 +285,7 @@ export class CollisionEvents {
             
             if (y0 <= y && y <= y1) {
                 const circleXAtTimeOfCollision = x0 + dx * timeOfX0Collision;
-                const [ circleYAtTimeOfCollision ] = getCirclePointYsFromCircleX(circleXAtTimeOfCollision);
+                const [ circleYAtTimeOfCollision ] = circle.getYValuesForX(circleXAtTimeOfCollision);
                 
                 if (circleYAtTimeOfCollision !== undefined) {
                     const collisionPoint = {
@@ -329,7 +308,7 @@ export class CollisionEvents {
             
             if (x0 <= x && x <= x1) {
                 const circleYAtTimeOfCollision = y1 + dy * timeOfY1Collision;
-                const [ circleXAtTimeOfCollision ] = getCirclePointXsFromCircleY(circleYAtTimeOfCollision);
+                const [ circleXAtTimeOfCollision ] = circle.getXValuesForY(circleYAtTimeOfCollision);
                 
                 if (circleXAtTimeOfCollision !== undefined) {
                     const collisionPoint = {
@@ -352,7 +331,7 @@ export class CollisionEvents {
             
             if (x0 <= x && x <= x1) {
                 const circleYAtTimeOfCollision = y0 + dy * timeOfY0Collision;
-                const [ circleXAtTimeOfCollision ] = getCirclePointXsFromCircleY(circleYAtTimeOfCollision);
+                const [ circleXAtTimeOfCollision ] = circle.getXValuesForY(circleYAtTimeOfCollision);
                 
                 if (circleXAtTimeOfCollision !== undefined) {
                     const collisionPoint = {

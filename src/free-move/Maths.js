@@ -1,10 +1,11 @@
 export class Maths {
-    // returns real and imaginary roots
     static quadratic = (a, b, c) => {
-        return [
+        const roots = [
             (-b + Math.sqrt(b ** 2 - 4 * a * c)) / (2 * a),
             (-b - Math.sqrt(b ** 2 - 4 * a * c)) / (2 * a),
         ];
+
+        return roots.filter(r => !isNaN(r));
     };
 
     // does the line segment A have overlap with line segment B
