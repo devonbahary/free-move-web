@@ -86,13 +86,13 @@ const getRandomCoordinates = () => {
 
                 const randomPosition = getRandomCoordinates();
                 const randomVelocity = Vectors.create(Math.random(), Math.random());
+                const isFixed = Math.round(Math.random()); // 0 or 1
 
                 if (isChar) {
                     const character = new Character();
 
                     character.moveTo(...randomPosition);
 
-                    const isFixed = Math.round(Math.random()); // 0 or 1
                     if (isFixed) character.body.setFixed();
                     else character.move(randomVelocity);
                     
@@ -102,7 +102,6 @@ const getRandomCoordinates = () => {
                     const rectBody = new RectangleBody(1, 1);
                     rectBody.moveTo(...randomPosition);
 
-                    const isFixed = Math.round(Math.random()); // 0 or 1
                     if (isFixed) rectBody.setFixed();
                     else rectBody.setVelocity(Vectors.rescale(randomVelocity, game.player.movementSpeed));
 
