@@ -23,6 +23,15 @@ export class RectangleVsRectangleCollisionEvent extends CircleVsCircleCollisionE
     }
 };
 
+const COLLISION_SIDES = [ 'x0', 'x1', 'y0', 'y1' ];
+
+const OPPOSITE_SIDE_MAP = {
+    x0: 'x1',
+    x1: 'x0',
+    y0: 'y1',
+    y1: 'y0',
+};
+
 export class CollisionEvents {
     static isValidTimeOfCollision = (timeOfCollision) => {
         return Boolean(
@@ -377,74 +386,48 @@ export class CollisionEvents {
     }
 
     static getRectangleVsRectangleCollisionEvents = (rectA, rectB) => {
-        const { x: dx, y: dy } = rectA.velocity;
+        return COLLISION_SIDES.reduce((validCollisionEvents, movingBodyContactSide) => {
+            const movingBoundary = rectA[movingBodyContactSide];
 
-        const getTimeOfAxisAlignedCollision = (rectBoundaryA, rectBoundaryB, changeInAxis) => {
-            if (changeInAxis === 0) return null;
+            const collisionBodyContactSide = OPPOSITE_SIDE_MAP[movingBodyContactSide];
+            const collisionBoundary = rectB[collisionBodyContactSide];
+            
+            const { x: dx, y: dy } = rectA.velocity;
 
-            return (rectBoundaryB - rectBoundaryA) / changeInAxis;
-        };
+            const isXAlignedCollision = movingBodyContactSide.includes('x');
 
-        const createRectangleVsRectangleCollisionEvent = (timeOfCollision, contact) => {
-            return new RectangleVsRectangleCollisionEvent({
-                movingBody: rectA,
-                collisionBody: rectB,
-                timeOfCollision,
-                contact,
-            });
-        };
+            const rateOfChangeInAxis = isXAlignedCollision ? dx : dy;
+            const timeOfCollision = CollisionEvents.getTimeOfAxisAlignedCollision(movingBoundary, collisionBoundary, rateOfChangeInAxis);
+            
+            if (!CollisionEvents.isValidTimeOfCollision(timeOfCollision)) return validCollisionEvents;
 
-        const validCollisionEvents = [];
+            const rateOfChangeInOtherAxis = isXAlignedCollision ? dy : dx;
+            const changeInOtherAxis = rateOfChangeInOtherAxis * timeOfCollision;
+            
+            const a0 = isXAlignedCollision ? rectA.y0 : rectA.x0;
+            const a1 = isXAlignedCollision ? rectA.y1 : rectA.x1;
+            
+            const a0AtTimeOfCollision = a0 + changeInOtherAxis;
+            const a1AtTimeOfCollision = a1 + changeInOtherAxis;
 
-        // consider collision into rectangle against any of its sides
-        const timeOfX0Collision = getTimeOfAxisAlignedCollision(rectA.x1, rectB.x0, dx);
-        if (CollisionEvents.isValidTimeOfCollision(timeOfX0Collision)) {
-            const changeInY = dy * timeOfX0Collision;
-            const y0 = rectA.y0 + changeInY;
-            const y1 = rectA.y1 + changeInY;
+            const b0 = isXAlignedCollision ? rectB.y0 : rectB.x0;
+            const b1 = isXAlignedCollision ? rectB.y1 : rectB.x1;
 
-            if (Maths.hasOverlap(y0, y1, rectB.y0, rectB.y1)) {
-                const collisionEvent = createRectangleVsRectangleCollisionEvent(timeOfX0Collision, { x0: rectB.x0 });
+            // determine if rectangles have overlap at the time that the collisionBoundary is met
+            if (Maths.hasOverlap(a0AtTimeOfCollision, a1AtTimeOfCollision, b0, b1)) {
+                const contact = { [collisionBodyContactSide]: collisionBoundary };
+                
+                const collisionEvent = new RectangleVsRectangleCollisionEvent({
+                    movingBody: rectA,
+                    collisionBody: rectB,
+                    timeOfCollision,
+                    contact,
+                });
+                
                 validCollisionEvents.push(collisionEvent);
             }
-        }
 
-        const timeOfX1Collision = getTimeOfAxisAlignedCollision(rectA.x0, rectB.x1, dx);
-        if (CollisionEvents.isValidTimeOfCollision(timeOfX1Collision)) {
-            const changeInY = dy * timeOfX1Collision;
-            const y0 = rectA.y0 + changeInY;
-            const y1 = rectA.y1 + changeInY;
-
-            if (Maths.hasOverlap(y0, y1, rectB.y0, rectB.y1)) {
-                const collisionEvent = createRectangleVsRectangleCollisionEvent(timeOfX1Collision, { x1: rectB.x1 });
-                validCollisionEvents.push(collisionEvent);
-            }
-        }
-
-        const timeOfY0Collision = getTimeOfAxisAlignedCollision(rectA.y1, rectB.y0, dy);
-        if (CollisionEvents.isValidTimeOfCollision(timeOfY0Collision)) {
-            const changeInX = dx * timeOfY0Collision;
-            const x0 = rectA.x0 + changeInX;
-            const x1 = rectA.x1 + changeInX;
-
-            if (Maths.hasOverlap(x0, x1, rectB.x0, rectB.x1)) {
-                const collisionEvent = createRectangleVsRectangleCollisionEvent(timeOfY0Collision, { y0: rectB.y0 });
-                validCollisionEvents.push(collisionEvent);
-            }
-        }
-
-        const timeOfY1Collision = getTimeOfAxisAlignedCollision(rectA.y0, rectB.y1, dy);
-        if (CollisionEvents.isValidTimeOfCollision(timeOfY1Collision)) {
-            const changeInX = dx * timeOfY1Collision;
-            const x0 = rectA.x0 + changeInX;
-            const x1 = rectA.x1 + changeInX;
-
-            if (Maths.hasOverlap(x0, x1, rectB.x0, rectB.x1)) {
-                const collisionEvent = createRectangleVsRectangleCollisionEvent(timeOfY1Collision, { y1: rectB.y1 });
-                validCollisionEvents.push(collisionEvent);
-            }
-        }
-
-        return validCollisionEvents;
+            return validCollisionEvents;
+        }, []);
     }
 }
