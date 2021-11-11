@@ -8,6 +8,7 @@ import { CircleBody, RectangleBody } from './free-move/Bodies';
 
 /*
     to-do list:
+        - investigate "stick" on horizontal movement of circle into rect corner
         - would tracking "contacts" on each body help prevent recalculating bodies already touching (and calculating bodies could collide into)?
         - rethink fixed property not being able to have velocity, because we may want to be able to move "fixed" characters
             - repercussions, what does it look like for a fixed character to move into a fixed character?
