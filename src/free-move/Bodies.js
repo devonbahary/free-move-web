@@ -1,5 +1,4 @@
 import { v4 as uuid } from 'uuid';
-import { Maths } from './Maths';
 import { Vectors } from "./Vectors";
 
 // should be abstract -- cannot work with an object if we don't know if it's
@@ -123,26 +122,6 @@ export class Circle extends Point {
     get y1() {
         return this.y + this.radius * 2;
     }
-
-    getYValuesForX = (x) => {
-        // equation of a circle: (x  - h)^2 + (y - k)^2 = r^2
-        const { x: h, y: k } = this.center;
-        
-        // y^2 - 2yk + k^2 - r^2 + (x - h)^2 = 0
-        const b = -2 * k;
-        const c = k ** 2 - this.radius ** 2 + (x - h) ** 2;
-        return Maths.quadratic(1, b, c);
-    };
-
-    getXValuesForY = (y) => {
-        // equation of a circle: (x  - h)^2 + (y - k)^2 = r^2
-        const { x: h, y: k } = this.center;
-        
-        // x^2 - 2xh + h^2 - r^2 + (y - k)^2 = 0
-        const b = -2 * h;
-        const c = h ** 2 - this.radius ** 2 + (y - k) ** 2;
-        return Maths.quadratic(1, b, c);
-    };
 };
 
 export class RectangleBody extends BodyMixin(Rectangle) {}
