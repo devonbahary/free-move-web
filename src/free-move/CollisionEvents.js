@@ -399,6 +399,7 @@ export class CollisionEvents {
             const rateOfChangeInAxis = isXAlignedCollision ? dx : dy;
             const timeOfCollision = CollisionEvents.getTimeOfAxisAlignedCollision(movingBoundary, collisionBoundary, rateOfChangeInAxis);
             
+            // determine if the moving rect will pass the collision rect boundary
             if (!CollisionEvents.isValidTimeOfCollision(timeOfCollision)) return validCollisionEvents;
 
             const rateOfChangeInOtherAxis = isXAlignedCollision ? dy : dx;
@@ -413,7 +414,7 @@ export class CollisionEvents {
             const b0 = isXAlignedCollision ? rectB.y0 : rectB.x0;
             const b1 = isXAlignedCollision ? rectB.y1 : rectB.x1;
 
-            // determine if rectangles have overlap at the time that the collisionBoundary is met
+            // determine if there is overlap between the two rects in the opposite axis at the time the collision boundary is met
             if (Maths.hasOverlap(a0AtTimeOfCollision, a1AtTimeOfCollision, b0, b1)) {
                 const contact = { [collisionBodyContactSide]: collisionBoundary };
                 
