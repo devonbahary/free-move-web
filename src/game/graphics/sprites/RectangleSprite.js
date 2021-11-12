@@ -1,24 +1,17 @@
 import { Element } from "../Element";
+import { BodySprite } from "./BodySprite";
 
-export class RectangleSprite {
+export class RectangleSprite extends BodySprite {
     constructor(rectangleBody) {
-        this.rectangleBody = rectangleBody;
-        this.initElement();
+        super(rectangleBody);
     }
 
-    getElement() {
-        return Element.create('span', 'rectangle');
+    get elementClass() {
+        return 'rectangle';
     }
-    
-    initElement() {
-        this.element = this.getElement();
-        const { width, height } = this.rectangleBody;
+
+    setDimensions() {
+        const { width, height } = this.body;
         Element.setDimensions(this.element, width, height);
-        if (this.rectangleBody.name) this.element.innerHTML = this.rectangleBody.name;
-    }
-
-    update() {
-        const { x0, y0 } = this.rectangleBody;
-        Element.moveToGameCoordinates(this.element, x0, y0);
     }
 }

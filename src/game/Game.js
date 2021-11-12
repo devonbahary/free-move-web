@@ -1,5 +1,5 @@
 import { Control } from './Control';
-import { Character } from './Character';
+import { Character } from './game-entities/Character';
 import { Element } from './graphics/Element';
 import { PlayerSprite } from './graphics/sprites/PlayerSprite';
 import { GameLoopControlsSprite } from './graphics/sprites/GameLoopControlsSprite';
@@ -15,7 +15,7 @@ export class Game {
         this.params = params;
 
         this.sprites = [];
-        this.characters = [];
+        this.gameEntities = [];
 
         this.initWorld();
         this.initGameLoopControls();
@@ -42,7 +42,7 @@ export class Game {
         this.player = new Character();
         this.player.body.name = 'player';
         const playerSprite = new PlayerSprite(this.player.body);
-        this.addCharacter(this.player, playerSprite);
+        this.addGameEntity(this.player, playerSprite);
 
         const { x, y } = this.params.player.startPosition;
         this.player.moveTo({ x, y });
@@ -58,9 +58,9 @@ export class Game {
         }, 1000 / 60); // 60/s
     }
 
-    addCharacter(character, characterSprite) {
-        this.characters.push(character);
-        this.addBody(character.body, characterSprite);        
+    addGameEntity(gameEntity, sprite) {
+        this.gameEntities.push(gameEntity);
+        this.addBody(gameEntity.body, sprite);        
     }
 
     addBody(body, sprite) {

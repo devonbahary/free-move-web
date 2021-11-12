@@ -1,10 +1,10 @@
-import { Character } from './game/Character';
+import { Character } from './game/game-entities/Character';
 import { Game } from './game/Game';
 import { Vectors } from './free-move/Vectors';
 import { CharacterSprite } from './game/graphics/sprites/CharacterSprite';
 import './main.css';
 import { RectangleSprite } from './game/graphics/sprites/RectangleSprite';
-import { CircleBody, RectangleBody } from './free-move/Bodies';
+import { Rectangle } from './game/game-entities/Rectangle';
 
 /*
     to-do list:
@@ -59,13 +59,12 @@ const getRandomCoordinates = () => {
                 const character = new Character();
                 character.moveTo(getRandomCoordinates());
                 const characterASprite = new CharacterSprite(character.body);
-                game.addCharacter(character, characterASprite);
+                game.addGameEntity(character, characterASprite);
                 
-                const rectBodyA = new RectangleBody(1, 1);
-                rectBodyA.name = 'RectA';
-                rectBodyA.moveTo({ x: 4, y: 3 });
-                const rectASprite = new RectangleSprite(rectBodyA);
-                game.addBody(rectBodyA, rectASprite);
+                const rectA = new Rectangle();
+                rectA.moveTo({ x: 4, y: 3 });
+                const rectASprite = new RectangleSprite(rectA.body);
+                game.addGameEntity(rectA, rectASprite);
             })();
             break;
         case GAME_MODES.CHAOS_CIRCLES:
@@ -77,7 +76,7 @@ const getRandomCoordinates = () => {
                 character.move(Vectors.create(Math.random(), Math.random()));
                 
                 const characterSprite = new CharacterSprite(character.body);
-                game.addCharacter(character, characterSprite);
+                game.addGameEntity(character, characterSprite);
             }
             break;
         case GAME_MODES.CHAOS_RANDOM_SHAPES:
@@ -98,32 +97,30 @@ const getRandomCoordinates = () => {
                     else character.move(randomVelocity);
                     
                     const characterSprite = new CharacterSprite(character.body);
-                    game.addCharacter(character, characterSprite);
+                    game.addGameEntity(character, characterSprite);
                 } else {
-                    const rectBody = new RectangleBody(1, 1);
-                    rectBody.moveTo(randomPosition);
+                    const rect = new Rectangle();
+                    rect.moveTo(randomPosition);
 
-                    if (isFixed) rectBody.setFixed();
-                    else rectBody.setVelocity(Vectors.rescale(randomVelocity, game.player.movementSpeed));
+                    if (isFixed) rect.body.setFixed();
+                    else rect.move(randomVelocity);
 
-                    const rectSprite = new RectangleSprite(rectBody);
-                    game.addBody(rectBody, rectSprite);
+                    const rectSprite = new RectangleSprite(rect.body);
+                    game.addGameEntity(rect, rectSprite);
                 }
             }
             break;
         case GAME_MODES.TERRAIN:
             (() => {
-                const rectBodyA = new RectangleBody(1, 1);
-                rectBodyA.name = 'RectA';
-                rectBodyA.moveTo({ x: 4, y: 3 });
-                const rectASprite = new RectangleSprite(rectBodyA);
-                game.addBody(rectBodyA, rectASprite);
+                const rectA = new Rectangle();
+                rectA.moveTo({ x: 4, y: 3 });
+                const rectASprite = new RectangleSprite(rectA.body);
+                game.addGameEntity(rectA, rectASprite);
 
-                const rectBodyB = new RectangleBody(1, 1);
-                rectBodyB.name = 'RectB';
-                rectBodyB.moveTo({ x: 1, y: 3 });
-                const rectBSprite = new RectangleSprite(rectBodyB);
-                game.addBody(rectBodyB, rectBSprite);
+                const rectB = new Rectangle();
+                rectB.moveTo({ x: 1, y: 3 });
+                const rectBSprite = new RectangleSprite(rectB.body);
+                game.addGameEntity(rectB, rectBSprite);
             })();
             break;
         default:

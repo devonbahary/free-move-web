@@ -1,24 +1,17 @@
 import { Element } from "../Element";
+import { BodySprite } from "./BodySprite";
 
-export class CharacterSprite {
+export class CharacterSprite extends BodySprite {
     constructor(characterBody) {
-        this.characterBody = characterBody;
-        this.initElement();
+        super(characterBody);
     }
 
-    getElement() {
-        return Element.create('span', 'character');
+    get elementClass() {
+        return 'character';
     }
-    
-    initElement() {
-        this.element = this.getElement();
-        const { radius } = this.characterBody;
+
+    setDimensions() {
+        const { radius } = this.body;
         Element.setDimensions(this.element, radius * 2, radius * 2);
-        if (this.characterBody.name) this.element.innerHTML = this.characterBody.name;
-    }
-
-    update() {
-        const { x0, y0 } = this.characterBody;
-        Element.moveToGameCoordinates(this.element, x0, y0);
     }
 }
