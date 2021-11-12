@@ -5,7 +5,7 @@ export class Rectangle extends GameEntity {
     constructor() {
         super();
         this.body = new RectangleBody(1, 1);
-        this.body.name = `Rect${String.fromCharCode(Rectangle.#CHARACTER_CODE++)}`;
+        this.body.name = `rect ${String.fromCharCode(Rectangle.#CHARACTER_CODE++)}`;
     }
 
     static #CHARACTER_CODE = 65; // <- 'A'

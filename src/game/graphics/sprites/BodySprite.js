@@ -32,5 +32,10 @@ export class BodySprite {
     update() {
         const { x0, y0 } = this.body;
         Element.moveToGameCoordinates(this.element, x0, y0);
+        if (this.body.isFixed) {
+            this.element.classList.add('fixed');
+        } else {
+            this.element.classList.remove('fixed');
+        }
     }
 }

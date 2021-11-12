@@ -32,7 +32,7 @@ body {
     position: absolute;
     background: white;
     color: black;
-    font-size: 6px;
+    font-size: 4px;
     text-align: center;
     font-family: sans-serif;
 }
@@ -52,6 +52,10 @@ body {
 .rectangle {
     opacity: 0.8;
     font-family: sans-serif;
+}
+
+.fixed {
+    text-transform: uppercase;
 }
 
 #player {
