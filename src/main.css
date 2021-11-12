@@ -28,24 +28,29 @@ body {
     height: 100%;
 }
 
-.character {
+.character, .rectangle {
     position: absolute;
     background: white;
     color: black;
-    display: inline-block;
-    border-radius: 50%;
     font-size: 6px;
     text-align: center;
     font-family: sans-serif;
 }
 
-.rectangle {
+.name {
     position: absolute;
-    background: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.character {
+    display: inline-block;
+    border-radius: 50%;
+}
+
+.rectangle {
     opacity: 0.8;
-    font-size: 6px;
-    text-align: center;
-    color: black;
     font-family: sans-serif;
 }
 
