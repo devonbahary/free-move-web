@@ -101,7 +101,23 @@ const getRectangleVsCirclePossibleSideCollisions = (rect, circle) => {
             axisOfCollision: 'y',
         },
     ];
-}
+};
+
+const getCornerCollisionEventsReducer = (
+    rect,
+    getTimeOfCollision,
+    createCollisionEvent,
+) => {
+    return getRectCorners(rect).reduce((validCollisionEvents, corner) => {
+        const timeOfCollision = getTimeOfCollision(corner);
+
+        if (timeOfCollision === null) return validCollisionEvents;
+
+        const collisionEvent = createCollisionEvent(timeOfCollision, corner);
+        validCollisionEvents.push(collisionEvent);
+        return validCollisionEvents;
+    }, []);
+};
 
 export class CollisionEvents {
     static isValidTimeOfCollision = (timeOfCollision) => {
@@ -217,58 +233,55 @@ export class CollisionEvents {
             });
         }
 
-        return this.getHeterogeneousCollisionEvents(
-            () => {
-                return getCircleVsRectanglePossibleSideCollisions(circle, rect).reduce((validCollisionEvents, possibleCollision) => {
-                    const { movingCircleBoundary, collisionRectBoundary, axisOfCollision } = possibleCollision;
+        const getSideCollisionEvents = () => {
+            return getCircleVsRectanglePossibleSideCollisions(circle, rect).reduce((validCollisionEvents, possibleCollision) => {
+                const { movingCircleBoundary, collisionRectBoundary, axisOfCollision } = possibleCollision;
+                
+                const isXAlignedCollision = axisOfCollision === 'x';
+                const rateOfChangeInAxis = isXAlignedCollision ? circle.velocity.x : circle.velocity.y;
+                const rateOfChangeInOtherAxis = isXAlignedCollision ? circle.velocity.y : circle.velocity.x;
+
+                const timeOfCollision = CollisionEvents.getTimeOfAxisAlignedCollision(movingCircleBoundary, collisionRectBoundary, rateOfChangeInAxis);
+
+                if (!CollisionEvents.isValidTimeOfCollision(timeOfCollision)) return validCollisionEvents;
+
+                const otherAxisAtTimeOfCollision = 
+                    (isXAlignedCollision ? circle.center.y : circle.center.x) + rateOfChangeInOtherAxis * timeOfCollision;
+
+                const rectOtherAxisLowerBoundary = isXAlignedCollision ? rect.y0 : rect.x0;
+                const rectOtherAxisUpperBoundary = isXAlignedCollision ? rect.y1 : rect.x1;
+
+                if (
+                    rectOtherAxisLowerBoundary <= otherAxisAtTimeOfCollision &&
+                    otherAxisAtTimeOfCollision <= rectOtherAxisUpperBoundary
+                ) {
+                    const collisionPoint = isXAlignedCollision 
+                        ? {
+                            x: collisionRectBoundary,
+                            y: otherAxisAtTimeOfCollision,
+                        }
+                        : {
+                            x: otherAxisAtTimeOfCollision,
+                            y: collisionRectBoundary,
+                        };
                     
-                    const isXAlignedCollision = axisOfCollision === 'x';
-                    const rateOfChangeInAxis = isXAlignedCollision ? circle.velocity.x : circle.velocity.y;
-                    const rateOfChangeInOtherAxis = isXAlignedCollision ? circle.velocity.y : circle.velocity.x;
-
-                    const timeOfCollision = CollisionEvents.getTimeOfAxisAlignedCollision(movingCircleBoundary, collisionRectBoundary, rateOfChangeInAxis);
-
-                    if (!CollisionEvents.isValidTimeOfCollision(timeOfCollision)) return validCollisionEvents;
-
-                    const otherAxisAtTimeOfCollision = 
-                        (isXAlignedCollision ? circle.center.y : circle.center.x) + rateOfChangeInOtherAxis * timeOfCollision;
-
-                    const rectOtherAxisLowerBoundary = isXAlignedCollision ? rect.y0 : rect.x0;
-                    const rectOtherAxisUpperBoundary = isXAlignedCollision ? rect.y1 : rect.x1;
-
-                    if (
-                        rectOtherAxisLowerBoundary <= otherAxisAtTimeOfCollision &&
-                        otherAxisAtTimeOfCollision <= rectOtherAxisUpperBoundary
-                    ) {
-                        const collisionPoint = isXAlignedCollision 
-                            ? {
-                                x: collisionRectBoundary,
-                                y: otherAxisAtTimeOfCollision,
-                            }
-                            : {
-                                x: otherAxisAtTimeOfCollision,
-                                y: collisionRectBoundary,
-                            };
-                        
-                        const collisionEvent = createCircleVsRectangleCollisionEvent(timeOfCollision, collisionPoint);
-                        validCollisionEvents.push(collisionEvent);
-                    }
-
-                    return validCollisionEvents;
-                }, []);
-            },
-            () => {
-                return getRectCorners(rect).reduce((validCollisionEvents, corner) => {
-                    const cornerTimeOfCollision = CollisionEvents.getTimeOfCircleVsRectangleCornerCollision(circle, corner);
-                    
-                    if (cornerTimeOfCollision === null) return validCollisionEvents;
-                    
-                    const collisionEvent = createCircleVsRectangleCollisionEvent(cornerTimeOfCollision, corner);
+                    const collisionEvent = createCircleVsRectangleCollisionEvent(timeOfCollision, collisionPoint);
                     validCollisionEvents.push(collisionEvent);
-                    return validCollisionEvents;
-                }, []);
-            }
-        );
+                }
+
+                return validCollisionEvents;
+            }, []);
+        };
+
+        const getCornerCollisionEvents = () => {
+            return getCornerCollisionEventsReducer(
+                rect,
+                (corner) => CollisionEvents.getTimeOfCircleVsRectangleCornerCollision(circle, corner),
+                createCircleVsRectangleCollisionEvent,
+            );
+        };
+
+        return this.getHeterogeneousCollisionEvents(getSideCollisionEvents, getCornerCollisionEvents);
     }
 
     static getRectangleVsCircleCollisionEvents = (rect, circle) => {
@@ -280,62 +293,61 @@ export class CollisionEvents {
                 collisionPoint,
             });
         };
+        
+        const getSideCollisionEvents = () => {
+            return getRectangleVsCirclePossibleSideCollisions(rect, circle).reduce((validCollisionEvents, possibleCollision) => {
+                const { axisOfCollision, movingRectBoundary, collisionCircleBoundary } = possibleCollision;
 
-        return this.getHeterogeneousCollisionEvents(
-            () => {
-                return getRectangleVsCirclePossibleSideCollisions(rect, circle).reduce((validCollisionEvents, possibleCollision) => {
-                    const { axisOfCollision, movingRectBoundary, collisionCircleBoundary } = possibleCollision;
-
-                    const isXAlignedCollision = axisOfCollision === 'x';
-                    const rateOfChangeInAxis = isXAlignedCollision ? rect.velocity.x : rect.velocity.y;
-                    const rateOfChangeInOtherAxis = isXAlignedCollision ? rect.velocity.y : rect.velocity.x;
-        
-                    const timeOfCollision = CollisionEvents.getTimeOfAxisAlignedCollision(movingRectBoundary, collisionCircleBoundary, rateOfChangeInAxis);
-        
-                    if (!CollisionEvents.isValidTimeOfCollision(timeOfCollision)) return validCollisionEvents;
-        
-                    const changeInOtherAxisAtTimeOfCollision = rateOfChangeInOtherAxis * timeOfCollision;
-                    const rectOtherAxisLowerBoundary = isXAlignedCollision ? rect.y0 : rect.x0;
-                    const rectOtherAxisUpperBoundary = isXAlignedCollision ? rect.y1 : rect.x1;
-                    
-                    const rectOtherAxisLowerBoundaryAtTimeOfCollision = rectOtherAxisLowerBoundary + changeInOtherAxisAtTimeOfCollision;
-                    const rectOtherAxisUpperBoundaryAtTimeOfCollision = rectOtherAxisUpperBoundary + changeInOtherAxisAtTimeOfCollision;
-        
-                    const circleCenterOfAxisCollision = isXAlignedCollision ? circle.center.y : circle.center.x;
-                    
-                    if (
-                        rectOtherAxisLowerBoundaryAtTimeOfCollision <= circleCenterOfAxisCollision && 
-                        circleCenterOfAxisCollision <= rectOtherAxisUpperBoundaryAtTimeOfCollision
-                    ) {
-                        const circleOtherAxisValueAtTimeOfCollision = isXAlignedCollision ? circle.center.y : circle.center.x;
-        
-                        const collisionPoint = isXAlignedCollision
-                            ? {
-                                x: collisionCircleBoundary,
-                                y: circleOtherAxisValueAtTimeOfCollision,
-                            }
-                            : {
-                                x: circleOtherAxisValueAtTimeOfCollision,
-                                y: collisionCircleBoundary,
-                            };
-        
-                        const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfCollision, collisionPoint);
-                        validCollisionEvents.push(collisionEvent);
-                    }
-
-                    return validCollisionEvents;
-                }, []);
-            },
-            () => {
-                return getRectCorners(rect).reduce((validCollisionEvents, corner) => {
-                    const timeOfCollision = CollisionEvents.getTimeOfRectangleCornerVsCircleCollision(corner, circle, rect.velocity);
-                    if (timeOfCollision === null) return validCollisionEvents;
-                    const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfCollision, corner);
+                const isXAlignedCollision = axisOfCollision === 'x';
+                const rateOfChangeInAxis = isXAlignedCollision ? rect.velocity.x : rect.velocity.y;
+                const rateOfChangeInOtherAxis = isXAlignedCollision ? rect.velocity.y : rect.velocity.x;
+    
+                const timeOfCollision = CollisionEvents.getTimeOfAxisAlignedCollision(movingRectBoundary, collisionCircleBoundary, rateOfChangeInAxis);
+    
+                if (!CollisionEvents.isValidTimeOfCollision(timeOfCollision)) return validCollisionEvents;
+    
+                const changeInOtherAxisAtTimeOfCollision = rateOfChangeInOtherAxis * timeOfCollision;
+                const rectOtherAxisLowerBoundary = isXAlignedCollision ? rect.y0 : rect.x0;
+                const rectOtherAxisUpperBoundary = isXAlignedCollision ? rect.y1 : rect.x1;
+                
+                const rectOtherAxisLowerBoundaryAtTimeOfCollision = rectOtherAxisLowerBoundary + changeInOtherAxisAtTimeOfCollision;
+                const rectOtherAxisUpperBoundaryAtTimeOfCollision = rectOtherAxisUpperBoundary + changeInOtherAxisAtTimeOfCollision;
+    
+                const circleCenterOfAxisCollision = isXAlignedCollision ? circle.center.y : circle.center.x;
+                
+                if (
+                    rectOtherAxisLowerBoundaryAtTimeOfCollision <= circleCenterOfAxisCollision && 
+                    circleCenterOfAxisCollision <= rectOtherAxisUpperBoundaryAtTimeOfCollision
+                ) {
+                    const circleOtherAxisValueAtTimeOfCollision = isXAlignedCollision ? circle.center.y : circle.center.x;
+    
+                    const collisionPoint = isXAlignedCollision
+                        ? {
+                            x: collisionCircleBoundary,
+                            y: circleOtherAxisValueAtTimeOfCollision,
+                        }
+                        : {
+                            x: circleOtherAxisValueAtTimeOfCollision,
+                            y: collisionCircleBoundary,
+                        };
+    
+                    const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfCollision, collisionPoint);
                     validCollisionEvents.push(collisionEvent);
-                    return validCollisionEvents;
-                }, [])
-            },
-        );
+                }
+
+                return validCollisionEvents;
+            }, []);
+        };
+
+        const getCornerCollisionEvents = () => {
+            return getCornerCollisionEventsReducer(
+                rect,
+                (corner) => CollisionEvents.getTimeOfRectangleCornerVsCircleCollision(corner, circle, rect.velocity),
+                createRectangleVsCircleCollisionEvent,
+            );
+        };
+
+        return this.getHeterogeneousCollisionEvents(getSideCollisionEvents, getCornerCollisionEvents);
     }
 
     static getRectangleVsRectangleCollisionEvents = (rectA, rectB) => {
