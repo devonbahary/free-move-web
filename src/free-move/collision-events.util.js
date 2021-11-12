@@ -173,6 +173,10 @@ export const getTimeOfRectangleCornerVsCircleCollision = (corner, circle, rectVe
 export const getTimeOfCircleVsPointCollision = (diffPos, radius, velocity) => {
     const { x: dx, y: dy} = velocity;
 
+    // don't consider collision into a corner if it won't ever come within a radius of the circle
+    if (!dx && Math.abs(diffPos.x) >= radius) return null;
+    if (!dy && Math.abs(diffPos.y) >= radius) return null;
+
     const a = dx ** 2 + dy ** 2;
     const b = 2 * diffPos.x * dx + 2 * diffPos.y * dy;
     const c = diffPos.x ** 2 + diffPos.y ** 2 - radius ** 2;
