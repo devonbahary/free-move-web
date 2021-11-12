@@ -55,7 +55,8 @@ body {
 }
 
 .fixed {
-    text-transform: uppercase;
+    border: 1px solid blue;
+    box-sizing: border-box;
 }
 
 #player {
