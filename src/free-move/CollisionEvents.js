@@ -12,6 +12,7 @@ import {
     getTimeOfRectangleCornerVsCircleCollision,
     isValidTimeOfCollision,
 } from "./collision-events.util";
+import { Collisions } from "./Collisions";
 
 export class CircleVsCircleCollisionEvent {
     constructor({ movingBody, collisionBody, timeOfCollision }) {
@@ -37,6 +38,40 @@ export class RectangleVsRectangleCollisionEvent extends CircleVsCircleCollisionE
 };
 
 export class CollisionEvents {
+    // TODO: implement quadtree to prevent O(n^2)
+    static getCollisionEventsInChronologicalOrder = (bodies, body) => {
+        const collisionEvents = bodies.reduce((acc, otherBody) => {
+            if (body === otherBody) return acc;
+
+            // broad phase collision detection
+            if (!Collisions.isMovingTowardsBody(body, otherBody)) {
+                return acc;
+            }
+
+            if (body.isCircle) {
+                if (otherBody.isCircle) {
+                    const collisionEvent = CollisionEvents.getCircleVsCircleCollisionEvent(body, otherBody);
+                    if (collisionEvent) {
+                        acc.push(collisionEvent);
+                    }
+                } else {
+                    const collisionEvents = CollisionEvents.getCircleVsRectangleCollisionEvents(body, otherBody);
+                    acc.push(...collisionEvents);
+                }
+            } else {
+                const collisionEvents = otherBody.isCircle 
+                    ? CollisionEvents.getRectangleVsCircleCollisionEvents(body, otherBody)
+                    : CollisionEvents.getRectangleVsRectangleCollisionEvents(body, otherBody);
+                
+                acc.push(...collisionEvents);
+            }
+
+            return acc;
+        }, []);
+
+        return collisionEvents.sort((a, b) => a.timeOfCollision - b.timeOfCollision)
+    }
+    
     static getCircleVsCircleCollisionEvent = (circleA, circleB) => {
         const timeOfCollision = getTimeOfCircleVsCircleCollision(circleA, circleB);
         

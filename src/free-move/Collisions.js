@@ -34,9 +34,9 @@ export class Collisions {
     static resolveCollision = (collisionEvent) => {
         const { movingBody, collisionBody, timeOfCollision } = collisionEvent;
 
-        Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
+        Collisions.#moveBodyToPointOfCollision(movingBody, timeOfCollision);
 
-        const diffPositions = Collisions.getCollisionRelativePositionVector(movingBody, collisionBody, collisionEvent);
+        const diffPositions = Collisions.#getCollisionRelativePositionVector(movingBody, collisionBody, collisionEvent);
         const { mass: mA, velocity: vA } = movingBody;
         const { mass: mB, velocity: vB } = collisionBody;
 
@@ -47,8 +47,14 @@ export class Collisions {
             } else {
                 if (Maths.roundFloatingPoint(diffPositions.x) === 0) {
                     movingBody.setVelocity({ x: vA.x, y: -vA.y });
+                    if (Collisions.isMovingTowardsBody(movingBody,  collisionBody)) {
+                        movingBody.setVelocity({ x: -vA.x, y: -vA.y });
+                    }
                 } else if (Maths.roundFloatingPoint(diffPositions.y === 0)) {
                     movingBody.setVelocity({ x: -vA.x, y: vA.y });
+                    if (Collisions.isMovingTowardsBody(movingBody,  collisionBody)) {
+                        movingBody.setVelocity({ x: -vA.x, y: -vA.y });
+                    }
                 } else {
                     movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(vA)));
                 }
@@ -93,46 +99,6 @@ export class Collisions {
         movingBody.setVelocity(finalVelocityA);
         collisionBody.setVelocity(finalVelocityB);
     }
-    
-    static getCollisionRelativePositionVector = (bodyA, bodyB, collisionEvent) => {
-        const { contact, collisionPoint } = collisionEvent;
-
-        if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
-            return Vectors.subtract(bodyA.center, bodyB.center);
-        }
-
-        if (bodyA.isCircle && !bodyB.isCircle) { // circle vs rectangle
-            return Vectors.subtract(bodyA.center, collisionPoint);
-        } else if (!bodyA.isCircle && bodyB.isCircle) { // rectangle vs circle
-            return Vectors.subtract(collisionPoint, bodyB.center);
-        }
-
-        // rectangle vs rectangle 
-        const { x0, x1, y0, y1 } = contact;
-        // either x-aligned or y-aligned collision
-        if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) {
-            const x = contact.hasOwnProperty('x0') ? x0 : x1;
-            return Vectors.create(bodyA.center.x - x, 0);
-        } else if (contact.hasOwnProperty('y0') || contact.hasOwnProperty('y1')) {
-            const y = contact.hasOwnProperty('y0') ? y0 : y1;
-            return Vectors.create(0, bodyA.center.y - y);
-        } 
-
-        throw new Error(`cannot resolve rectangle vs rectangle collision with contact ${JSON.stringify(contact)}`);
-    }
-
-    static moveBodyToPointOfCollision = (body, timeOfCollision) => {
-        const dx = body.velocity.x * timeOfCollision;
-        const dy = body.velocity.y * timeOfCollision;
-        body.moveTo(body.x + dx, body.y + dy);
-    };
-    
-    static isPointMovingTowardsPoint = (pointA, pointB, pointAVelocity) => {
-        // https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other
-        const diffVelocity = Vectors.neg(pointAVelocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
-        const diffPosition = Vectors.subtract(pointB, pointA);
-        return Vectors.dot(diffVelocity, diffPosition) < 0;
-    }
 
     // TODO: revisit, isn't working intuitively for rectangle vs any collisions
     static isMovingTowardsBody = (bodyA, bodyB) => {
@@ -141,7 +107,7 @@ export class Collisions {
         if (!vA.x && !vA.y) return false;
         
         if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
-            return Collisions.isPointMovingTowardsPoint(bodyA.center, bodyB.center, bodyA.velocity);
+            return Collisions.#isPointMovingTowardsPoint(bodyA.center, bodyB.center, bodyA.velocity);
         }
 
         if (Collisions.isRectangleVsRectangle(bodyA, bodyB)) {
@@ -183,14 +149,14 @@ export class Collisions {
             const alreadyTouchingEvent = collisionEvents.find(event => Maths.roundFloatingPoint(event.timeOfCollision) === 0);
             
             if (alreadyTouchingEvent) {
-                return Collisions.isPointMovingTowardsPoint(bodyA.center, alreadyTouchingEvent.collisionPoint, bodyA.velocity);
+                return Collisions.#isPointMovingTowardsPoint(bodyA.center, alreadyTouchingEvent.collisionPoint, bodyA.velocity);
             }
         } else if (!bodyA.isCircle && bodyB.isCircle) { // rectangle vs circle
             const collisionEvents = CollisionEvents.getRectangleVsCircleCollisionEvents(bodyA, bodyB);
             const alreadyTouchingEvent = collisionEvents.find(event => Maths.roundFloatingPoint(event.timeOfCollision) === 0);
             
             if (alreadyTouchingEvent) {
-                return Collisions.isPointMovingTowardsPoint(alreadyTouchingEvent.collisionPoint, bodyB.center, bodyA.velocity);
+                return Collisions.#isPointMovingTowardsPoint(alreadyTouchingEvent.collisionPoint, bodyB.center, bodyA.velocity);
             }
         }
 
@@ -200,5 +166,45 @@ export class Collisions {
         if (vA.y < 0 && bodyA.center.y >= bodyB.y1) return true;
 
         return false;
+    }
+    
+    static #getCollisionRelativePositionVector = (bodyA, bodyB, collisionEvent) => {
+        const { contact, collisionPoint } = collisionEvent;
+
+        if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
+            return Vectors.subtract(bodyA.center, bodyB.center);
+        }
+
+        if (bodyA.isCircle && !bodyB.isCircle) { // circle vs rectangle
+            return Vectors.subtract(bodyA.center, collisionPoint);
+        } else if (!bodyA.isCircle && bodyB.isCircle) { // rectangle vs circle
+            return Vectors.subtract(collisionPoint, bodyB.center);
+        }
+
+        // rectangle vs rectangle 
+        const { x0, x1, y0, y1 } = contact;
+        // either x-aligned or y-aligned collision
+        if (contact.hasOwnProperty('x0') || contact.hasOwnProperty('x1')) {
+            const x = contact.hasOwnProperty('x0') ? x0 : x1;
+            return Vectors.create(bodyA.center.x - x, 0);
+        } else if (contact.hasOwnProperty('y0') || contact.hasOwnProperty('y1')) {
+            const y = contact.hasOwnProperty('y0') ? y0 : y1;
+            return Vectors.create(0, bodyA.center.y - y);
+        } 
+
+        throw new Error(`cannot resolve rectangle vs rectangle collision with contact ${JSON.stringify(contact)}`);
+    }
+
+    static #moveBodyToPointOfCollision = (body, timeOfCollision) => {
+        const dx = body.velocity.x * timeOfCollision;
+        const dy = body.velocity.y * timeOfCollision;
+        body.moveTo(body.x + dx, body.y + dy);
+    };
+    
+    static #isPointMovingTowardsPoint = (pointA, pointB, pointAVelocity) => {
+        // https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other
+        const diffVelocity = Vectors.neg(pointAVelocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
+        const diffPosition = Vectors.subtract(pointB, pointA);
+        return Vectors.dot(diffVelocity, diffPosition) < 0;
     }
 }
