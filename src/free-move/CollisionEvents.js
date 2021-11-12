@@ -200,6 +200,7 @@ export class CollisionEvents {
         return (approachingBoundary - movingBoundary) / changeInAxis;
     }
 
+    // circle vs rectangle / rectangle vs circle collisions
     static getHeterogeneousCollisionEvents = (getSideCollisionEvents, getCornerCollisionEvents) => {
         const sideCollisionEvents = getSideCollisionEvents();
         // if a collision occurs with a circle side, then we don't need to check for corners
