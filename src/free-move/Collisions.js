@@ -26,7 +26,7 @@ export class Collisions {
         const height = rectY1 - rectY0;
 
         const rect = new Rectangle(width, height);
-        rect.moveTo(rectX0, rectY0);
+        rect.moveTo({ x: rectX0, y: rectY0 });
 
         return rect;
     }
@@ -198,7 +198,10 @@ export class Collisions {
     static #moveBodyToPointOfCollision = (body, timeOfCollision) => {
         const dx = body.velocity.x * timeOfCollision;
         const dy = body.velocity.y * timeOfCollision;
-        body.moveTo(body.x + dx, body.y + dy);
+        body.moveTo({ 
+            x: body.x + dx, 
+            y: body.y + dy,
+        });
     };
     
     static #isPointMovingTowardsPoint = (pointA, pointB, pointAVelocity) => {

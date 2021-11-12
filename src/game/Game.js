@@ -45,7 +45,7 @@ export class Game {
         this.addCharacter(this.player, playerSprite);
 
         const { x, y } = this.params.player.startPosition;
-        this.player.moveTo(x, y);
+        this.player.moveTo({ x, y });
     }
 
     initGameLoop() {

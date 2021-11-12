@@ -35,9 +35,11 @@ export class World {
         const { bodies, collisionResolutionMem } = saveableWorldState;
 
         for (const saveableBody of bodies) {
-            const body = this.bodies.find(body => body.id === saveableBody.id);
-            body.moveTo(saveableBody.x, saveableBody.y);
-            body.setVelocity(saveableBody.velocity);
+            const { id, x, y, velocity } = saveableBody;
+            
+            const body = this.bodies.find(body => body.id === id);
+            body.moveTo({ x, y });
+            body.setVelocity(velocity);
         }
         
         this.collisionResolutionMem = collisionResolutionMem;
@@ -51,19 +53,19 @@ export class World {
 
     #initBoundaries() {
         const topBoundary = new RectangleBody(this.width, 0);
-        topBoundary.moveTo(0, 0);
+        topBoundary.moveTo({ x: 0, y: 0 });
         topBoundary.name = 'top boundary';
 
         const rightBoundary = new RectangleBody(0, this.height);
-        rightBoundary.moveTo(this.width, 0);
+        rightBoundary.moveTo({ x: this.width, y: 0 });
         rightBoundary.name = 'right boundary';
 
         const bottomBoundary = new RectangleBody(this.width, 0);
-        bottomBoundary.moveTo(0, this.height);
+        bottomBoundary.moveTo({ x: 0, y: this.height });
         bottomBoundary.name = 'bottom boundary';
 
         const leftBoundary = new RectangleBody(0, this.height);
-        leftBoundary.moveTo(0, 0);
+        leftBoundary.moveTo({ x: 0, y: 0 });
         leftBoundary.name = 'left boundary';
 
         const boundaries = [topBoundary, rightBoundary, bottomBoundary, leftBoundary];
@@ -83,7 +85,7 @@ export class World {
         if (!collisionEvents.length) {
             // no collisions; progress velocity
             const { x, y, velocity } = body;
-            body.moveTo(x + velocity.x, y + velocity.y);
+            body.moveTo({ x: x + velocity.x, y: y + velocity.y });
 
             // because this body has moved, any new collision is inherently different and should
             // be processed

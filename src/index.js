@@ -43,7 +43,7 @@ const GAME_PARAMS = {
 const getRandomCoordinates = () => {
     const randX = Math.floor((Math.random() * GAME_PARAMS.bounds.width));
     const randY = Math.floor((Math.random() * GAME_PARAMS.bounds.height));
-    return [ randX, randY ];
+    return { x: randX, y: randY };
 };
 
 (() => {
@@ -57,13 +57,13 @@ const getRandomCoordinates = () => {
         case GAME_MODES.ONE:
             (() => {
                 const character = new Character();
-                character.moveTo(...getRandomCoordinates());
+                character.moveTo(getRandomCoordinates());
                 const characterASprite = new CharacterSprite(character.body);
                 game.addCharacter(character, characterASprite);
                 
                 const rectBodyA = new RectangleBody(1, 1);
                 rectBodyA.name = 'RectA';
-                rectBodyA.moveTo(4, 3);
+                rectBodyA.moveTo({ x: 4, y: 3 });
                 const rectASprite = new RectangleSprite(rectBodyA);
                 game.addBody(rectBodyA, rectASprite);
             })();
@@ -73,7 +73,7 @@ const getRandomCoordinates = () => {
             for (let i = 0; i < 6; i++) {
                 const character = new Character();
 
-                character.moveTo(...getRandomCoordinates());
+                character.moveTo(getRandomCoordinates());
                 character.move(Vectors.create(Math.random(), Math.random()));
                 
                 const characterSprite = new CharacterSprite(character.body);
@@ -92,7 +92,7 @@ const getRandomCoordinates = () => {
                 if (isChar) {
                     const character = new Character();
 
-                    character.moveTo(...randomPosition);
+                    character.moveTo(randomPosition);
 
                     if (isFixed) character.body.setFixed();
                     else character.move(randomVelocity);
@@ -101,7 +101,7 @@ const getRandomCoordinates = () => {
                     game.addCharacter(character, characterSprite);
                 } else {
                     const rectBody = new RectangleBody(1, 1);
-                    rectBody.moveTo(...randomPosition);
+                    rectBody.moveTo(randomPosition);
 
                     if (isFixed) rectBody.setFixed();
                     else rectBody.setVelocity(Vectors.rescale(randomVelocity, game.player.movementSpeed));
@@ -115,13 +115,13 @@ const getRandomCoordinates = () => {
             (() => {
                 const rectBodyA = new RectangleBody(1, 1);
                 rectBodyA.name = 'RectA';
-                rectBodyA.moveTo(4, 3);
+                rectBodyA.moveTo({ x: 4, y: 3 });
                 const rectASprite = new RectangleSprite(rectBodyA);
                 game.addBody(rectBodyA, rectASprite);
 
                 const rectBodyB = new RectangleBody(1, 1);
                 rectBodyB.name = 'RectB';
-                rectBodyB.moveTo(1, 3);
+                rectBodyB.moveTo({ x: 1, y: 3 });
                 const rectBSprite = new RectangleSprite(rectBodyB);
                 game.addBody(rectBodyB, rectBSprite);
             })();

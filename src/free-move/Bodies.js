@@ -55,7 +55,7 @@ class Point {
 
     get isCircle() { return false; }
 
-    moveTo(x, y) {
+    moveTo({ x, y }) {
         this.x = x;
         this.y = y;
     }
