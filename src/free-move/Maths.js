@@ -10,8 +10,8 @@ export class Maths {
 
     // does the line segment A have overlap with line segment B
     static hasOverlap = (a0, a1, b0, b1) => {
-        if (b1 < a0) return false;
-        if (a1 < b0) return false;
+        if (b1 <= a0) return false;
+        if (a1 <= b0) return false;
         return true;
     };
 
