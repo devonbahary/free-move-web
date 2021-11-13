@@ -40,6 +40,11 @@ export class Collisions {
         const { mass: mA, velocity: vA } = movingBody;
         const { mass: mB, velocity: vB } = collisionBody;
 
+        // TODO: this presumes code will allow for velocity of a fixed body
+        // TODO: actually, a body can have velocity and THEN be set to fixed, meaning this is already possible
+        if (Collisions.#isFixedVsFixed(movingBody, collisionBody)) {
+            return; // don't resolve collisions between two fixed bodies
+        }
 
         if (collisionBody.isFixed) {
             if (Collisions.isCircleVsCircle(movingBody, collisionBody)) {
@@ -96,7 +101,7 @@ export class Collisions {
         );
         const finalVelocityB = Vectors.divide(sum, mB);
         
-        movingBody.setVelocity(finalVelocityA);
+        if (!movingBody.isFixed) movingBody.setVelocity(finalVelocityA);
         collisionBody.setVelocity(finalVelocityB);
     }
 
@@ -166,6 +171,10 @@ export class Collisions {
         if (vA.y < 0 && bodyA.center.y >= bodyB.y1) return true;
 
         return false;
+    }
+
+    static #isFixedVsFixed = (bodyA, bodyB) => {
+        return bodyA.isFixed && bodyB.isFixed;
     }
     
     static #getCollisionRelativePositionVector = (bodyA, bodyB, collisionEvent) => {
