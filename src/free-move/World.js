@@ -3,8 +3,8 @@ import { RectangleBody } from "./Bodies";
 import { CollisionEvents } from "./CollisionEvents";
 
 export class World {
-    constructor(bounds) {
-        const { width, height } = bounds; 
+    constructor(boundsRect) {
+        const { width, height } = boundsRect; 
         this.width = width;
         this.height = height;
 
