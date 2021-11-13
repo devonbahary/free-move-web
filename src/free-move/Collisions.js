@@ -4,14 +4,6 @@ import { Maths } from "./Maths";
 import { Vectors } from "./Vectors";
 
 export class Collisions {
-    static isCircleVsCircle = (bodyA, bodyB) => {
-        return bodyA.isCircle && bodyB.isCircle;
-    }
-
-    static isRectangleVsRectangle = (bodyA, bodyB) => {
-        return !bodyA.isCircle && !bodyB.isCircle;
-    }
-
     // TODO: use in quad-tree optimization
     static getMovementBoundingBox = (body) => {
         const { center, x0, x1, y0, y1, velocity } = body;
@@ -46,18 +38,19 @@ export class Collisions {
             return; // don't resolve collisions between two fixed bodies
         }
 
+        // TODO: pull out into a resolveFixedCollision()
         if (collisionBody.isFixed) {
-            if (Collisions.isCircleVsCircle(movingBody, collisionBody)) {
+            if (Collisions.#isCircleVsCircle(movingBody, collisionBody)) {
                 movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(vA)));   
             } else {
                 if (Maths.roundFloatingPoint(diffPositions.x) === 0) {
                     movingBody.setVelocity({ x: vA.x, y: -vA.y });
-                    if (Collisions.isMovingTowardsBody(movingBody,  collisionBody)) {
+                    if (Collisions.isMovingTowardsBody(movingBody, collisionBody)) {
                         movingBody.setVelocity({ x: -vA.x, y: -vA.y });
                     }
                 } else if (Maths.roundFloatingPoint(diffPositions.y === 0)) {
                     movingBody.setVelocity({ x: -vA.x, y: vA.y });
-                    if (Collisions.isMovingTowardsBody(movingBody,  collisionBody)) {
+                    if (Collisions.isMovingTowardsBody(movingBody, collisionBody)) {
                         movingBody.setVelocity({ x: -vA.x, y: -vA.y });
                     }
                 } else {
@@ -111,11 +104,11 @@ export class Collisions {
 
         if (!vA.x && !vA.y) return false;
         
-        if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
+        if (Collisions.#isCircleVsCircle(bodyA, bodyB)) {
             return Collisions.#isPointMovingTowardsPoint(bodyA.center, bodyB.center, bodyA.velocity);
         }
 
-        if (Collisions.isRectangleVsRectangle(bodyA, bodyB)) {
+        if (Collisions.#isRectangleVsRectangle(bodyA, bodyB)) {
             const isMovingInXDirection = vA.x > 0
                 ? bodyA.x1 <= bodyB.x0
                 : bodyA.x0 >= bodyB.x1;
@@ -173,6 +166,14 @@ export class Collisions {
         return false;
     }
 
+    static #isCircleVsCircle = (bodyA, bodyB) => {
+        return bodyA.isCircle && bodyB.isCircle;
+    }
+
+    static #isRectangleVsRectangle = (bodyA, bodyB) => {
+        return !bodyA.isCircle && !bodyB.isCircle;
+    }
+
     static #isFixedVsFixed = (bodyA, bodyB) => {
         return bodyA.isFixed && bodyB.isFixed;
     }
@@ -180,7 +181,7 @@ export class Collisions {
     static #getCollisionRelativePositionVector = (bodyA, bodyB, collisionEvent) => {
         const { contact, collisionPoint } = collisionEvent;
 
-        if (Collisions.isCircleVsCircle(bodyA, bodyB)) {
+        if (Collisions.#isCircleVsCircle(bodyA, bodyB)) {
             return Vectors.subtract(bodyA.center, bodyB.center);
         }
 
