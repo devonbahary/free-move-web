@@ -7,5 +7,5 @@
       "noImplicitThis": true,
       "strictNullChecks": true,
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "babel.config.js"]
 }
