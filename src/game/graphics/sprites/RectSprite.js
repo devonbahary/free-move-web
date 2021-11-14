@@ -1,9 +1,9 @@
 import { Element } from "../Element";
 import { BodySprite } from "./BodySprite";
 
-export class RectangleSprite extends BodySprite {
-    constructor(rectangleBody) {
-        super(rectangleBody);
+export class RectSprite extends BodySprite {
+    constructor(rectBody) {
+        super(rectBody);
     }
 
     get elementClass() {

@@ -3,7 +3,7 @@ import { Game } from './game/Game';
 import { Vectors } from './free-move/Vectors';
 import { CharacterSprite } from './game/graphics/sprites/CharacterSprite';
 import './main.css';
-import { RectangleSprite } from './game/graphics/sprites/RectangleSprite';
+import { RectSprite } from './game/graphics/sprites/RectSprite';
 import { Rectangle } from './game/game-entities/Rectangle';
 
 /*
@@ -105,7 +105,7 @@ const getRandomCoordinates = () => {
                     if (isFixed) rect.body.setFixed();
                     else rect.move(randomVelocity);
 
-                    const rectSprite = new RectangleSprite(rect.body);
+                    const rectSprite = new RectSprite(rect.body);
                     game.addGameEntity(rect, rectSprite);
                 }
             }
@@ -114,12 +114,12 @@ const getRandomCoordinates = () => {
             (() => {
                 const rectA = new Rectangle();
                 rectA.moveTo({ x: 4, y: 3 });
-                const rectASprite = new RectangleSprite(rectA.body);
+                const rectASprite = new RectSprite(rectA.body);
                 game.addGameEntity(rectA, rectASprite);
 
                 const rectB = new Rectangle();
                 rectB.moveTo({ x: 1, y: 3 });
-                const rectBSprite = new RectangleSprite(rectB.body);
+                const rectBSprite = new RectSprite(rectB.body);
                 game.addGameEntity(rectB, rectBSprite);
             })();
             break;

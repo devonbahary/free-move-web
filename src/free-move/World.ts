@@ -1,26 +1,47 @@
 import { Collisions } from "./Collisions";
-import { RectangleBody } from "./Bodies";
+import { RectBody } from "./Bodies";
 import { CollisionEvents } from "./CollisionEvents";
+import { BodyType, Rect, SaveableBodyState } from "./types";
+
+type CollisionResolutionMem = {
+    [bodyId: string]: string;
+};
+
+type SaveableWorldState = {
+    bodies: SaveableBodyState[];
+    collisionResolutionMem: CollisionResolutionMem;
+};
+
+const getCollisionResolutionMemId = (bodyA: BodyType, bodyB: BodyType) => {
+    const { x: Ax, y: Ay, velocity: vA } = bodyA;
+    const { id, x: Bx, y: By, velocity: vB } = bodyB;
+    return `${Ax}-${Ay}-${vA.x}-${vA.y}-${id}-${Bx}-${By}-${vB.x}-${vB.y}`;
+};
 
 export class World {
-    constructor(boundsRect) {
-        const { width, height } = boundsRect; 
+    public width: number;
+    public height: number;
+    public bodies: BodyType[];
+    private collisionResolutionMem: CollisionResolutionMem;
+
+    constructor(bounds: Rect) {
+        const { width, height } = bounds; 
         this.width = width;
         this.height = height;
 
         this.bodies = [];
         this.collisionResolutionMem = {}; 
         
-        this.#initBoundaries();
+        this.initBoundaries();
     }
 
-    addBody(body) {
+    addBody(body: BodyType) {
         this.bodies.push(body);
     }
 
     update() {
         for (const body of this.bodies) {
-            this.#updateBody(body);
+            this.updateBody(body);
         }
     }
 
@@ -31,13 +52,16 @@ export class World {
         };
     }
 
-    loadWorldState(saveableWorldState) {
+    loadWorldState(saveableWorldState: SaveableWorldState) {
         const { bodies, collisionResolutionMem } = saveableWorldState;
 
         for (const saveableBody of bodies) {
             const { id, x, y, velocity } = saveableBody;
             
             const body = this.bodies.find(body => body.id === id);
+            
+            if (!body) throw new Error(`could not load body with id ${id}`);
+            
             body.moveTo({ x, y });
             body.setVelocity(velocity);
         }
@@ -45,26 +69,20 @@ export class World {
         this.collisionResolutionMem = collisionResolutionMem;
     }
 
-    static #getCollisionResolutionMemId = (bodyA, bodyB) => {
-        const { x: Ax, y: Ay, velocity: vA } = bodyA;
-        const { id, x: Bx, y: By, velocity: vB } = bodyB;
-        return `${Ax}-${Ay}-${vA.x}-${vA.y}-${id}-${Bx}-${By}-${vB.x}-${vB.y}`;
-    };    
-
-    #initBoundaries() {
-        const topBoundary = new RectangleBody(this.width, 0);
+    private initBoundaries() {
+        const topBoundary = new RectBody(this.width, 0);
         topBoundary.moveTo({ x: 0, y: 0 });
         topBoundary.name = 'top boundary';
 
-        const rightBoundary = new RectangleBody(0, this.height);
+        const rightBoundary = new RectBody(0, this.height);
         rightBoundary.moveTo({ x: this.width, y: 0 });
         rightBoundary.name = 'right boundary';
 
-        const bottomBoundary = new RectangleBody(this.width, 0);
+        const bottomBoundary = new RectBody(this.width, 0);
         bottomBoundary.moveTo({ x: 0, y: this.height });
         bottomBoundary.name = 'bottom boundary';
 
-        const leftBoundary = new RectangleBody(0, this.height);
+        const leftBoundary = new RectBody(0, this.height);
         leftBoundary.moveTo({ x: 0, y: 0 });
         leftBoundary.name = 'left boundary';
 
@@ -77,7 +95,7 @@ export class World {
         this.bodies.push(...boundaries);
     }    
 
-    #updateBody(body) {
+    private updateBody(body: BodyType) {
         if (!body.isMoving()) return;
 
         const collisionEvents = CollisionEvents.getCollisionEventsInChronologicalOrder(this.bodies, body);
@@ -89,34 +107,34 @@ export class World {
 
             // because this body has moved, any new collision is inherently different and should
             // be processed
-            this.#forgetCollision(body);
+            this.forgetCollision(body);
 
             return;
         }
 
         for (const collisionEvent of collisionEvents) {
             // prevent resolving the same collision back-to-back (causes "stickiness" bug of infinite reversal)
-            if (this.#hasAlreadyProcessedCollision(body, collisionEvent.collisionBody)) continue;
+            if (this.hasAlreadyProcessedCollision(body, collisionEvent.collisionBody)) continue;
 
             Collisions.resolveCollision(collisionEvent);
-            this.#rememberCollision(body, collisionEvent.collisionBody);
+            this.rememberCollision(body, collisionEvent.collisionBody);
 
             return;
         }
     }
 
-    #rememberCollision(bodyA, bodyB) {
+    private rememberCollision(bodyA: BodyType, bodyB: BodyType) {
         // both bodyA and bodyB are likely to encounter one another again after collision 
         // resolution; important that both remember they already processed collision
-        this.collisionResolutionMem[bodyA.id] = World.#getCollisionResolutionMemId(bodyA, bodyB);
-        this.collisionResolutionMem[bodyB.id] = World.#getCollisionResolutionMemId(bodyB, bodyA);
+        this.collisionResolutionMem[bodyA.id] = getCollisionResolutionMemId(bodyA, bodyB);
+        this.collisionResolutionMem[bodyB.id] = getCollisionResolutionMemId(bodyB, bodyA);
     }
 
-    #hasAlreadyProcessedCollision(bodyA, bodyB) {
-        return this.collisionResolutionMem[bodyA.id] === World.#getCollisionResolutionMemId(bodyA, bodyB);
+    private hasAlreadyProcessedCollision(bodyA: BodyType, bodyB: BodyType) {
+        return this.collisionResolutionMem[bodyA.id] === getCollisionResolutionMemId(bodyA, bodyB);
     }
 
-    #forgetCollision(body) {
+    private forgetCollision(body: BodyType) {
         delete this.collisionResolutionMem[body.id];
     }
 }

@@ -2,45 +2,24 @@ import { Maths } from "./Maths";
 import {
     COLLISION_SIDES,
     OPPOSITE_SIDE_MAP,
-    getCircleVsRectanglePossibleSideCollisions,
+    getCircleVsRectPossibleSideCollisions,
     getCornerCollisionEventsReducer,
     getHeterogeneousCollisionEvents,
-    getRectangleVsCirclePossibleSideCollisions,
+    getRectVsCirclePossibleSideCollisions,
     getTimeOfAxisAlignedCollision,
     getTimeOfCircleVsCircleCollision,
-    getTimeOfCircleVsRectangleCornerCollision,
-    getTimeOfRectangleCornerVsCircleCollision,
+    getTimeOfCircleVsRectCornerCollision,
+    getTimeOfRectCornerVsCircleCollision,
     isValidTimeOfCollision,
 } from "./collision-events.util";
 import { Collisions } from "./Collisions";
-
-export class CircleVsCircleCollisionEvent {
-    constructor({ movingBody, collisionBody, timeOfCollision }) {
-        this.movingBody = movingBody;
-        this.collisionBody = collisionBody;
-        this.timeOfCollision = timeOfCollision;
-    }
-};
-
-// circle vs rectangle / rectangle vs circle
-export class CircleVsRectangleCollisionEvent extends CircleVsCircleCollisionEvent {
-    constructor({ collisionPoint, ...rest }) {
-        super(rest);
-        this.collisionPoint = collisionPoint;
-    }
-};
-
-export class RectangleVsRectangleCollisionEvent extends CircleVsCircleCollisionEvent {
-    constructor({ contact, ...rest }) {
-        super(rest);
-        this.contact = contact;
-    }
-};
+import { BodyType, CircleBodyType, RectBodyType, CircleVsRectCollisionEvent, CollisionEvent, Vector, RectVsCircleCollisionEvent, RectVsRectCollisionEvent } from "./types";
+import { isCircleBody, isRectBody } from "./Bodies";
 
 export class CollisionEvents {
     // TODO: implement quadtree to prevent O(n^2)
-    static getCollisionEventsInChronologicalOrder = (bodies, body) => {
-        const collisionEvents = bodies.reduce((acc, otherBody) => {
+    static getCollisionEventsInChronologicalOrder = (bodies: BodyType[], body: BodyType) => {
+        const collisionEvents = bodies.reduce<CollisionEvent[]>((acc, otherBody) => {
             if (body === otherBody) return acc;
 
             // broad phase collision detection
@@ -48,22 +27,22 @@ export class CollisionEvents {
                 return acc;
             }
 
-            if (body.isCircle) {
-                if (otherBody.isCircle) {
-                    const collisionEvent = CollisionEvents.getCircleVsCircleCollisionEvent(body, otherBody);
-                    if (collisionEvent) {
-                        acc.push(collisionEvent);
-                    }
-                } else {
-                    const collisionEvents = CollisionEvents.getCircleVsRectangleCollisionEvents(body, otherBody);
-                    acc.push(...collisionEvents);
+            if (isCircleBody(body) && isCircleBody(otherBody)) {
+                const collisionEvent = CollisionEvents.getCircleVsCircleCollisionEvent(body, otherBody);
+                if (collisionEvent) {
+                    acc.push(collisionEvent);
                 }
-            } else {
-                const collisionEvents = otherBody.isCircle 
-                    ? CollisionEvents.getRectangleVsCircleCollisionEvents(body, otherBody)
-                    : CollisionEvents.getRectangleVsRectangleCollisionEvents(body, otherBody);
-                
+            } else if (isCircleBody(body) && isRectBody(otherBody)) {
+                const collisionEvents = CollisionEvents.getCircleVsRectCollisionEvents(body, otherBody);
                 acc.push(...collisionEvents);
+            } else if (isRectBody(body) && isCircleBody(otherBody)) {
+                const collisionEvents = CollisionEvents.getRectVsCircleCollisionEvents(body, otherBody);
+                acc.push(...collisionEvents);
+            } else if (isRectBody(body) && isRectBody(otherBody)) {
+                const collisionEvents = CollisionEvents.getRectVsRectCollisionEvents(body, otherBody);
+                acc.push(...collisionEvents);
+            } else {
+                throw new Error(`can't recognize collision type for bodies: ${JSON.stringify(body)}, ${JSON.stringify(otherBody)}`);
             }
 
             return acc;
@@ -72,30 +51,33 @@ export class CollisionEvents {
         return collisionEvents.sort((a, b) => a.timeOfCollision - b.timeOfCollision)
     }
     
-    static getCircleVsCircleCollisionEvent = (circleA, circleB) => {
+    static getCircleVsCircleCollisionEvent = (
+        circleA: CircleBodyType, 
+        circleB: CircleBodyType,
+    ): CollisionEvent | null => {
         const timeOfCollision = getTimeOfCircleVsCircleCollision(circleA, circleB);
         
         if (timeOfCollision === null) return null;
         
-        return new CircleVsCircleCollisionEvent({
+        return {
             movingBody: circleA,
             collisionBody: circleB,
             timeOfCollision,
-        });
+        };
     }
 
-    static getCircleVsRectangleCollisionEvents = (circle, rect) => {
-        const createCircleVsRectangleCollisionEvent = (timeOfCollision, collisionPoint) => {
-            return new CircleVsRectangleCollisionEvent({
+    static getCircleVsRectCollisionEvents = (circle: CircleBodyType, rect: RectBodyType) => {
+        const createCircleVsRectCollisionEvent = (timeOfCollision: number, collisionPoint: Vector): CircleVsRectCollisionEvent => {
+            return {
                 movingBody: circle,
                 collisionBody: rect,
                 timeOfCollision,
                 collisionPoint,
-            });
+            };
         }
 
         const getSideCollisionEvents = () => {
-            return getCircleVsRectanglePossibleSideCollisions(circle, rect).reduce((validCollisionEvents, possibleCollision) => {
+            return getCircleVsRectPossibleSideCollisions(circle, rect).reduce<CircleVsRectCollisionEvent[]>((validCollisionEvents, possibleCollision) => {
                 const { movingCircleBoundary, collisionRectBoundary, axisOfCollision } = possibleCollision;
                 
                 const isXAlignedCollision = axisOfCollision === 'x';
@@ -126,7 +108,7 @@ export class CollisionEvents {
                             y: collisionRectBoundary,
                         };
                     
-                    const collisionEvent = createCircleVsRectangleCollisionEvent(timeOfCollision, collisionPoint);
+                    const collisionEvent = createCircleVsRectCollisionEvent(timeOfCollision, collisionPoint);
                     validCollisionEvents.push(collisionEvent);
                 }
 
@@ -137,26 +119,26 @@ export class CollisionEvents {
         const getCornerCollisionEvents = () => {
             return getCornerCollisionEventsReducer(
                 rect,
-                (corner) => getTimeOfCircleVsRectangleCornerCollision(circle, corner),
-                createCircleVsRectangleCollisionEvent,
+                (corner) => getTimeOfCircleVsRectCornerCollision(circle, corner),
+                createCircleVsRectCollisionEvent,
             );
         };
 
         return getHeterogeneousCollisionEvents(getSideCollisionEvents, getCornerCollisionEvents);
     }
 
-    static getRectangleVsCircleCollisionEvents = (rect, circle) => {
-        const createRectangleVsCircleCollisionEvent = (timeOfCollision, collisionPoint) => {
-            return new CircleVsRectangleCollisionEvent({
+    static getRectVsCircleCollisionEvents = (rect: RectBodyType, circle: CircleBodyType) => {
+        const createRectVsCircleCollisionEvent = (timeOfCollision: number, collisionPoint: Vector): RectVsCircleCollisionEvent => {
+            return {
                 movingBody: rect,
                 collisionBody: circle,
                 timeOfCollision,
                 collisionPoint,
-            });
+            };
         };
         
         const getSideCollisionEvents = () => {
-            return getRectangleVsCirclePossibleSideCollisions(rect, circle).reduce((validCollisionEvents, possibleCollision) => {
+            return getRectVsCirclePossibleSideCollisions(rect, circle).reduce<RectVsCircleCollisionEvent[]>((validCollisionEvents, possibleCollision) => {
                 const { axisOfCollision, movingRectBoundary, collisionCircleBoundary } = possibleCollision;
 
                 const isXAlignedCollision = axisOfCollision === 'x';
@@ -192,7 +174,7 @@ export class CollisionEvents {
                             y: collisionCircleBoundary,
                         };
     
-                    const collisionEvent = createRectangleVsCircleCollisionEvent(timeOfCollision, collisionPoint);
+                    const collisionEvent = createRectVsCircleCollisionEvent(timeOfCollision, collisionPoint);
                     validCollisionEvents.push(collisionEvent);
                 }
 
@@ -203,16 +185,16 @@ export class CollisionEvents {
         const getCornerCollisionEvents = () => {
             return getCornerCollisionEventsReducer(
                 rect,
-                (corner) => getTimeOfRectangleCornerVsCircleCollision(corner, circle, rect.velocity),
-                createRectangleVsCircleCollisionEvent,
+                (corner) => getTimeOfRectCornerVsCircleCollision(corner, circle, rect.velocity),
+                createRectVsCircleCollisionEvent,
             );
         };
 
         return getHeterogeneousCollisionEvents(getSideCollisionEvents, getCornerCollisionEvents);
     }
 
-    static getRectangleVsRectangleCollisionEvents = (rectA, rectB) => {
-        return COLLISION_SIDES.reduce((validCollisionEvents, movingBodyContactSide) => {
+    static getRectVsRectCollisionEvents = (rectA: RectBodyType, rectB: RectBodyType) => {
+        return COLLISION_SIDES.reduce<RectVsRectCollisionEvent[]>((validCollisionEvents, movingBodyContactSide) => {
             const movingBoundary = rectA[movingBodyContactSide];
 
             const collisionBodyContactSide = OPPOSITE_SIDE_MAP[movingBodyContactSide];
@@ -244,12 +226,12 @@ export class CollisionEvents {
             if (Maths.hasOverlap(a0AtTimeOfCollision, a1AtTimeOfCollision, b0, b1)) {
                 const contact = { [collisionBodyContactSide]: collisionBoundary };
                 
-                const collisionEvent = new RectangleVsRectangleCollisionEvent({
+                const collisionEvent = {
                     movingBody: rectA,
                     collisionBody: rectB,
                     timeOfCollision,
                     contact,
-                });
+                };
                 
                 validCollisionEvents.push(collisionEvent);
             }
