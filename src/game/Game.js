@@ -1,9 +1,9 @@
 import { Control } from './Control';
-import { Character } from './game-entities/Character';
+import { CircleEntity } from './game-entities/CircleEntity';
 import { Element } from './graphics/Element';
-import { PlayerSprite } from './graphics/sprites/PlayerSprite';
 import { GameLoopControlsSprite } from './graphics/sprites/GameLoopControlsSprite';
 import { World } from '../free-move/World';
+import { CircleSprite } from './graphics/sprites/CircleSprite';
 
 const BEGIN_FRAME = 0;
 const MAX_FRAME_STATES_TO_SAVE = 1000;
@@ -39,9 +39,10 @@ export class Game {
     }
 
     initPlayer() {
-        this.player = new Character();
+        this.player = new CircleEntity();
         this.player.body.name = 'player';
-        const playerSprite = new PlayerSprite(this.player.body);
+        const playerSprite = new CircleSprite(this.player.body);
+        playerSprite.element.id = 'player';
         this.addGameEntity(this.player, playerSprite);
 
         const { x, y } = this.params.player.startPosition;

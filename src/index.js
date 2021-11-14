@@ -1,10 +1,10 @@
-import { Character } from './game/game-entities/Character';
+import { CircleEntity } from './game/game-entities/CircleEntity';
 import { Game } from './game/Game';
 import { Vectors } from './free-move/Vectors';
-import { CharacterSprite } from './game/graphics/sprites/CharacterSprite';
+import { CircleSprite } from './game/graphics/sprites/CircleSprite';
 import './main.css';
 import { RectSprite } from './game/graphics/sprites/RectSprite';
-import { Rectangle } from './game/game-entities/Rectangle';
+import { RectEntity } from './game/game-entities/RectEntity';
 
 /*
     to-do list:
@@ -56,32 +56,32 @@ const getRandomCoordinates = () => {
             break;
         case GAME_MODES.ONE:
             (() => {
-                const character = new Character();
-                character.moveTo(getRandomCoordinates());
-                const characterASprite = new CharacterSprite(character.body);
-                game.addGameEntity(character, characterASprite);
-                
-                const rectA = new Rectangle();
-                rectA.moveTo({ x: 4, y: 3 });
-                const rectASprite = new RectangleSprite(rectA.body);
+                const rectA = new RectEntity();
+                rectA.moveTo({ x: 0, y: 2 });
+                rectA.move({ x: 0.05, y: 0.05 });
+                const rectASprite = new RectSprite(rectA.body);
                 game.addGameEntity(rectA, rectASprite);
+
+                const rectB = new RectEntity();
+                rectB.moveTo({ x: 1, y: 3 });
+                rectB.body.setFixed();
+                const rectBSprite = new RectSprite(rectB.body);
+                game.addGameEntity(rectB, rectBSprite);
             })();
             break;
         case GAME_MODES.CHAOS_CIRCLES:
-            // seed characters
             for (let i = 0; i < 6; i++) {
-                const character = new Character();
+                const circle = new CircleEntity();
 
-                character.moveTo(getRandomCoordinates());
-                character.move(Vectors.create(Math.random(), Math.random()));
+                circle.moveTo(getRandomCoordinates());
+                circle.move(Vectors.create(Math.random(), Math.random()));
                 
-                const characterSprite = new CharacterSprite(character.body);
-                game.addGameEntity(character, characterSprite);
+                const characterSprite = new CircleSprite(circle.body);
+                game.addGameEntity(circle, characterSprite);
             }
             break;
         case GAME_MODES.CHAOS_RANDOM_SHAPES:
-            // seed characters
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 8; i++) {
                 const isChar = Math.round(Math.random()); // 0 or 1
 
                 const randomPosition = getRandomCoordinates();
@@ -89,17 +89,17 @@ const getRandomCoordinates = () => {
                 const isFixed = Math.round(Math.random()); // 0 or 1
 
                 if (isChar) {
-                    const character = new Character();
+                    const circle = new CircleEntity();
 
-                    character.moveTo(randomPosition);
+                    circle.moveTo(randomPosition);
 
-                    if (isFixed) character.body.setFixed();
-                    else character.move(randomVelocity);
+                    if (isFixed) circle.body.setFixed();
+                    else circle.move(randomVelocity);
                     
-                    const characterSprite = new CharacterSprite(character.body);
-                    game.addGameEntity(character, characterSprite);
+                    const characterSprite = new CircleSprite(circle.body);
+                    game.addGameEntity(circle, characterSprite);
                 } else {
-                    const rect = new Rectangle();
+                    const rect = new RectEntity();
                     rect.moveTo(randomPosition);
 
                     if (isFixed) rect.body.setFixed();
@@ -112,12 +112,12 @@ const getRandomCoordinates = () => {
             break;
         case GAME_MODES.TERRAIN:
             (() => {
-                const rectA = new Rectangle();
+                const rectA = new RectEntity();
                 rectA.moveTo({ x: 4, y: 3 });
                 const rectASprite = new RectSprite(rectA.body);
                 game.addGameEntity(rectA, rectASprite);
 
-                const rectB = new Rectangle();
+                const rectB = new RectEntity();
                 rectB.moveTo({ x: 1, y: 3 });
                 const rectBSprite = new RectSprite(rectB.body);
                 game.addGameEntity(rectB, rectBSprite);

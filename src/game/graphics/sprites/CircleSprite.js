@@ -1,13 +1,13 @@
 import { Element } from "../Element";
 import { BodySprite } from "./BodySprite";
 
-export class CharacterSprite extends BodySprite {
+export class CircleSprite extends BodySprite {
     constructor(characterBody) {
         super(characterBody);
     }
 
     get elementClass() {
-        return 'character';
+        return 'circle';
     }
 
     setDimensions() {

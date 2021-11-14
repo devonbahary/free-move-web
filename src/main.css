@@ -28,7 +28,7 @@ body {
     height: 100%;
 }
 
-.character, .rectangle {
+.circle, .rectangle {
     position: absolute;
     background: white;
     color: black;
@@ -45,7 +45,7 @@ body {
     transform: translate(-50%, -50%);
 }
 
-.character {
+.circle {
     border-radius: 50%;
 }
 
