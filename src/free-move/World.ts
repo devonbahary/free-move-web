@@ -1,7 +1,7 @@
 import { Collisions } from "./Collisions";
 import { RectBody } from "./Bodies";
 import { CollisionEvents } from "./CollisionEvents";
-import { BodyType, Rect, SaveableBodyState } from "./types";
+import { BodyType, Bounds, SaveableBodyState } from "./types";
 
 type CollisionResolutionMem = {
     [bodyId: string]: string;
@@ -24,7 +24,7 @@ export class World {
     public bodies: BodyType[];
     private collisionResolutionMem: CollisionResolutionMem;
 
-    constructor(bounds: Rect) {
+    constructor(bounds: Bounds) {
         const { width, height } = bounds; 
         this.width = width;
         this.height = height;

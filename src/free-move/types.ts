@@ -5,10 +5,12 @@ export type Vector = {
     y: number;
 }
 
-export type Rect = Vector & {
+export type Bounds = {
     width: number;
     height: number;
 }
+
+export type Rect = Vector & Bounds;
 
 export type Circle = Vector & {
     radius: number;
