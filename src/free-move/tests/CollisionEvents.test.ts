@@ -113,8 +113,9 @@ describe('CollisionEvents', () => {
                     circleB.moveTo(Vectors.create((circleA.radius + circleB.radius) * 2, 0));
 
                     const distanceBetween = Vectors.distance(circleB.center, circleA.center);
+                    const twiceDistanceVel = Vectors.create(distanceBetween * 2, 0);
 
-                    circleA.setVelocity(Vectors.create(distanceBetween * 2, 0));
+                    circleA.setVelocity(twiceDistanceVel);
 
                     const [ collisionEvent ] = getCollisionEventsInChronologicalOrder();
                     expect(collisionEvent).toMatchObject({
