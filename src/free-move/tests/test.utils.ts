@@ -3,7 +3,7 @@ import { isCircleBody, isRectBody } from "../Bodies";
 import { Vectors } from "../Vectors";
 
 // get diameter / longest rect side
-export const getBodyLength = (body: BodyType) => {
+const getBodyLength = (body: BodyType) => {
     if (isCircleBody(body)) return body.radius * 2;
     if (isRectBody(body)) return Math.max(body.width, body.height) * 2;
     throw new Error(`cannot getBodyLength for unrecognized body ${JSON.stringify(body)}`);
