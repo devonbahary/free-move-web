@@ -4,13 +4,9 @@ import { Maths } from "../Maths";
 import { CircleBodyType } from "../types";
 import { Vectors } from "../Vectors";
 import {
-    moveCirclesApartFromEachOther,
-    moveCirclesAdjacentToEachOther,
-    moveCirclesIntoEachOther,
-    moveBodyAwayFromBody,
-    moveBodyTowardsBody,
     Direction,
-} from "./test.utils";
+    TestUtils,
+} from "./TestUtils";
 
 const SHOULD = 'should return a collision event';
 const SHOULD_NOT = 'should NOT return any collision event';
@@ -31,27 +27,27 @@ describe('CollisionEvents', () => {
     
                 describe('invalid collision events', () => {
                     it(`${SHOULD_NOT} for two bodies that are not touching or moving`, () => {
-                        moveCirclesApartFromEachOther(circleA, circleB, dir);
+                        TestUtils.moveCirclesApartFromEachOther(circleA, circleB, dir);
                         const collisionEvents = getCollisionEventsInChronologicalOrder();
                         expect(collisionEvents).toHaveLength(0);
                     });
             
                     it(`${SHOULD_NOT} for two bodies that are touching but not moving`, () => {
-                        moveCirclesAdjacentToEachOther(circleA, circleB, dir);
+                        TestUtils.moveCirclesAdjacentToEachOther(circleA, circleB, dir);
                         const collisionEvents = getCollisionEventsInChronologicalOrder();
                         expect(collisionEvents).toHaveLength(0);
                     });
     
                     it(`${SHOULD_NOT} when one body is moving away from another body it is touching`, () => {
-                        moveCirclesAdjacentToEachOther(circleA, circleB, dir);
-                        moveBodyAwayFromBody(circleA, circleB);
+                        TestUtils.moveCirclesAdjacentToEachOther(circleA, circleB, dir);
+                        TestUtils.moveBodyAwayFromBody(circleA, circleB);
                         const collisionEvents = getCollisionEventsInChronologicalOrder();
                         expect(collisionEvents).toHaveLength(0);
                     });
     
                     it(`${SHOULD_NOT} when one body is moving away from another body it isn't touching`, () => {
-                        moveCirclesApartFromEachOther(circleA, circleB, dir);
-                        moveBodyAwayFromBody(circleA, circleB);
+                        TestUtils.moveCirclesApartFromEachOther(circleA, circleB, dir);
+                        TestUtils.moveBodyAwayFromBody(circleA, circleB);
                         const collisionEvents = getCollisionEventsInChronologicalOrder();
                         expect(collisionEvents).toHaveLength(0);
                     });
@@ -59,17 +55,17 @@ describe('CollisionEvents', () => {
     
                 describe('intersecting bodies (allow for movement out of another body)', () => {
                     beforeEach(() => {
-                        moveCirclesIntoEachOther(circleA, circleB, dir);
+                        TestUtils.moveCirclesIntoEachOther(circleA, circleB, dir);
                     });
                     
                     it.skip(`${SHOULD_NOT} when one body is moving towards another body that the moving body is already intersecting`, () => {
-                        moveBodyTowardsBody(circleA, circleB);
+                        TestUtils.moveBodyTowardsBody(circleA, circleB);
                         const collisionEvents = getCollisionEventsInChronologicalOrder();
                         expect(collisionEvents).toHaveLength(0);
                     });
     
                     it(`${SHOULD_NOT} when one body is moving away from another body that the moving body is already intersecting`, () => {
-                        moveBodyAwayFromBody(circleA, circleB);
+                        TestUtils.moveBodyAwayFromBody(circleA, circleB);
                         const collisionEvents = getCollisionEventsInChronologicalOrder();
                         expect(collisionEvents).toHaveLength(0);
                     });
@@ -77,8 +73,8 @@ describe('CollisionEvents', () => {
     
                 describe('continous collision detection', () => {
                     it(`${SHOULD} when one body is moving towards another body it is already touching`, () => {
-                        moveCirclesAdjacentToEachOther(circleA, circleB, dir);
-                        moveBodyTowardsBody(circleA, circleB);
+                        TestUtils.moveCirclesAdjacentToEachOther(circleA, circleB, dir);
+                        TestUtils.moveBodyTowardsBody(circleA, circleB);
             
                         const [ collisionEvent ] = getCollisionEventsInChronologicalOrder();
                         expect(collisionEvent).toMatchObject({
@@ -90,7 +86,7 @@ describe('CollisionEvents', () => {
                     });
     
                     it(`${SHOULD} when one body is moving towards another body with a movement path that would end within the other body`, () => {
-                        moveCirclesApartFromEachOther(circleA, circleB, dir);
+                        TestUtils.moveCirclesApartFromEachOther(circleA, circleB, dir);
     
                         const diffPos = Vectors.subtract(circleB.center, circleA.center);
     
@@ -106,7 +102,7 @@ describe('CollisionEvents', () => {
                     });
     
                     it(`${SHOULD} when one body is moving towards another body with a movement path that passes all the way through the other body (prevent tunneling)`, () => {
-                        moveCirclesApartFromEachOther(circleA, circleB, dir);
+                        TestUtils.moveCirclesApartFromEachOther(circleA, circleB, dir);
     
                         const diffPos = Vectors.subtract(circleB.center, circleA.center);
                         const twiceDiffPos = Vectors.rescale(diffPos, Vectors.magnitude(diffPos) * 2);
@@ -123,7 +119,7 @@ describe('CollisionEvents', () => {
                     });
         
                     it(`${SHOULD_NOT} when one body is moving towards another body that is beyond the reach of the movement path (don't return future events)`, () => {
-                        moveCirclesApartFromEachOther(circleA, circleB, dir);
+                        TestUtils.moveCirclesApartFromEachOther(circleA, circleB, dir);
     
                         const diffPos = Vectors.subtract(circleB.center, circleA.center);
     
