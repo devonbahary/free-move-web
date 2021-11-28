@@ -131,7 +131,21 @@ describe('CollisionEvents', () => {
                 });
     
                 describe("tangential movement (don't recognize collision events for grazing bodies)", () => {
-                   // 
+                    beforeEach(() => {
+                        TestUtils.moveCirclesAdjacentToEachOther(circleA, circleB, dir);
+                    });
+
+                    it(`${SHOULD_NOT} when a body moves tangentially to another body`, () => {
+                        const diffPos = Vectors.subtract(circleB.center, circleA.center);
+                        const tangentVectors = Vectors.normalVectors(diffPos);
+                        
+                        for (const tangent of tangentVectors) {
+                            circleA.setVelocity(tangent);
+                            const collisionEvents = getCollisionEventsInChronologicalOrder();
+                            expect(collisionEvents).toHaveLength(0);
+                        }
+
+                    });
                 });
             });   
         }

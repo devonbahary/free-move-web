@@ -22,6 +22,14 @@ export class Vectors {
         return (A.x * B.x) + (A.y * B.y);
     }
 
+    static normalVectors = (vector: Vector): Vector[] => {
+        const normalVector = Vectors.create(-vector.y, vector.x);
+        return [
+            normalVector,
+            Vectors.neg(normalVector),
+        ];
+    }
+
     static magnitude = ({ x, y }: Vector) => Math.sqrt(x ** 2 + y ** 2);
 
     static mult = ({ x, y }: Vector, scalar: number): Vector => ({ x: x * scalar, y: y * scalar });
@@ -35,7 +43,7 @@ export class Vectors {
 
     static neg = ({ x, y }: Vector): Vector => ({ x: -x, y: -y });
 
-    static normalize = (vector: Vector): Vector => {
+    static unit = (vector: Vector): Vector => {
         const mag = Vectors.magnitude(vector);
         if (!mag) {
             return vector;
@@ -44,7 +52,7 @@ export class Vectors {
     };
 
     static rescale = (vector: Vector, mag: number): Vector => {
-        return Vectors.mult(Vectors.normalize(vector), mag);
+        return Vectors.mult(Vectors.unit(vector), mag);
     }
 
     static subtract = (v1: Vector, v2: Vector): Vector => ({ x: v1.x - v2.x, y: v1.y - v2.y });
