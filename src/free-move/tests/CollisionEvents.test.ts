@@ -19,6 +19,11 @@ describe('CollisionEvents', () => {
                 let circleB: CircleBodyType;
                 let getCollisionEventsInChronologicalOrder: () => ReturnType<typeof CollisionEvents['getCollisionEventsInChronologicalOrder']>;
                 
+                const expectNoCollisionEvents = () => {
+                    const collisionEvents = getCollisionEventsInChronologicalOrder();
+                    expect(collisionEvents).toHaveLength(0);
+                }
+                
                 beforeEach(() => {
                     circleA = new CircleBody();
                     circleB = new CircleBody();
@@ -28,28 +33,24 @@ describe('CollisionEvents', () => {
                 describe('invalid collision events', () => {
                     it(`${SHOULD_NOT} for two bodies that are not touching or moving`, () => {
                         TestUtils.moveCirclesApartFromEachOther(circleA, circleB, dir);
-                        const collisionEvents = getCollisionEventsInChronologicalOrder();
-                        expect(collisionEvents).toHaveLength(0);
+                        expectNoCollisionEvents();
                     });
             
                     it(`${SHOULD_NOT} for two bodies that are touching but not moving`, () => {
                         TestUtils.moveCirclesAdjacentToEachOther(circleA, circleB, dir);
-                        const collisionEvents = getCollisionEventsInChronologicalOrder();
-                        expect(collisionEvents).toHaveLength(0);
+                        expectNoCollisionEvents();
                     });
     
                     it(`${SHOULD_NOT} when one body is moving away from another body it is touching`, () => {
                         TestUtils.moveCirclesAdjacentToEachOther(circleA, circleB, dir);
                         TestUtils.moveBodyAwayFromBody(circleA, circleB);
-                        const collisionEvents = getCollisionEventsInChronologicalOrder();
-                        expect(collisionEvents).toHaveLength(0);
+                        expectNoCollisionEvents();
                     });
     
                     it(`${SHOULD_NOT} when one body is moving away from another body it isn't touching`, () => {
                         TestUtils.moveCirclesApartFromEachOther(circleA, circleB, dir);
                         TestUtils.moveBodyAwayFromBody(circleA, circleB);
-                        const collisionEvents = getCollisionEventsInChronologicalOrder();
-                        expect(collisionEvents).toHaveLength(0);
+                        expectNoCollisionEvents();
                     });
                 });
     
@@ -60,14 +61,12 @@ describe('CollisionEvents', () => {
                     
                     it.skip(`${SHOULD_NOT} when one body is moving towards another body that the moving body is already intersecting`, () => {
                         TestUtils.moveBodyTowardsBody(circleA, circleB);
-                        const collisionEvents = getCollisionEventsInChronologicalOrder();
-                        expect(collisionEvents).toHaveLength(0);
+                        expectNoCollisionEvents();
                     });
     
                     it(`${SHOULD_NOT} when one body is moving away from another body that the moving body is already intersecting`, () => {
                         TestUtils.moveBodyAwayFromBody(circleA, circleB);
-                        const collisionEvents = getCollisionEventsInChronologicalOrder();
-                        expect(collisionEvents).toHaveLength(0);
+                        expectNoCollisionEvents();
                     });
                 });
     
@@ -125,8 +124,7 @@ describe('CollisionEvents', () => {
     
                         circleA.setVelocity(Vectors.rescale(diffPos, 0.5));
     
-                        const collisionEvents = getCollisionEventsInChronologicalOrder();
-                        expect(collisionEvents).toHaveLength(0);
+                        expectNoCollisionEvents();
                     });
                 });
     
@@ -141,8 +139,7 @@ describe('CollisionEvents', () => {
                         
                         for (const tangent of tangentVectors) {
                             circleA.setVelocity(tangent);
-                            const collisionEvents = getCollisionEventsInChronologicalOrder();
-                            expect(collisionEvents).toHaveLength(0);
+                            expectNoCollisionEvents();
                         }
 
                     });
