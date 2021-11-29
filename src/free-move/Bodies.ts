@@ -65,7 +65,7 @@ export class Point implements Vector {
     ) {}
 
     get center(): Vector {
-        return { x: this.x, y: this.y };
+        return Vectors.create(this.x, this.y);
     }
 
     get x0() {
@@ -99,10 +99,10 @@ export class Rectangle extends Point implements Rect {
     }
 
     get center(): Vector {
-        return { 
-            x: this.x + this.width / 2, 
-            y: this.y + this.height / 2,
-        };
+        return Vectors.create(
+            this.x + this.width / 2, 
+            this.y + this.height / 2,
+        );
     }
 
     get x0() {
@@ -130,10 +130,7 @@ export class Circle extends Point implements CircleType {
     }
 
     get center(): Vector {
-        return { 
-            x: this.x + this.radius, 
-            y: this.y + this.radius,
-        };
+        return Vectors.create(this.x + this.radius, this.y + this.radius);
     }
 
     get x0() {
