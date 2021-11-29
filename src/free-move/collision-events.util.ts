@@ -1,5 +1,5 @@
 import { Maths } from "./Maths";
-import { CircleBodyType, CircleVsRectCollisionEvent, Rect, RectBodyType, RectSides, RectVsCircleCollisionEvent, Vector } from "./types";
+import { CircleBodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionEvent, RectBodyType, RectSides, RectVsCircleCollisionEvent, Vector } from "./types";
 import { Vectors } from "./Vectors";
 
 export const COLLISION_SIDES: (keyof RectSides)[] = [ 'x0', 'x1', 'y0', 'y1' ];
@@ -136,12 +136,13 @@ export const getValidTimeOfCollision = (a: number, b: number, c: number) => {
     }, null);
 };
 
-export const getTimeOfCircleVsCircleCollision = (A: CircleBodyType, B: CircleBodyType) => {
-    const { center: centerA, radius: radiusA, velocity } = A;
+export const getTimeOfCircleVsCircleCollision = (collisionPair: CircleVsCircleCollisionPair) => {
+    const { movingBody, collisionBody } = collisionPair;
+    const { center: centerA, radius: radiusA, velocity } = movingBody;
     const { x: Ax, y: Ay } = centerA;
     const { x: dx, y: dy } = velocity;
 
-    const { center: centerB, radius: radiusB } = B;
+    const { center: centerB, radius: radiusB } = collisionBody;
     const { x: Bx, y: By } = centerB;
 
     /*

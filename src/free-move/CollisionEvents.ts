@@ -13,37 +13,38 @@ import {
     isValidTimeOfCollision,
 } from "./collision-events.util";
 import { Collisions } from "./Collisions";
-import { BodyType, CircleBodyType, RectBodyType, CircleVsRectCollisionEvent, CollisionEvent, Vector, RectVsCircleCollisionEvent, RectVsRectCollisionEvent } from "./types";
-import { isCircleBody, isRectBody } from "./Bodies";
+import { BodyType, CircleVsRectCollisionEvent, CollisionEvent, Vector, RectVsCircleCollisionEvent, RectVsRectCollisionEvent, CircleVsCircleCollisionPair, CircleVsCircleCollisionEvent, CircleVsRectCollisionPair, RectVsCircleCollisionPair, RectVsRectCollisionPair } from "./types";
 import { Vectors } from "./Vectors";
 
 export class CollisionEvents {
     // TODO: implement quadtree to prevent O(n^2)
-    static getCollisionEventsInChronologicalOrder = (bodies: BodyType[], body: BodyType) => {
-        const collisionEvents = bodies.reduce<CollisionEvent[]>((acc, otherBody) => {
-            if (body === otherBody) return acc;
+    static getCollisionEventsInChronologicalOrder = (bodies: BodyType[], movingBody: BodyType) => {
+        const collisionEvents = bodies.reduce<CollisionEvent[]>((acc, collisionBody) => {
+            if (movingBody === collisionBody) return acc;
 
+            const collisionPair = { movingBody, collisionBody };
+            
             // broad phase collision detection
-            if (!Collisions.isMovingTowardsBody(body, otherBody)) {
+            if (!Collisions.isMovingTowardsBody(collisionPair)) {
                 return acc;
             }
 
-            if (isCircleBody(body) && isCircleBody(otherBody)) {
-                const collisionEvent = CollisionEvents.getCircleVsCircleCollisionEvent(body, otherBody);
+            if (Collisions.isCircleVsCircle(collisionPair)) {
+                const collisionEvent = CollisionEvents.getCircleVsCircleCollisionEvent(collisionPair);
                 if (collisionEvent) {
                     acc.push(collisionEvent);
                 }
-            } else if (isCircleBody(body) && isRectBody(otherBody)) {
-                const collisionEvents = CollisionEvents.getCircleVsRectCollisionEvents(body, otherBody);
+            } else if (Collisions.isCircleVsRect(collisionPair)) {
+                const collisionEvents = CollisionEvents.getCircleVsRectCollisionEvents(collisionPair);
                 acc.push(...collisionEvents);
-            } else if (isRectBody(body) && isCircleBody(otherBody)) {
-                const collisionEvents = CollisionEvents.getRectVsCircleCollisionEvents(body, otherBody);
+            } else if (Collisions.isRectVsCircle(collisionPair)) {
+                const collisionEvents = CollisionEvents.getRectVsCircleCollisionEvents(collisionPair);
                 acc.push(...collisionEvents);
-            } else if (isRectBody(body) && isRectBody(otherBody)) {
-                const collisionEvents = CollisionEvents.getRectVsRectCollisionEvents(body, otherBody);
+            } else if (Collisions.isRectVsRect(collisionPair)) {
+                const collisionEvents = CollisionEvents.getRectVsRectCollisionEvents(collisionPair);
                 acc.push(...collisionEvents);
             } else {
-                throw new Error(`can't recognize collision type for bodies: ${JSON.stringify(body)}, ${JSON.stringify(otherBody)}`);
+                throw new Error(`can't recognize collision type for bodies: ${JSON.stringify(movingBody)}, ${JSON.stringify(collisionBody)}`);
             }
 
             return acc;
@@ -53,29 +54,28 @@ export class CollisionEvents {
     }
     
     static getCircleVsCircleCollisionEvent = (
-        circleA: CircleBodyType, 
-        circleB: CircleBodyType,
-    ): CollisionEvent | null => {
-        const timeOfCollision = getTimeOfCircleVsCircleCollision(circleA, circleB);
+        collisionPair: CircleVsCircleCollisionPair,
+    ): CircleVsCircleCollisionEvent | null => {
+        const timeOfCollision = getTimeOfCircleVsCircleCollision(collisionPair);
         
         if (timeOfCollision === null) return null;
         
         return {
-            movingBody: circleA,
-            collisionBody: circleB,
+            collisionPair,
             timeOfCollision,
         };
     }
 
-    static getCircleVsRectCollisionEvents = (circle: CircleBodyType, rect: RectBodyType) => {
+    static getCircleVsRectCollisionEvents = (collisionPair: CircleVsRectCollisionPair) => {        
         const createCircleVsRectCollisionEvent = (timeOfCollision: number, collisionPoint: Vector): CircleVsRectCollisionEvent => {
             return {
-                movingBody: circle,
-                collisionBody: rect,
+                collisionPair,
                 timeOfCollision,
                 collisionPoint,
             };
         }
+
+        const { movingBody: circle, collisionBody: rect } = collisionPair;
 
         const getSideCollisionEvents = () => {
             return getCircleVsRectPossibleSideCollisions(circle, rect).reduce<CircleVsRectCollisionEvent[]>((validCollisionEvents, possibleCollision) => {
@@ -128,15 +128,16 @@ export class CollisionEvents {
         return getHeterogeneousCollisionEvents(getSideCollisionEvents, getCornerCollisionEvents);
     }
 
-    static getRectVsCircleCollisionEvents = (rect: RectBodyType, circle: CircleBodyType) => {
+    static getRectVsCircleCollisionEvents = (collisionPair: RectVsCircleCollisionPair) => {
         const createRectVsCircleCollisionEvent = (timeOfCollision: number, collisionPoint: Vector): RectVsCircleCollisionEvent => {
             return {
-                movingBody: rect,
-                collisionBody: circle,
+                collisionPair,
                 timeOfCollision,
                 collisionPoint,
             };
         };
+
+        const { movingBody: rect, collisionBody: circle } = collisionPair;
         
         const getSideCollisionEvents = () => {
             return getRectVsCirclePossibleSideCollisions(rect, circle).reduce<RectVsCircleCollisionEvent[]>((validCollisionEvents, possibleCollision) => {
@@ -194,7 +195,9 @@ export class CollisionEvents {
         return getHeterogeneousCollisionEvents(getSideCollisionEvents, getCornerCollisionEvents);
     }
 
-    static getRectVsRectCollisionEvents = (rectA: RectBodyType, rectB: RectBodyType) => {
+    static getRectVsRectCollisionEvents = (collisionPair: RectVsRectCollisionPair) => {
+        const { movingBody: rectA, collisionBody: rectB } = collisionPair;
+
         return COLLISION_SIDES.reduce<RectVsRectCollisionEvent[]>((validCollisionEvents, movingBodyContactSide) => {
             // determine if the moving rect will pass the collision rect boundary at all in the future            
             const movingBoundary = rectA[movingBodyContactSide];
@@ -243,8 +246,7 @@ export class CollisionEvents {
                 const contact = { [collisionBodyContactSide]: collisionBoundary };
                 
                 const collisionEvent = {
-                    movingBody: rectA,
-                    collisionBody: rectB,
+                    collisionPair,
                     timeOfCollision,
                     contact,
                 };

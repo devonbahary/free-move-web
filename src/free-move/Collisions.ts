@@ -1,7 +1,7 @@
 import { isCircleBody, isRectBody, Rectangle } from "./Bodies";
 import { CollisionEvents } from "./CollisionEvents";
 import { Maths } from "./Maths";
-import { BodyType, CollisionEvent, Vector } from "./types";
+import { BodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionEvent, CollisionPair, RectVsCircleCollisionPair, RectVsRectCollisionPair, Vector } from "./types";
 import { Vectors } from "./Vectors";
 
 export class Collisions {
@@ -25,7 +25,8 @@ export class Collisions {
     }
 
     static resolveCollision = (collisionEvent: CollisionEvent) => {
-        const { movingBody, collisionBody, timeOfCollision } = collisionEvent;
+        const { collisionPair, timeOfCollision } = collisionEvent;
+        const { movingBody, collisionBody } = collisionPair;
 
         Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
 
@@ -41,18 +42,18 @@ export class Collisions {
 
         // TODO: pull out into a resolveFixedCollision()
         if (collisionBody.isFixed) {
-            if (isCircleBody(movingBody) && isCircleBody(collisionBody)) {
+            if (Collisions.isCircleVsCircle(collisionPair)) {
                 movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(vA)));   
             } else {
                 // TODO: remove roundFloatingPoint here, smell of bad diffPositions
                 if (Maths.roundFloatingPoint(diffPositions.x) === 0) {
                     movingBody.setVelocity({ x: vA.x, y: -vA.y });
-                    if (Collisions.isMovingTowardsBody(movingBody, collisionBody)) {
+                    if (Collisions.isMovingTowardsBody(collisionPair)) {
                         movingBody.setVelocity({ x: -vA.x, y: -vA.y });
                     }
                 } else if (Maths.roundFloatingPoint(diffPositions.y) === 0) {
                     movingBody.setVelocity({ x: -vA.x, y: vA.y });
-                    if (Collisions.isMovingTowardsBody(movingBody, collisionBody)) {
+                    if (Collisions.isMovingTowardsBody(collisionPair)) {
                         movingBody.setVelocity({ x: -vA.x, y: -vA.y });
                     }
                 } else {
@@ -101,81 +102,104 @@ export class Collisions {
     }
 
     // TODO: revisit, isn't working intuitively for rectangle vs any collisions
-    static isMovingTowardsBody = (bodyA: BodyType, bodyB: BodyType) => {
-        const { velocity: vA } = bodyA;
+    static isMovingTowardsBody = (collisionPair: CollisionPair) => {
+        const { movingBody, collisionBody } = collisionPair;
+        const { velocity: movingBodyVel } = movingBody;
 
-        if (!vA.x && !vA.y) return false;
-        
-        if (isCircleBody(bodyA) && isCircleBody(bodyB)) {
-            return Collisions.isPointMovingTowardsPoint(bodyA.center, bodyB.center, bodyA.velocity);
+        if (!movingBodyVel.x && !movingBodyVel.y) return false;
+
+        if (Collisions.isCircleVsCircle(collisionPair)) {
+            return Collisions.isPointMovingTowardsPoint(movingBody.center, collisionBody.center, movingBody.velocity);
         }
 
-        if (isRectBody(bodyA) && isRectBody(bodyB)) {
-            const isMovingInXDirection = vA.x > 0
-                ? bodyA.x1 <= bodyB.x0
-                : bodyA.x0 >= bodyB.x1;
-            const isMovingInYDirection = vA.y > 0
-                ? bodyA.y1 <= bodyB.y0
-                : bodyA.y0 >= bodyB.y1;
-            const hasXOverlap = Maths.hasOverlap(bodyA.x0, bodyA.x1, bodyB.x0, bodyB.x1);
-            const hasYOverlap = Maths.hasOverlap(bodyA.y0, bodyA.y1, bodyB.y0, bodyB.y1);
+        if (Collisions.isRectVsRect(collisionPair)) {
+            const isMovingInXDirection = movingBodyVel.x > 0
+                ? movingBody.x1 <= collisionBody.x0
+                : movingBody.x0 >= collisionBody.x1;
+            const isMovingInYDirection = movingBodyVel.y > 0
+                ? movingBody.y1 <= collisionBody.y0
+                : movingBody.y0 >= collisionBody.y1;
+            const hasXOverlap = Maths.hasOverlap(movingBody.x0, movingBody.x1, collisionBody.x0, collisionBody.x1);
+            const hasYOverlap = Maths.hasOverlap(movingBody.y0, movingBody.y1, collisionBody.y0, collisionBody.y1);
 
-            if (!vA.x || !vA.y) {
-                if (!vA.x) {
+            if (!movingBodyVel.x || !movingBodyVel.y) {
+                if (!movingBodyVel.x) {
                     if (!hasXOverlap) return false;
                     return isMovingInYDirection;
-                } else if (!vA.y) {
+                } else if (!movingBodyVel.y) {
                     if (!hasYOverlap) return false;
                     return isMovingInXDirection;
                 }
             }
 
             if (hasXOverlap) {
-                if (vA.y > 0 && bodyA.y1 <= bodyB.y0) return true;
-                if (vA.y < 0 && bodyA.y0 >= bodyB.y1) return true;
+                if (movingBodyVel.y > 0 && movingBody.y1 <= collisionBody.y0) return true;
+                if (movingBodyVel.y < 0 && movingBody.y0 >= collisionBody.y1) return true;
             }
 
             if (hasYOverlap) {
-                if (vA.x > 0 && bodyA.x1 <= bodyB.x0) return true;
-                if (vA.x < 0 && bodyA.x0 >= bodyB.x1) return true;
+                if (movingBodyVel.x > 0 && movingBody.x1 <= collisionBody.x0) return true;
+                if (movingBodyVel.x < 0 && movingBody.x0 >= collisionBody.x1) return true;
             }
 
             return isMovingInXDirection && isMovingInYDirection;
         }
 
         // account for bodies already in contact that the movingBody is not moving towards
-        if (isCircleBody(bodyA) && isRectBody(bodyB)) { 
-            const collisionEvents = CollisionEvents.getCircleVsRectCollisionEvents(bodyA, bodyB);
+        if (Collisions.isCircleVsRect(collisionPair)) { 
+            const collisionEvents = CollisionEvents.getCircleVsRectCollisionEvents(collisionPair);
             const alreadyTouchingEvent = collisionEvents.find(event => Maths.roundFloatingPoint(event.timeOfCollision) === 0);
             
             if (alreadyTouchingEvent) {
-                return Collisions.isPointMovingTowardsPoint(bodyA.center, alreadyTouchingEvent.collisionPoint, bodyA.velocity);
+                return Collisions.isPointMovingTowardsPoint(movingBody.center, alreadyTouchingEvent.collisionPoint, movingBodyVel);
             }
-        } else if (isRectBody(bodyA) && isCircleBody(bodyB)) {
-            const collisionEvents = CollisionEvents.getRectVsCircleCollisionEvents(bodyA, bodyB);
+        } else if (Collisions.isRectVsCircle(collisionPair)) {
+            const collisionEvents = CollisionEvents.getRectVsCircleCollisionEvents(collisionPair);
             const alreadyTouchingEvent = collisionEvents.find(event => Maths.roundFloatingPoint(event.timeOfCollision) === 0);
             
             if (alreadyTouchingEvent) {
-                return Collisions.isPointMovingTowardsPoint(alreadyTouchingEvent.collisionPoint, bodyB.center, bodyA.velocity);
+                return Collisions.isPointMovingTowardsPoint(alreadyTouchingEvent.collisionPoint, collisionBody.center, movingBodyVel);
             }
         }
 
-        if (vA.x > 0 && bodyA.center.x <= bodyB.x0) return true;
-        if (vA.x < 0 && bodyA.center.x >= bodyB.x1) return true;
-        if (vA.y > 0 && bodyA.center.y <= bodyB.y0) return true;
-        if (vA.y < 0 && bodyA.center.y >= bodyB.y1) return true;
+        if (movingBodyVel.x > 0 && movingBody.center.x <= collisionBody.x0) return true;
+        if (movingBodyVel.x < 0 && movingBody.center.x >= collisionBody.x1) return true;
+        if (movingBodyVel.y > 0 && movingBody.center.y <= collisionBody.y0) return true;
+        if (movingBodyVel.y < 0 && movingBody.center.y >= collisionBody.y1) return true;
 
         return false;
+    }
+
+    static isCircleVsCircle = (collisionPair: CollisionPair): collisionPair is CircleVsCircleCollisionPair => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isCircleBody(movingBody) && isCircleBody(collisionBody);
+    }
+
+    static isCircleVsRect = (collisionPair: CollisionPair): collisionPair is CircleVsRectCollisionPair => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isCircleBody(movingBody) && isRectBody(collisionBody);
+    }
+
+    static isRectVsCircle = (collisionPair: CollisionPair): collisionPair is RectVsCircleCollisionPair => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isRectBody(movingBody) && isCircleBody(collisionBody);
+    }
+
+    static isRectVsRect = (collisionPair: CollisionPair): collisionPair is RectVsRectCollisionPair => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isRectBody(movingBody) && isRectBody(collisionBody);
     }
 
     private static getCollisionRelativePositionVector = (bodyA: BodyType, bodyB: BodyType, collisionEvent: CollisionEvent): Vector => {
         const { contact, collisionPoint } = collisionEvent;
 
-        if (isCircleBody(bodyA) && isCircleBody(bodyB)) {
+        const collisionPair = { movingBody: bodyA, collisionBody: bodyB };
+
+        if (Collisions.isCircleVsCircle(collisionPair)) {
             return Vectors.subtract(bodyA.center, bodyB.center);
         }
 
-        if (isRectBody(bodyA) && isRectBody(bodyB)) {
+        if (Collisions.isRectVsRect(collisionPair)) {
             if (!contact) {
                 throw new Error(
                     `can't getCollisionRelativePositionVector() for rect vs rect collision from collision event without contact: ${JSON.stringify(collisionEvent)}`,
@@ -200,9 +224,9 @@ export class Collisions {
             );
         }
 
-        if (isCircleBody(bodyA) && isRectBody(bodyB)) { 
+        if (Collisions.isCircleVsRect(collisionPair)) { 
             return Vectors.subtract(bodyA.center, collisionPoint);
-        } else if (isRectBody(bodyA) && isCircleBody(bodyB)) {
+        } else if (Collisions.isRectVsCircle(collisionPair)) {
             return Vectors.subtract(collisionPoint, bodyB.center);
         }
 

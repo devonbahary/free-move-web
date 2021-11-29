@@ -1,7 +1,7 @@
 import { CircleBody, RectBody } from "../Bodies";
 import { CollisionEvents } from "../CollisionEvents";
 import { Maths } from "../Maths";
-import { BodyType, CollisionEvent, Vector } from "../types";
+import { BodyType, CollisionEvent, CollisionPair, Vector } from "../types";
 import { Vectors } from "../Vectors";
 import {
     CollisionType,
@@ -12,12 +12,18 @@ import {
 const SHOULD = 'should return a collision event';
 const SHOULD_NOT = 'should NOT return any collision event';
 
-const initBodies = (collisionType: CollisionType): [ BodyType, BodyType ] => {
+const initCollisionPair = (collisionType: CollisionType): CollisionPair => {
     switch (collisionType) {
         case CollisionType.circleVsCircle:
-            return [ new CircleBody(), new CircleBody() ];
+            return {
+                movingBody: new CircleBody(), 
+                collisionBody: new CircleBody(),
+            };
         case CollisionType.rectVsRect:
-            return [ new RectBody(), new RectBody() ]; 
+            return {
+                movingBody: new RectBody(),
+                collisionBody: new RectBody(),
+            };
         default:
             throw new Error(`unrecognized CollisionType ${collisionType}`);
     }
@@ -29,10 +35,7 @@ const expectZeroTimeOfCollision = (collisionEvent: CollisionEvent) => {
 
 describe('CollisionEvents', () => {
     describe('getCollisionEventsInChronologicalOrder()', () => {
-        let bodyA: BodyType;
-        let bodyB: BodyType;
         let getCollisionEventsInChronologicalOrder: () => ReturnType<typeof CollisionEvents['getCollisionEventsInChronologicalOrder']>;
-        let expectCollisionEvent: (collisionEvent: CollisionEvent) => void;
                 
         const expectNoCollisionEvents = () => {
             const collisionEvents = getCollisionEventsInChronologicalOrder();
@@ -41,68 +44,72 @@ describe('CollisionEvents', () => {
 
         for (const dir of Object.values(Direction)) {
             for (const collisionType of Object.values(CollisionType)) {
-                let getDiffPos: () => Vector;
-                
                 describe(`${collisionType} (${dir})`, () => {
+                    let collisionPair: CollisionPair;
+                    let movingBody: BodyType;
+                    let collisionBody: BodyType;
+                    let getDiffPos: () => Vector;
+                    let expectCollisionEvent: (collisionEvent: CollisionEvent) => void;
+                    
                     beforeEach(() => {
-                        [ bodyA, bodyB ] = initBodies(collisionType);
+                        collisionPair = initCollisionPair(collisionType);
+                        ({ movingBody, collisionBody } = collisionPair);
+
+                        const bodies = [ movingBody, collisionBody ];
                         
-                        getCollisionEventsInChronologicalOrder = () => CollisionEvents.getCollisionEventsInChronologicalOrder([bodyA, bodyB], bodyA);
+                        getCollisionEventsInChronologicalOrder = () => CollisionEvents.getCollisionEventsInChronologicalOrder(bodies, movingBody);
                         
-                        getDiffPos = () => Vectors.subtract(bodyB.center, bodyA.center);
+                        getDiffPos = () => Vectors.subtract(collisionBody.center, movingBody.center);
 
                         expectCollisionEvent = (collisionEvent: CollisionEvent) => {
-                            expect(collisionEvent).toMatchObject({
-                                movingBody: bodyA,
-                                collisionBody: bodyB,
-                            });
+                            expect(collisionEvent).toMatchObject({ collisionPair });
                         }
                     });
         
                     describe('invalid collision events', () => {
                         it(`${SHOULD_NOT} for two bodies that are not touching or moving`, () => {
-                            TestUtils.moveBodiesApartFromEachOther(bodyA, bodyB, dir);
+                            TestUtils.moveBodiesApartFromEachOther(collisionPair, dir);
                             expectNoCollisionEvents();
                         });
                 
                         it(`${SHOULD_NOT} for two bodies that are touching but not moving`, () => {
-                            TestUtils.moveBodiesAdjacentToEachOther(bodyA, bodyB, dir);
+                            TestUtils.moveBodiesAdjacentToEachOther(collisionPair, dir);
                             expectNoCollisionEvents();
                         });
         
                         it(`${SHOULD_NOT} when one body is moving away from another body it is touching`, () => {
-                            TestUtils.moveBodiesAdjacentToEachOther(bodyA, bodyB, dir);
-                            TestUtils.moveBodyAwayFromBody(bodyA, bodyB);
+                            TestUtils.moveBodiesAdjacentToEachOther(collisionPair, dir);
+                            TestUtils.moveBodyAwayFromBody(collisionPair);
                             expectNoCollisionEvents();
                         });
         
                         it(`${SHOULD_NOT} when one body is moving away from another body it isn't touching`, () => {
-                            TestUtils.moveBodiesApartFromEachOther(bodyA, bodyB, dir);
-                            TestUtils.moveBodyAwayFromBody(bodyA, bodyB);
+                            TestUtils.moveBodiesApartFromEachOther(collisionPair, dir);
+                            TestUtils.moveBodyAwayFromBody(collisionPair);
                             expectNoCollisionEvents();
                         });
                     });
         
                     describe('intersecting bodies (allow for movement out of another body)', () => {
                         beforeEach(() => {
-                            TestUtils.moveBodiesIntoEachOther(bodyA, bodyB, dir);
+                            TestUtils.moveBodiesIntoEachOther(collisionPair, dir);
                         });
                         
                         it.skip(`${SHOULD_NOT} when one body is moving towards another body that the moving body is already intersecting`, () => {
-                            TestUtils.moveBodyTowardsBody(bodyA, bodyB);
+                            TestUtils.moveBodyTowardsBody(collisionPair);
                             expectNoCollisionEvents();
                         });
         
                         it(`${SHOULD_NOT} when one body is moving away from another body that the moving body is already intersecting`, () => {
-                            TestUtils.moveBodyAwayFromBody(bodyA, bodyB);
+                            TestUtils.moveBodyAwayFromBody(collisionPair);
                             expectNoCollisionEvents();
                         });
                     });
         
                     describe('continous collision detection', () => {
                         it(`${SHOULD} when one body is moving towards another body it is already touching`, () => {
-                            TestUtils.moveBodiesAdjacentToEachOther(bodyA, bodyB, dir);
-                            TestUtils.moveBodyTowardsBody(bodyA, bodyB);
+                            TestUtils.moveBodiesAdjacentToEachOther(collisionPair, dir);
+                            TestUtils.moveBodyTowardsBody(collisionPair);
                 
                             const [ collisionEvent ] = getCollisionEventsInChronologicalOrder();
                             
@@ -111,10 +118,10 @@ describe('CollisionEvents', () => {
                         });
         
                         it(`${SHOULD} when one body is moving towards another body with a movement path that would end within the other body`, () => {
-                            TestUtils.moveBodiesApartFromEachOther(bodyA, bodyB, dir);
+                            TestUtils.moveBodiesApartFromEachOther(collisionPair, dir);
         
                             const diffPos = getDiffPos();
-                            bodyA.setVelocity(diffPos);
+                            movingBody.setVelocity(diffPos);
         
                             const [ collisionEvent ] = getCollisionEventsInChronologicalOrder();
                             
@@ -124,11 +131,11 @@ describe('CollisionEvents', () => {
                         });
         
                         it(`${SHOULD} when one body is moving towards another body with a movement path that passes all the way through the other body (prevent tunneling)`, () => {
-                            TestUtils.moveBodiesApartFromEachOther(bodyA, bodyB, dir);
+                            TestUtils.moveBodiesApartFromEachOther(collisionPair, dir);
         
                             const diffPos = getDiffPos();
                             const twiceDiffPos = Vectors.rescale(diffPos, Vectors.magnitude(diffPos) * 2);
-                            bodyA.setVelocity(twiceDiffPos);
+                            movingBody.setVelocity(twiceDiffPos);
         
                             const [ collisionEvent ] = getCollisionEventsInChronologicalOrder();
                             
@@ -138,10 +145,10 @@ describe('CollisionEvents', () => {
                         });
             
                         it(`${SHOULD_NOT} when one body is moving towards another body that is beyond the reach of the movement path (don't return future events)`, () => {
-                            TestUtils.moveBodiesApartFromEachOther(bodyA, bodyB, dir);
+                            TestUtils.moveBodiesApartFromEachOther(collisionPair, dir);
         
                             const diffPos = getDiffPos();
-                            bodyA.setVelocity(Vectors.rescale(diffPos, 0.5));
+                            movingBody.setVelocity(Vectors.rescale(diffPos, 0.5));
         
                             expectNoCollisionEvents();
                         });
@@ -149,14 +156,14 @@ describe('CollisionEvents', () => {
         
                     describe("tangential movement (don't recognize collision events for grazing bodies)", () => {
                         beforeEach(() => {
-                            TestUtils.moveBodiesAdjacentToEachOther(bodyA, bodyB, dir);
+                            TestUtils.moveBodiesAdjacentToEachOther(collisionPair, dir);
                         });
     
                         it(`${SHOULD_NOT} when a body moves tangentially to another body`, () => {
-                            const tangentialVectors = TestUtils.getTangentialMovementVectors(bodyA, bodyB, dir, getDiffPos);
+                            const tangentialVectors = TestUtils.getTangentialMovementVectors(collisionPair, dir, getDiffPos);
                             
                             for (const tangent of tangentialVectors) {
-                                bodyA.setVelocity(tangent);
+                                movingBody.setVelocity(tangent);
                                 expectNoCollisionEvents();
                             }
     

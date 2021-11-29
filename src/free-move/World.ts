@@ -1,7 +1,7 @@
 import { Collisions } from "./Collisions";
 import { RectBody } from "./Bodies";
 import { CollisionEvents } from "./CollisionEvents";
-import { BodyType, Bounds, SaveableBodyState } from "./types";
+import { BodyType, Bounds, CollisionPair, SaveableBodyState } from "./types";
 
 type CollisionResolutionMem = {
     [bodyId: string]: string;
@@ -113,25 +113,29 @@ export class World {
         }
 
         for (const collisionEvent of collisionEvents) {
+            const { collisionPair } = collisionEvent;
+            
             // prevent resolving the same collision back-to-back (causes "stickiness" bug of infinite reversal)
-            if (this.hasAlreadyProcessedCollision(body, collisionEvent.collisionBody)) continue;
+            if (this.hasAlreadyProcessedCollision(collisionPair)) continue;
 
             Collisions.resolveCollision(collisionEvent);
-            this.rememberCollision(body, collisionEvent.collisionBody);
+            this.rememberCollision(collisionPair);
 
             return;
         }
     }
 
-    private rememberCollision(bodyA: BodyType, bodyB: BodyType) {
+    private rememberCollision(collisionPair: CollisionPair) {
+        const { movingBody, collisionBody } = collisionPair;
         // both bodyA and bodyB are likely to encounter one another again after collision 
         // resolution; important that both remember they already processed collision
-        this.collisionResolutionMem[bodyA.id] = getCollisionResolutionMemId(bodyA, bodyB);
-        this.collisionResolutionMem[bodyB.id] = getCollisionResolutionMemId(bodyB, bodyA);
+        this.collisionResolutionMem[movingBody.id] = getCollisionResolutionMemId(movingBody, collisionBody);
+        this.collisionResolutionMem[collisionBody.id] = getCollisionResolutionMemId(collisionBody, movingBody);
     }
 
-    private hasAlreadyProcessedCollision(bodyA: BodyType, bodyB: BodyType) {
-        return this.collisionResolutionMem[bodyA.id] === getCollisionResolutionMemId(bodyA, bodyB);
+    private hasAlreadyProcessedCollision(collisionPair: CollisionPair) {
+        const { movingBody, collisionBody } = collisionPair;
+        return this.collisionResolutionMem[movingBody.id] === getCollisionResolutionMemId(movingBody, collisionBody);
     }
 
     private forgetCollision(body: BodyType) {

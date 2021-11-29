@@ -32,28 +32,53 @@ export type BodyType = InstanceType<ReturnType<typeof BodyMixin>>;
 export type CircleBodyType = InstanceType<typeof CircleBody>;
 export type RectBodyType = InstanceType<typeof RectBody>;
 
-export type CollisionEvent = {
+export type CollisionPair = {
     movingBody: BodyType;
     collisionBody: BodyType;
+}
+
+export type CircleVsCircleCollisionPair = {
+    movingBody: CircleBodyType;
+    collisionBody: CircleBodyType;
+}
+
+export type CircleVsRectCollisionPair = {
+    movingBody: CircleBodyType;
+    collisionBody: RectBodyType;
+}
+
+export type RectVsCircleCollisionPair = {
+    movingBody: RectBodyType;
+    collisionBody: CircleBodyType;
+}
+
+export type RectVsRectCollisionPair = {
+    movingBody: RectBodyType;
+    collisionBody: RectBodyType;
+}
+
+export type CollisionEvent = {
+    collisionPair: CollisionPair;
     timeOfCollision: number;
     collisionPoint?: Vector;
     contact?: Partial<RectSides>;
 }
 
+export type CircleVsCircleCollisionEvent = CollisionEvent & {
+    collisionPair: CircleVsCircleCollisionPair;
+}
+
 export type CircleVsRectCollisionEvent = CollisionEvent & {
-    movingBody: CircleBodyType;
-    collisionBody: RectBodyType;
+    collisionPair: CircleVsRectCollisionPair;
     collisionPoint: Vector;
 }
 
 export type RectVsCircleCollisionEvent = CollisionEvent & {
-    movingBody: RectBodyType;
-    collisionBody: CircleBodyType;
+    collisionPair: RectVsCircleCollisionPair;
     collisionPoint: Vector;
 }
 
 export type RectVsRectCollisionEvent = CollisionEvent & {
-    movingBody: RectBodyType;
-    collisionBody: RectBodyType;
+    collisionPair: RectVsRectCollisionPair;
     contact: Partial<RectSides>;
 }
