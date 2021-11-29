@@ -78,10 +78,10 @@ export class TestUtils {
     private static moveCircleBRelativeToCircleA = (circleA: CircleBodyType, circleB: CircleBodyType, dir: Direction, distance: number) => {
         const dirVector = TestUtils.getDirectionalVector(dir, distance);
         
-        const circleBCenter = Vectors.add(circleA.center, dirVector);
-        const circleBPos = TestUtils.getCircleXYPosFromCenter(circleB, circleBCenter);
+        const targetCircleBCenter = Vectors.add(circleA.center, dirVector);
+        const targetCircleBPos = TestUtils.getCircleXYPosFromCenter(circleB, targetCircleBCenter);
 
-        circleB.moveTo(circleBPos);
+        circleB.moveTo(targetCircleBPos);
     };
 
 }
