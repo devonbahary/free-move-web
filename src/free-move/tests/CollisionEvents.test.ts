@@ -12,6 +12,17 @@ import {
 const SHOULD = 'should return a collision event';
 const SHOULD_NOT = 'should NOT return any collision event';
 
+const initBodies = (collisionType: CollisionType): [ BodyType, BodyType ] => {
+    switch (collisionType) {
+        case CollisionType.circleVsCircle:
+            return [ new CircleBody(), new CircleBody() ];
+        case CollisionType.rectVsRect:
+            return [ new RectBody(), new RectBody() ]; 
+        default:
+            throw new Error(`unrecognized CollisionType ${collisionType}`);
+    }
+}
+
 const expectZeroTimeOfCollision = (collisionEvent: CollisionEvent) => {
     expect(Maths.roundFloatingPoint(collisionEvent.timeOfCollision) === 0).toBe(true);
 };
@@ -21,6 +32,7 @@ describe('CollisionEvents', () => {
         let bodyA: BodyType;
         let bodyB: BodyType;
         let getCollisionEventsInChronologicalOrder: () => ReturnType<typeof CollisionEvents['getCollisionEventsInChronologicalOrder']>;
+        let expectCollisionEvent: (collisionEvent: CollisionEvent) => void;
                 
         const expectNoCollisionEvents = () => {
             const collisionEvents = getCollisionEventsInChronologicalOrder();
@@ -33,20 +45,18 @@ describe('CollisionEvents', () => {
                 
                 describe(`${collisionType} (${dir})`, () => {
                     beforeEach(() => {
-                        switch (collisionType) {
-                            case CollisionType.circleVsCircle:
-                                bodyA = new CircleBody();
-                                bodyB = new CircleBody();
-                                break;
-                            case CollisionType.rectVsRect:
-                                bodyA = new RectBody();
-                                bodyB = new RectBody();
-                                break;
-                            default:
-                                throw new Error(`unrecognized CollisionType ${collisionType}`);
-                        }
+                        [ bodyA, bodyB ] = initBodies(collisionType);
+                        
                         getCollisionEventsInChronologicalOrder = () => CollisionEvents.getCollisionEventsInChronologicalOrder([bodyA, bodyB], bodyA);
+                        
                         getDiffPos = () => Vectors.subtract(bodyB.center, bodyA.center);
+
+                        expectCollisionEvent = (collisionEvent: CollisionEvent) => {
+                            expect(collisionEvent).toMatchObject({
+                                movingBody: bodyA,
+                                collisionBody: bodyB,
+                            });
+                        }
                     });
         
                     describe('invalid collision events', () => {
@@ -95,11 +105,8 @@ describe('CollisionEvents', () => {
                             TestUtils.moveBodyTowardsBody(bodyA, bodyB);
                 
                             const [ collisionEvent ] = getCollisionEventsInChronologicalOrder();
-                            expect(collisionEvent).toMatchObject({
-                                movingBody: bodyA,
-                                collisionBody: bodyB,
-                            });
-    
+                            
+                            expectCollisionEvent(collisionEvent);
                             expectZeroTimeOfCollision(collisionEvent);
                         });
         
@@ -110,10 +117,8 @@ describe('CollisionEvents', () => {
                             bodyA.setVelocity(diffPos);
         
                             const [ collisionEvent ] = getCollisionEventsInChronologicalOrder();
-                            expect(collisionEvent).toMatchObject({
-                                movingBody: bodyA,
-                                collisionBody: bodyB,
-                            });
+                            
+                            expectCollisionEvent(collisionEvent);
                             expect(collisionEvent.timeOfCollision).toBeGreaterThan(0);
                             expect(collisionEvent.timeOfCollision).toBeLessThanOrEqual(1);
                         });
@@ -126,10 +131,8 @@ describe('CollisionEvents', () => {
                             bodyA.setVelocity(twiceDiffPos);
         
                             const [ collisionEvent ] = getCollisionEventsInChronologicalOrder();
-                            expect(collisionEvent).toMatchObject({
-                                movingBody: bodyA,
-                                collisionBody: bodyB,
-                            });
+                            
+                            expectCollisionEvent(collisionEvent);
                             expect(collisionEvent.timeOfCollision).toBeGreaterThan(0);
                             expect(collisionEvent.timeOfCollision).toBeLessThanOrEqual(1);
                         });
