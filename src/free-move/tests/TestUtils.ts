@@ -1,6 +1,11 @@
-import { BodyType, CircleBodyType, Vector } from "../types";
+import { BodyType, CircleBodyType, RectBodyType, Vector } from "../types";
 import { isCircleBody, isRectBody } from "../Bodies";
 import { Vectors } from "../Vectors";
+
+export enum CollisionType {
+    circleVsCircle = 'circle vs circle',
+    rectVsRect = 'rect vs rect',
+}
 
 export enum Direction {
     UP = 'UP',
@@ -31,20 +36,93 @@ const DIRECTION_TO_UNIT_VECTOR_MAP: DirectionToUnitVectorMap = {
 };
 
 export class TestUtils {
-    public static moveCirclesAdjacentToEachOther = (circleA: CircleBodyType, circleB: CircleBodyType, dir: Direction) => {
+    public static moveBodiesAdjacentToEachOther = (bodyA: BodyType, bodyB: BodyType, dir: Direction) => {
+        if (isCircleBody(bodyA) && isCircleBody(bodyB)) {
+            return TestUtils.moveCirclesAdjacentToEachOther(bodyA, bodyB, dir);
+        } else if (isRectBody(bodyA) && isRectBody(bodyB)) {
+            return TestUtils.moveRectsAdjacentToEachOther(bodyA, bodyB, dir);
+        }
+    }
+
+    public static moveBodiesApartFromEachOther = (bodyA: BodyType, bodyB: BodyType, dir: Direction) => {
+        if (isCircleBody(bodyA) && isCircleBody(bodyB)) {
+            return TestUtils.moveCirclesApartFromEachOther(bodyA, bodyB, dir);
+        } else if (isRectBody(bodyA) && isRectBody(bodyB)) {
+            return TestUtils.moveRectsApartFromEachOther(bodyA, bodyB, dir);
+        }
+    } 
+
+    public static moveBodiesIntoEachOther = (bodyA: BodyType, bodyB: BodyType, dir: Direction) => {
+        if (isCircleBody(bodyA) && isCircleBody(bodyB)) {
+            return TestUtils.moveCirclesIntoEachOther(bodyA, bodyB, dir);
+        } else if (isRectBody(bodyA) && isRectBody(bodyB)) {
+            return TestUtils.moveRectsIntoEachOther(bodyA, bodyB, dir);
+        }
+    }
+
+    private static moveCirclesAdjacentToEachOther = (circleA: CircleBodyType, circleB: CircleBodyType, dir: Direction) => {
         const distance = circleA.radius + circleB.radius;
         TestUtils.moveCircleBRelativeToCircleA(circleA, circleB, dir, distance);
     };
 
-    public static moveCirclesApartFromEachOther = (circleA: CircleBodyType, circleB: CircleBodyType, dir: Direction) => {
+    private static moveCirclesApartFromEachOther = (circleA: CircleBodyType, circleB: CircleBodyType, dir: Direction) => {
         const distance = (circleA.radius + circleB.radius) * 2;  // space between
         TestUtils.moveCircleBRelativeToCircleA(circleA, circleB, dir, distance);
     };
 
-    public static moveCirclesIntoEachOther = (circleA: CircleBodyType, circleB: CircleBodyType, dir: Direction) => {
+    private static moveCirclesIntoEachOther = (circleA: CircleBodyType, circleB: CircleBodyType, dir: Direction) => {
         const distance = circleA.radius / 2;
         TestUtils.moveCircleBRelativeToCircleA(circleA, circleB, dir, distance);
     };
+
+    private static moveRectsAdjacentToEachOther = (rectA: RectBodyType, rectB: RectBodyType, dir: Direction) => {
+        TestUtils.moveRectBRelativeToRectA(rectA, rectB, dir, 1);
+    };
+
+    private static moveRectsApartFromEachOther = (rectA: RectBodyType, rectB: RectBodyType, dir: Direction) => {
+        TestUtils.moveRectBRelativeToRectA(rectA, rectB, dir, 2);
+    };
+
+    private static moveRectsIntoEachOther = (rectA: RectBodyType, rectB: RectBodyType, dir: Direction) => {
+        TestUtils.moveRectBRelativeToRectA(rectA, rectB, dir, 0.5);
+    };
+
+    private static moveRectBRelativeToRectA = (rectA: RectBodyType, rectB: RectBodyType, dir: Direction, relativeMag: number) => {
+        const targetRectBCenter = rectA.center;
+
+        const xOverlap = (rectA.width / 2 + rectB.width / 2) * relativeMag;
+        const yOverlap = (rectA.height / 2 + rectB.height / 2) * relativeMag;
+
+        switch (dir) {
+            case Direction.DOWN_RIGHT:
+            case Direction.RIGHT:
+            case Direction.UP_RIGHT:
+                targetRectBCenter.x += xOverlap;
+                break;
+            case Direction.DOWN_LEFT:
+            case Direction.LEFT:
+            case Direction.UP_LEFT:
+                targetRectBCenter.x -= xOverlap;
+                break;
+        }
+
+        switch (dir) {
+            case Direction.UP:
+            case Direction.UP_RIGHT:
+            case Direction.UP_LEFT:
+                targetRectBCenter.y -= yOverlap;
+                break;
+            case Direction.DOWN:
+            case Direction.DOWN_LEFT:
+            case Direction.DOWN_RIGHT:
+                targetRectBCenter.y += yOverlap;
+                break;
+        }
+
+        const targetRectBPos = TestUtils.getRectXYPosFromCenter(rectB, targetRectBCenter);
+
+        rectB.moveTo(targetRectBPos);
+    }
 
     public static moveBodyTowardsBody = (bodyA: BodyType, bodyB: BodyType) => {
         const diffPos = Vectors.subtract(bodyB.center, bodyA.center);
@@ -66,8 +144,12 @@ export class TestUtils {
         throw new Error(`cannot getBodyLength for unrecognized body ${JSON.stringify(body)}`);
     }
 
-    private static getCircleXYPosFromCenter = (circle: CircleBodyType, pos: Vector): Vector => {
-        return Vectors.subtract(pos, Vectors.create(circle.radius, circle.radius));
+    private static getCircleXYPosFromCenter = (circle: CircleBodyType, center: Vector): Vector => {
+        return Vectors.subtract(center, Vectors.create(circle.radius, circle.radius));
+    }
+
+    private static getRectXYPosFromCenter = (rect: RectBodyType, center: Vector): Vector => {
+        return Vectors.subtract(center, Vectors.create(rect.width / 2, rect.height / 2));
     }
 
     private static getDirectionalVector = (dir: Direction, mag: number): Vector => {

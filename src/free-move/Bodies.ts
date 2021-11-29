@@ -84,6 +84,10 @@ export class Point implements Vector {
         return this.y;
     }
 
+    get pos() { 
+        return Vectors.create(this.x, this.y);
+    }
+
     moveTo({ x, y }: Vector) {
         this.x = x;
         this.y = y;
