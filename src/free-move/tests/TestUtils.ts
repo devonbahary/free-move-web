@@ -60,6 +60,42 @@ export class TestUtils {
         }
     }
 
+    public static getTangentialMovementVectors = (bodyA: BodyType, bodyB: BodyType, dir: Direction, getDiffPos: () => Vector): Vector[] => {
+        if (isCircleBody(bodyA) && isCircleBody(bodyB)) {
+            const diffPos = getDiffPos();
+            return Vectors.normalVectors(diffPos);
+        } else if (isRectBody(bodyA) && isRectBody(bodyB)) {
+            switch (dir) {
+                case Direction.DOWN:
+                case Direction.UP:
+                    return [
+                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.LEFT],
+                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.RIGHT],
+                    ];
+                case Direction.LEFT:
+                case Direction.RIGHT:
+                    return [
+                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP],
+                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN],
+                    ];
+                case Direction.DOWN_LEFT:
+                case Direction.UP_RIGHT:
+                    return [
+                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP_LEFT],
+                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN_RIGHT],
+                    ];
+                case Direction.DOWN_RIGHT:
+                case Direction.UP_LEFT:
+                    return [
+                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP_RIGHT],
+                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN_LEFT],
+                    ];
+            }
+        }
+        
+        throw new Error(`can't get tangential movement vector for bodyA ${JSON.stringify(bodyA)}, bodyB ${JSON.stringify(bodyB)}`);
+    };
+
     private static moveCirclesAdjacentToEachOther = (circleA: CircleBodyType, circleB: CircleBodyType, dir: Direction) => {
         const distance = circleA.radius + circleB.radius;
         TestUtils.moveCircleBRelativeToCircleA(circleA, circleB, dir, distance);

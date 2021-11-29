@@ -150,10 +150,9 @@ describe('CollisionEvents', () => {
                         });
     
                         it(`${SHOULD_NOT} when a body moves tangentially to another body`, () => {
-                            const diffPos = getDiffPos();
-                            const tangentVectors = Vectors.normalVectors(diffPos);
+                            const tangentialVectors = TestUtils.getTangentialMovementVectors(bodyA, bodyB, dir, getDiffPos);
                             
-                            for (const tangent of tangentVectors) {
+                            for (const tangent of tangentialVectors) {
                                 bodyA.setVelocity(tangent);
                                 expectNoCollisionEvents();
                             }
