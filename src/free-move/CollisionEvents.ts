@@ -195,6 +195,7 @@ export class CollisionEvents {
 
     static getRectVsRectCollisionEvents = (rectA: RectBodyType, rectB: RectBodyType) => {
         return COLLISION_SIDES.reduce<RectVsRectCollisionEvent[]>((validCollisionEvents, movingBodyContactSide) => {
+            // determine if the moving rect will pass the collision rect boundary at all in the future            
             const movingBoundary = rectA[movingBodyContactSide];
 
             const collisionBodyContactSide = OPPOSITE_SIDE_MAP[movingBodyContactSide];
@@ -207,9 +208,9 @@ export class CollisionEvents {
             const rateOfChangeInAxis = isXAlignedCollision ? dx : dy;
             const timeOfCollision = getTimeOfAxisAlignedCollision(movingBoundary, collisionBoundary, rateOfChangeInAxis);
             
-            // determine if the moving rect will pass the collision rect boundary
             if (!isValidTimeOfCollision(timeOfCollision)) return validCollisionEvents;
 
+            // determine if there is overlap between the two rects in the opposite axis at the time the collision boundary is met
             const rateOfChangeInOtherAxis = isXAlignedCollision ? dy : dx;
             const changeInOtherAxis = rateOfChangeInOtherAxis * timeOfCollision;
             
@@ -222,7 +223,6 @@ export class CollisionEvents {
             const b0 = isXAlignedCollision ? rectB.y0 : rectB.x0;
             const b1 = isXAlignedCollision ? rectB.y1 : rectB.x1;
 
-            // determine if there is overlap between the two rects in the opposite axis at the time the collision boundary is met
             if (Maths.hasOverlap(a0AtTimeOfCollision, a1AtTimeOfCollision, b0, b1)) {
                 const contact = { [collisionBodyContactSide]: collisionBoundary };
                 
