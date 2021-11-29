@@ -61,7 +61,11 @@ export class TestUtils {
         }
     }
 
-    public static getTangentialMovementVectors = (collisionPair: CollisionPair, dir: Direction, getDiffPos: () => Vector): Vector[] => {
+    public static getTangentialMovementVectors = (
+        collisionPair: CollisionPair, 
+        dir: Direction, 
+        getDiffPos: () => Vector,
+    ): Vector[] => {
         if (Collisions.isCircleVsCircle(collisionPair)) {
             const diffPos = getDiffPos();
             return Vectors.normalVectors(diffPos);
@@ -94,7 +98,9 @@ export class TestUtils {
             }
         }
         
-        throw new Error(`can't get tangential movement vector for bodyA ${JSON.stringify(collisionPair.movingBody)}, bodyB ${JSON.stringify(collisionPair.collisionBody)}`);
+        throw new Error(
+            `can't get tangential movement vector for bodyA ${JSON.stringify(collisionPair.movingBody)}, bodyB ${JSON.stringify(collisionPair.collisionBody)}`
+        );
     };
 
     private static moveCirclesAdjacentToEachOther = (collisionPair: CircleVsCircleCollisionPair, dir: Direction) => {
@@ -201,7 +207,11 @@ export class TestUtils {
         return Vectors.rescale(unitVector, mag);
     };
 
-    private static moveCircleBRelativeToCircleA = (collisionPair: CircleVsCircleCollisionPair, dir: Direction, distance: number) => {
+    private static moveCircleBRelativeToCircleA = (
+        collisionPair: CircleVsCircleCollisionPair, 
+        dir: Direction, 
+        distance: number,
+    ) => {
         const { movingBody, collisionBody } = collisionPair;
 
         const dirVector = TestUtils.getDirectionalVector(dir, distance);
