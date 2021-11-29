@@ -57,5 +57,14 @@ export class Vectors {
 
     static subtract = (v1: Vector, v2: Vector): Vector => ({ x: v1.x - v2.x, y: v1.y - v2.y });
 
+    static inSameQuadrant = (v1: Vector, v2: Vector): boolean => {
+        const { x: x1, y: y1 } = v1;
+        const { x: x2, y: y2 } = v2;
+
+        const inSameXAxis = x1 === x2 || Math.sign(x1) === Math.sign(x2);
+        const inSameYAxis = y1 === y2 || Math.sign(y1) === Math.sign(y2);
+        return inSameXAxis && inSameYAxis;
+    }
+
     static format = (vector: Vector) => `(${round(vector.x)}, ${round(vector.y)})`;
 }

@@ -15,6 +15,7 @@ import {
 import { Collisions } from "./Collisions";
 import { BodyType, CircleBodyType, RectBodyType, CircleVsRectCollisionEvent, CollisionEvent, Vector, RectVsCircleCollisionEvent, RectVsRectCollisionEvent } from "./types";
 import { isCircleBody, isRectBody } from "./Bodies";
+import { Vectors } from "./Vectors";
 
 export class CollisionEvents {
     // TODO: implement quadtree to prevent O(n^2)
@@ -224,6 +225,21 @@ export class CollisionEvents {
             const b1 = isXAlignedCollision ? rectB.y1 : rectB.x1;
 
             if (Maths.hasOverlap(a0AtTimeOfCollision, a1AtTimeOfCollision, b0, b1)) {
+                const exactOverlap = Maths.getExactOverlap(a0AtTimeOfCollision, a1AtTimeOfCollision, b0, b1);
+
+                // when there's exact overlap, a rect may be grazing a corner
+                if (exactOverlap !== null) {
+                    const pointOfCollision = isXAlignedCollision 
+                        ? Vectors.create(collisionBoundary, exactOverlap)
+                        : Vectors.create(exactOverlap, collisionBoundary);
+                    
+                    // we only want to consider a collision if the rect is moving towards the other rect
+                    const directionOfCollisionRelativeToRectCenter = Vectors.subtract(pointOfCollision, rectA.center);
+                    if (!Vectors.inSameQuadrant(directionOfCollisionRelativeToRectCenter, rectA.velocity)) {
+                        return validCollisionEvents;
+                    }
+                }
+
                 const contact = { [collisionBodyContactSide]: collisionBoundary };
                 
                 const collisionEvent = {

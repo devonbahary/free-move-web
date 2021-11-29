@@ -15,6 +15,12 @@ export class Maths {
         return true;
     };
 
+    static getExactOverlap = (a0: number, a1: number, b0: number, b1: number) => {
+        if (a0 === b1) return a0;
+        if (a1 === b0) return a1;
+        return null;
+    }
+
     // alleviate floating point errors (e.g., -7.082604849269798e-7 should be 0)
     static roundFloatingPoint = (timeOfCollision: number) => {
         return Math.round(timeOfCollision * 1000) / 1000;
