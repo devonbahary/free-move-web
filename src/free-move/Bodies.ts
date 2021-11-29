@@ -92,8 +92,8 @@ export class Point implements Vector {
 
 export class Rectangle extends Point implements Rect {
     constructor(
-        public width: number,
-        public height: number,
+        public width = 1,
+        public height = 1,
     ) {
         super();
     }

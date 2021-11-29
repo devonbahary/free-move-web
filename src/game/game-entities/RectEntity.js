@@ -4,7 +4,7 @@ import { GameEntity } from "./GameEntity";
 export class RectEntity extends GameEntity {
     constructor() {
         super();
-        this.body = new RectBody(1, 1);
+        this.body = new RectBody();
         this.body.name = `rect ${String.fromCharCode(RectEntity.#CHARACTER_CODE++)}`;
     }
 
