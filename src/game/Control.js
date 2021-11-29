@@ -37,7 +37,7 @@ export class Control {
     }
 
     updatePlayerInput() {
-        const movementVector = Vectors.create(0, 0);
+        const movementVector = Vectors.create();
 
         if (this.isPressed('ArrowUp')) {
             movementVector.y = -1;

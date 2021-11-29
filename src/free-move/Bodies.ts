@@ -16,7 +16,7 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
             super(...args);
             
             this.id = uuid();
-            this.velocity = Vectors.create(0, 0);        
+            this.velocity = Vectors.create();        
             this.mass = 1;
             // TODO: implement restitution
             this.isElastic = true;
