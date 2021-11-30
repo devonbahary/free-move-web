@@ -201,26 +201,26 @@ export class TestUtils {
         dir: Direction, 
         relativeMag: number,
     ) => {
-        const { movingBody, collisionBody: rectB } = collisionPair;
+        const { movingBody, collisionBody: collisionBodyRect } = collisionPair;
 
-        const targetRectBCenter = movingBody.center;
+        const targetCollisionBodRectCenter = movingBody.center;
 
         const movingBodyHalfWidth = TestUtils.getBodyHalfWidth(movingBody);
         const movingBodyHalfHeight = TestUtils.getBodyHalfHeight(movingBody);
 
-        const xOverlap = (movingBodyHalfWidth + rectB.width / 2) * relativeMag;
-        const yOverlap = (movingBodyHalfHeight + rectB.height / 2) * relativeMag;
+        const xOverlap = (movingBodyHalfWidth + collisionBodyRect.width / 2) * relativeMag;
+        const yOverlap = (movingBodyHalfHeight + collisionBodyRect.height / 2) * relativeMag;
 
         switch (dir) {
             case Direction.DOWN_RIGHT:
             case Direction.RIGHT:
             case Direction.UP_RIGHT:
-                targetRectBCenter.x += xOverlap;
+                targetCollisionBodRectCenter.x += xOverlap;
                 break;
             case Direction.DOWN_LEFT:
             case Direction.LEFT:
             case Direction.UP_LEFT:
-                targetRectBCenter.x -= xOverlap;
+                targetCollisionBodRectCenter.x -= xOverlap;
                 break;
         }
 
@@ -228,18 +228,18 @@ export class TestUtils {
             case Direction.UP:
             case Direction.UP_RIGHT:
             case Direction.UP_LEFT:
-                targetRectBCenter.y -= yOverlap;
+                targetCollisionBodRectCenter.y -= yOverlap;
                 break;
             case Direction.DOWN:
             case Direction.DOWN_LEFT:
             case Direction.DOWN_RIGHT:
-                targetRectBCenter.y += yOverlap;
+                targetCollisionBodRectCenter.y += yOverlap;
                 break;
         }
 
-        const targetRectBPos = TestUtils.getRectXYPosFromCenter(rectB, targetRectBCenter);
+        const targetCollisionBodyRectPos = TestUtils.getRectXYPosFromCenter(collisionBodyRect, targetCollisionBodRectCenter);
 
-        rectB.moveTo(targetRectBPos);
+        collisionBodyRect.moveTo(targetCollisionBodyRectPos);
     }
 
     public static moveBodyTowardsBody = (collisionPair: CollisionPair) => {
