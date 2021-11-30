@@ -1,13 +1,15 @@
-import { BodyType, CircleBodyType, CircleVsCircleCollisionPair, CollisionPair, RectBodyType, RectVsRectCollisionPair, Vector } from "../types";
+import { BodyType, CircleBodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionPair, RectBodyType, Vector } from "../types";
 import { isCircleBody, isRectBody } from "../Bodies";
 import { Vectors } from "../Vectors";
 import { Collisions } from "../Collisions";
 
 export enum CollisionType {
     circleVsCircle = 'circle vs circle',
+    circleVsRect = 'circle vs rect',
     rectVsRect = 'rect vs rect',
 }
 
+// TODO: can we make Direction a union of Direction | DiagonalDirection?
 export enum Direction {
     UP = 'UP',
     RIGHT = 'RIGHT',
@@ -23,6 +25,11 @@ type DirectionToUnitVectorMap = {
     [ key in Direction]: Vector; 
 }
 
+type BodyVsRectCollisionPair = {
+    movingBody: BodyType;
+    collisionBody: RectBodyType;
+}
+
 const diagonalScalar = Math.sqrt(2) / 2;
 
 const DIRECTION_TO_UNIT_VECTOR_MAP: DirectionToUnitVectorMap = {
@@ -36,28 +43,58 @@ const DIRECTION_TO_UNIT_VECTOR_MAP: DirectionToUnitVectorMap = {
     UP_LEFT: Vectors.create(-diagonalScalar, -diagonalScalar),
 };
 
+const isDiagonal = (dir: Direction) => {
+    switch (dir) {
+        case Direction.DOWN:
+        case Direction.LEFT:
+        case Direction.RIGHT:
+        case Direction.UP:
+            return false;
+        default:
+            return true;
+    }
+}
+
 export class TestUtils {
     public static moveBodiesAdjacentToEachOther = (collisionPair: CollisionPair, dir: Direction) => {
         if (Collisions.isCircleVsCircle(collisionPair)) {
-            return TestUtils.moveCirclesAdjacentToEachOther(collisionPair, dir);
+            const { movingBody: circleA, collisionBody: circleB } = collisionPair;
+            const distance = circleA.radius + circleB.radius;
+            TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
+        } else if (Collisions.isCircleVsRect(collisionPair)) {
+            TestUtils.moveRectRelativeToCircle(collisionPair, dir, 1);
         } else if (Collisions.isRectVsRect(collisionPair)) {
-            return TestUtils.moveRectsAdjacentToEachOther(collisionPair, dir);
+            return TestUtils.moveCollisionBodyRectRelativeToMovingBody(collisionPair, dir, 1);
+        } else {
+            throw new Error();
         }
     }
 
     public static moveBodiesApartFromEachOther = (collisionPair: CollisionPair, dir: Direction) => {
         if (Collisions.isCircleVsCircle(collisionPair)) {
-            return TestUtils.moveCirclesApartFromEachOther(collisionPair, dir);
+            const { movingBody: circleA, collisionBody: circleB } = collisionPair;
+            const distance = (circleA.radius + circleB.radius) * 2;  // space between
+            TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
+        } else if (Collisions.isCircleVsRect(collisionPair)) {
+            TestUtils.moveRectRelativeToCircle(collisionPair, dir, 2);
         } else if (Collisions.isRectVsRect(collisionPair)) {
-            return TestUtils.moveRectsApartFromEachOther(collisionPair, dir);
+            TestUtils.moveCollisionBodyRectRelativeToMovingBody(collisionPair, dir, 2);
+        } else {
+            throw new Error();
         }
     } 
 
     public static moveBodiesIntoEachOther = (collisionPair: CollisionPair, dir: Direction) => {
         if (Collisions.isCircleVsCircle(collisionPair)) {
-            return TestUtils.moveCirclesIntoEachOther(collisionPair, dir);
+            const { movingBody: circleA } = collisionPair;
+            const distance = circleA.radius / 2;
+            TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
+        } else if (Collisions.isCircleVsRect(collisionPair)) {
+            TestUtils.moveRectRelativeToCircle(collisionPair, dir, 0.5);
         } else if (Collisions.isRectVsRect(collisionPair)) {
-            return TestUtils.moveRectsIntoEachOther(collisionPair, dir);
+            TestUtils.moveCollisionBodyRectRelativeToMovingBody(collisionPair, dir, 0.5);
+        } else {
+            throw new Error();
         }
     }
 
@@ -69,7 +106,7 @@ export class TestUtils {
         if (Collisions.isCircleVsCircle(collisionPair)) {
             const diffPos = getDiffPos();
             return Vectors.normalVectors(diffPos);
-        } else if (Collisions.isRectVsRect(collisionPair)) {
+        } else if (Collisions.isCircleVsRect(collisionPair) || Collisions.isRectVsRect(collisionPair)) {
             switch (dir) {
                 case Direction.DOWN:
                 case Direction.UP:
@@ -98,48 +135,81 @@ export class TestUtils {
             }
         }
         
-        throw new Error(
-            `can't get tangential movement vector for bodyA ${JSON.stringify(collisionPair.movingBody)}, bodyB ${JSON.stringify(collisionPair.collisionBody)}`
-        );
+        throw new Error();
     };
 
-    private static moveCirclesAdjacentToEachOther = (collisionPair: CircleVsCircleCollisionPair, dir: Direction) => {
-        const { movingBody: circleA, collisionBody: circleB } = collisionPair;
-        const distance = circleA.radius + circleB.radius;
-        TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
+    private static moveCircleBRelativeToCircleA = (
+        collisionPair: CircleVsCircleCollisionPair, 
+        dir: Direction, 
+        distance: number,
+    ) => {
+        const { movingBody, collisionBody } = collisionPair;
+
+        const dirVector = TestUtils.getDirectionalVector(dir, distance);
+        
+        const targetCircleBCenter = Vectors.add(movingBody.center, dirVector);
+        const targetCircleBPos = TestUtils.getCircleXYPosFromCenter(collisionBody, targetCircleBCenter);
+
+        collisionBody.moveTo(targetCircleBPos);
     };
 
-    private static moveCirclesApartFromEachOther = (collisionPair: CircleVsCircleCollisionPair, dir: Direction) => {
-        const { movingBody: circleA, collisionBody: circleB } = collisionPair;
-        const distance = (circleA.radius + circleB.radius) * 2;  // space between
-        TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
-    };
+    private static moveRectRelativeToCircle = (
+        collisionPair: CircleVsRectCollisionPair,
+        dir: Direction,
+        magnitude: number,
+    ) => {
+        const { movingBody: circle, collisionBody: rect } = collisionPair;
 
-    private static moveCirclesIntoEachOther = (collisionPair: CircleVsCircleCollisionPair, dir: Direction) => {
-        const { movingBody: circleA } = collisionPair;
-        const distance = circleA.radius / 2;
-        TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
-    };
+        if (isDiagonal(dir)) {
+            const vectorToCircleEdge = Vectors.rescale(DIRECTION_TO_UNIT_VECTOR_MAP[dir], circle.radius);
 
-    private static moveRectsAdjacentToEachOther = (collisionPair: RectVsRectCollisionPair, dir: Direction) => {
-        TestUtils.moveRectBRelativeToRectA(collisionPair, dir, 1);
-    };
+            let rectClosestCorner = Vectors.create();
+            switch (dir) {
+                case Direction.DOWN_LEFT:
+                    rectClosestCorner = Vectors.create(rect.x1, rect.y0);
+                    break;
+                case Direction.DOWN_RIGHT:
+                    rectClosestCorner = Vectors.create(rect.x0, rect.y0);
+                    break;
+                case Direction.UP_LEFT:
+                    rectClosestCorner = Vectors.create(rect.x1, rect.y1);
+                    break;
+                case Direction.UP_RIGHT:
+                    rectClosestCorner = Vectors.create(rect.x0, rect.y1);
+                    break;
+            }
 
-    private static moveRectsApartFromEachOther = (collisionPair: RectVsRectCollisionPair, dir: Direction) => {
-        TestUtils.moveRectBRelativeToRectA(collisionPair, dir, 2);
-    };
+            const vectorToRectCenterFromClosestCorner = Vectors.subtract(rect.center, rectClosestCorner);
+            const vectorFromCircleCenterToRectTargetCenter = Vectors.add(vectorToCircleEdge, vectorToRectCenterFromClosestCorner);
+            const adjacentMagnitude = Vectors.magnitude(vectorFromCircleCenterToRectTargetCenter);
+            const targetVectorFromCircleCenterToRectTargetCenter = Vectors.rescale(
+                vectorFromCircleCenterToRectTargetCenter, 
+                adjacentMagnitude * magnitude,
+            );
 
-    private static moveRectsIntoEachOther = (collisionPair: RectVsRectCollisionPair, dir: Direction) => {
-        TestUtils.moveRectBRelativeToRectA(collisionPair, dir, 0.5);
-    };
+            const targetRectCenter = Vectors.add(circle.center, targetVectorFromCircleCenterToRectTargetCenter);
+            const targetRectPos = TestUtils.getRectXYPosFromCenter(rect, targetRectCenter);
+            
+            rect.moveTo(targetRectPos);
+        } else {
+            TestUtils.moveCollisionBodyRectRelativeToMovingBody(collisionPair, dir, magnitude);
+        }
+    }
 
-    private static moveRectBRelativeToRectA = (collisionPair: RectVsRectCollisionPair, dir: Direction, relativeMag: number) => {
-        const { movingBody: rectA, collisionBody: rectB } = collisionPair;
+    private static moveCollisionBodyRectRelativeToMovingBody = (
+        collisionPair: BodyVsRectCollisionPair, 
+        dir: Direction, 
+        relativeMag: number,
+    ) => {
+        const { movingBody, collisionBody: rectB } = collisionPair;
 
-        const targetRectBCenter = rectA.center;
+        const targetRectBCenter = movingBody.center;
 
-        const xOverlap = (rectA.width / 2 + rectB.width / 2) * relativeMag;
-        const yOverlap = (rectA.height / 2 + rectB.height / 2) * relativeMag;
+        const movingBodyHalfWidth = TestUtils.getBodyHalfWidth(movingBody);
+        const movingBodyHalfHeight = TestUtils.getBodyHalfHeight(movingBody);
+
+        const xOverlap = (movingBodyHalfWidth + rectB.width / 2) * relativeMag;
+        const yOverlap = (movingBodyHalfHeight + rectB.height / 2) * relativeMag;
 
         switch (dir) {
             case Direction.DOWN_RIGHT:
@@ -191,7 +261,19 @@ export class TestUtils {
     private static getBodyLength = (body: BodyType) => {
         if (isCircleBody(body)) return body.radius * 2;
         if (isRectBody(body)) return Math.max(body.width, body.height) * 2;
-        throw new Error(`cannot getBodyLength for unrecognized body ${JSON.stringify(body)}`);
+        throw new Error();
+    }
+
+    private static getBodyHalfWidth = (body: BodyType): number => {
+        if (isCircleBody(body)) return body.radius;
+        if (isRectBody(body)) return body.width / 2;
+        throw new Error();
+    }
+
+    private static getBodyHalfHeight = (body: BodyType): number => {
+        if (isCircleBody(body)) return body.radius;
+        if (isRectBody(body)) return body.height / 2;
+        throw new Error();
     }
 
     private static getCircleXYPosFromCenter = (circle: CircleBodyType, center: Vector): Vector => {
@@ -205,21 +287,6 @@ export class TestUtils {
     private static getDirectionalVector = (dir: Direction, mag: number): Vector => {
         const unitVector = DIRECTION_TO_UNIT_VECTOR_MAP[dir];
         return Vectors.rescale(unitVector, mag);
-    };
-
-    private static moveCircleBRelativeToCircleA = (
-        collisionPair: CircleVsCircleCollisionPair, 
-        dir: Direction, 
-        distance: number,
-    ) => {
-        const { movingBody, collisionBody } = collisionPair;
-
-        const dirVector = TestUtils.getDirectionalVector(dir, distance);
-        
-        const targetCircleBCenter = Vectors.add(movingBody.center, dirVector);
-        const targetCircleBPos = TestUtils.getCircleXYPosFromCenter(collisionBody, targetCircleBCenter);
-
-        collisionBody.moveTo(targetCircleBPos);
     };
 
 }
