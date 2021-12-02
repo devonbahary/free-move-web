@@ -1,4 +1,4 @@
-import { BodyType, CircleBodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionPair, RectBodyType, Vector } from "../types";
+import { BodyType, CircleBodyType, CollisionPair, RectBodyType, Vector } from "../types";
 import { isCircleBody, isRectBody } from "../Bodies";
 import { Vectors } from "../Vectors";
 import { Collisions } from "../Collisions";
@@ -6,6 +6,7 @@ import { Collisions } from "../Collisions";
 export enum CollisionType {
     circleVsCircle = 'circle vs circle',
     circleVsRect = 'circle vs rect',
+    rectVsCircle = 'rect vs circle',
     rectVsRect = 'rect vs rect',
 }
 
@@ -23,11 +24,6 @@ export enum Direction {
 
 type DirectionToUnitVectorMap = { 
     [ key in Direction]: Vector; 
-}
-
-type BodyVsRectCollisionPair = {
-    movingBody: BodyType;
-    collisionBody: RectBodyType;
 }
 
 const diagonalScalar = Math.sqrt(2) / 2;
@@ -57,45 +53,15 @@ const isDiagonal = (dir: Direction) => {
 
 export class TestUtils {
     public static moveBodiesAdjacentToEachOther = (collisionPair: CollisionPair, dir: Direction) => {
-        if (Collisions.isCircleVsCircle(collisionPair)) {
-            const { movingBody: circleA, collisionBody: circleB } = collisionPair;
-            const distance = circleA.radius + circleB.radius;
-            TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
-        } else if (Collisions.isCircleVsRect(collisionPair)) {
-            TestUtils.moveRectRelativeToCircle(collisionPair, dir, 1);
-        } else if (Collisions.isRectVsRect(collisionPair)) {
-            return TestUtils.moveCollisionBodyRectRelativeToMovingBody(collisionPair, dir, 1);
-        } else {
-            throw new Error();
-        }
+        TestUtils.moveCollisionBodyRelativeToMovingBody(collisionPair, dir, 1);
     }
 
     public static moveBodiesApartFromEachOther = (collisionPair: CollisionPair, dir: Direction) => {
-        if (Collisions.isCircleVsCircle(collisionPair)) {
-            const { movingBody: circleA, collisionBody: circleB } = collisionPair;
-            const distance = (circleA.radius + circleB.radius) * 2;  // space between
-            TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
-        } else if (Collisions.isCircleVsRect(collisionPair)) {
-            TestUtils.moveRectRelativeToCircle(collisionPair, dir, 2);
-        } else if (Collisions.isRectVsRect(collisionPair)) {
-            TestUtils.moveCollisionBodyRectRelativeToMovingBody(collisionPair, dir, 2);
-        } else {
-            throw new Error();
-        }
+        TestUtils.moveCollisionBodyRelativeToMovingBody(collisionPair, dir, 2);
     } 
 
     public static moveBodiesIntoEachOther = (collisionPair: CollisionPair, dir: Direction) => {
-        if (Collisions.isCircleVsCircle(collisionPair)) {
-            const { movingBody: circleA } = collisionPair;
-            const distance = circleA.radius / 2;
-            TestUtils.moveCircleBRelativeToCircleA(collisionPair, dir, distance);
-        } else if (Collisions.isCircleVsRect(collisionPair)) {
-            TestUtils.moveRectRelativeToCircle(collisionPair, dir, 0.5);
-        } else if (Collisions.isRectVsRect(collisionPair)) {
-            TestUtils.moveCollisionBodyRectRelativeToMovingBody(collisionPair, dir, 0.5);
-        } else {
-            throw new Error();
-        }
+        TestUtils.moveCollisionBodyRelativeToMovingBody(collisionPair, dir, 0.5);
     }
 
     public static getTangentialMovementVectors = (
@@ -106,140 +72,61 @@ export class TestUtils {
         if (Collisions.isCircleVsCircle(collisionPair)) {
             const diffPos = getDiffPos();
             return Vectors.normalVectors(diffPos);
-        } else if (Collisions.isCircleVsRect(collisionPair) || Collisions.isRectVsRect(collisionPair)) {
-            switch (dir) {
-                case Direction.DOWN:
-                case Direction.UP:
-                    return [
-                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.LEFT],
-                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.RIGHT],
-                    ];
-                case Direction.LEFT:
-                case Direction.RIGHT:
-                    return [
-                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP],
-                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN],
-                    ];
-                case Direction.DOWN_LEFT:
-                case Direction.UP_RIGHT:
-                    return [
-                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP_LEFT],
-                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN_RIGHT],
-                    ];
-                case Direction.DOWN_RIGHT:
-                case Direction.UP_LEFT:
-                    return [
-                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP_RIGHT],
-                        DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN_LEFT],
-                    ];
-            }
         }
-        
-        throw new Error();
+
+        switch (dir) {
+            case Direction.DOWN:
+            case Direction.UP:
+                return [
+                    DIRECTION_TO_UNIT_VECTOR_MAP[Direction.LEFT],
+                    DIRECTION_TO_UNIT_VECTOR_MAP[Direction.RIGHT],
+                ];
+            case Direction.LEFT:
+            case Direction.RIGHT:
+                return [
+                    DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP],
+                    DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN],
+                ];
+            case Direction.DOWN_LEFT:
+            case Direction.UP_RIGHT:
+                return [
+                    DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP_LEFT],
+                    DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN_RIGHT],
+                ];
+            case Direction.DOWN_RIGHT:
+            case Direction.UP_LEFT:
+                return [
+                    DIRECTION_TO_UNIT_VECTOR_MAP[Direction.UP_RIGHT],
+                    DIRECTION_TO_UNIT_VECTOR_MAP[Direction.DOWN_LEFT],
+                ];
+        }
     };
 
-    private static moveCircleBRelativeToCircleA = (
-        collisionPair: CircleVsCircleCollisionPair, 
-        dir: Direction, 
-        distance: number,
-    ) => {
-        const { movingBody, collisionBody } = collisionPair;
-
-        const dirVector = TestUtils.getDirectionalVector(dir, distance);
-        
-        const targetCircleBCenter = Vectors.add(movingBody.center, dirVector);
-        const targetCircleBPos = TestUtils.getCircleXYPosFromCenter(collisionBody, targetCircleBCenter);
-
-        collisionBody.moveTo(targetCircleBPos);
-    };
-
-    private static moveRectRelativeToCircle = (
-        collisionPair: CircleVsRectCollisionPair,
-        dir: Direction,
-        magnitude: number,
-    ) => {
-        const { movingBody: circle, collisionBody: rect } = collisionPair;
-
-        if (isDiagonal(dir)) {
-            const vectorToCircleEdge = Vectors.rescale(DIRECTION_TO_UNIT_VECTOR_MAP[dir], circle.radius);
-
-            let rectClosestCorner = Vectors.create();
-            switch (dir) {
-                case Direction.DOWN_LEFT:
-                    rectClosestCorner = Vectors.create(rect.x1, rect.y0);
-                    break;
-                case Direction.DOWN_RIGHT:
-                    rectClosestCorner = Vectors.create(rect.x0, rect.y0);
-                    break;
-                case Direction.UP_LEFT:
-                    rectClosestCorner = Vectors.create(rect.x1, rect.y1);
-                    break;
-                case Direction.UP_RIGHT:
-                    rectClosestCorner = Vectors.create(rect.x0, rect.y1);
-                    break;
-            }
-
-            const vectorToRectCenterFromClosestCorner = Vectors.subtract(rect.center, rectClosestCorner);
-            const vectorFromCircleCenterToRectTargetCenter = Vectors.add(vectorToCircleEdge, vectorToRectCenterFromClosestCorner);
-            const adjacentMagnitude = Vectors.magnitude(vectorFromCircleCenterToRectTargetCenter);
-            const targetVectorFromCircleCenterToRectTargetCenter = Vectors.rescale(
-                vectorFromCircleCenterToRectTargetCenter, 
-                adjacentMagnitude * magnitude,
-            );
-
-            const targetRectCenter = Vectors.add(circle.center, targetVectorFromCircleCenterToRectTargetCenter);
-            const targetRectPos = TestUtils.getRectXYPosFromCenter(rect, targetRectCenter);
-            
-            rect.moveTo(targetRectPos);
-        } else {
-            TestUtils.moveCollisionBodyRectRelativeToMovingBody(collisionPair, dir, magnitude);
-        }
-    }
-
-    private static moveCollisionBodyRectRelativeToMovingBody = (
-        collisionPair: BodyVsRectCollisionPair, 
+    private static moveCollisionBodyRelativeToMovingBody = (
+        collisionPair: CollisionPair, 
         dir: Direction, 
         relativeMag: number,
     ) => {
-        const { movingBody, collisionBody: collisionBodyRect } = collisionPair;
+        const { movingBody, collisionBody } = collisionPair;
 
-        const targetCollisionBodRectCenter = movingBody.center;
+        const centerToCenterAdjacentBodyVector = TestUtils.getCenterToCenterAdjacentBodyVector(collisionPair, dir);
 
-        const movingBodyHalfWidth = TestUtils.getBodyHalfWidth(movingBody);
-        const movingBodyHalfHeight = TestUtils.getBodyHalfHeight(movingBody);
+        const vectorFromMovingBodyCenterToTargetCollisionBodyCenter = Vectors.rescale(
+            centerToCenterAdjacentBodyVector,
+            Vectors.magnitude(centerToCenterAdjacentBodyVector) * relativeMag,
+        );
 
-        const xOverlap = (movingBodyHalfWidth + collisionBodyRect.width / 2) * relativeMag;
-        const yOverlap = (movingBodyHalfHeight + collisionBodyRect.height / 2) * relativeMag;
+        const targetCollisionBodyCenter = Vectors.add(movingBody.center, vectorFromMovingBodyCenterToTargetCollisionBodyCenter);
 
-        switch (dir) {
-            case Direction.DOWN_RIGHT:
-            case Direction.RIGHT:
-            case Direction.UP_RIGHT:
-                targetCollisionBodRectCenter.x += xOverlap;
-                break;
-            case Direction.DOWN_LEFT:
-            case Direction.LEFT:
-            case Direction.UP_LEFT:
-                targetCollisionBodRectCenter.x -= xOverlap;
-                break;
+        if (isCircleBody(collisionBody)) {
+            const targetCirclePos = TestUtils.getCircleXYPosFromCenter(collisionBody, targetCollisionBodyCenter);
+            collisionBody.moveTo(targetCirclePos);
+        } else if (isRectBody(collisionBody)) {
+            const targetRectPos = TestUtils.getRectXYPosFromCenter(collisionBody, targetCollisionBodyCenter);
+            collisionBody.moveTo(targetRectPos);
+        } else {
+            throw new Error();
         }
-
-        switch (dir) {
-            case Direction.UP:
-            case Direction.UP_RIGHT:
-            case Direction.UP_LEFT:
-                targetCollisionBodRectCenter.y -= yOverlap;
-                break;
-            case Direction.DOWN:
-            case Direction.DOWN_LEFT:
-            case Direction.DOWN_RIGHT:
-                targetCollisionBodRectCenter.y += yOverlap;
-                break;
-        }
-
-        const targetCollisionBodyRectPos = TestUtils.getRectXYPosFromCenter(collisionBodyRect, targetCollisionBodRectCenter);
-
-        collisionBodyRect.moveTo(targetCollisionBodyRectPos);
     }
 
     public static moveBodyTowardsBody = (collisionPair: CollisionPair) => {
@@ -257,22 +144,42 @@ export class TestUtils {
         movingBody.setVelocity(diffPos);
     };
 
-    // get diameter / longest rect side
-    private static getBodyLength = (body: BodyType) => {
-        if (isCircleBody(body)) return body.radius * 2;
-        if (isRectBody(body)) return Math.max(body.width, body.height) * 2;
-        throw new Error();
+    private static getCenterToCenterAdjacentBodyVector = (collisionPair: CollisionPair, dir: Direction): Vector => {
+        const { movingBody, collisionBody } = collisionPair;
+
+        const distanceX = 
+            TestUtils.getBodyDistanceXToEdgeFromCenter(movingBody, dir) + TestUtils.getBodyDistanceXToEdgeFromCenter(collisionBody, dir);
+        const distanceY = 
+            TestUtils.getBodyDistanceYToEdgeFromCenter(movingBody, dir) + TestUtils.getBodyDistanceYToEdgeFromCenter(collisionBody, dir);
+
+        const unitVector = DIRECTION_TO_UNIT_VECTOR_MAP[dir];
+        
+        return Vectors.create(
+            Math.sign(unitVector.x) * distanceX,
+            Math.sign(unitVector.y) * distanceY,
+        );
     }
 
-    private static getBodyHalfWidth = (body: BodyType): number => {
-        if (isCircleBody(body)) return body.radius;
+    private static getBodyDistanceXToEdgeFromCenter = (body: BodyType, dir: Direction): number => {
+        if (isCircleBody(body)) return TestUtils.getCircleBodyDistancetoEdge(body, dir);
         if (isRectBody(body)) return body.width / 2;
         throw new Error();
     }
 
-    private static getBodyHalfHeight = (body: BodyType): number => {
-        if (isCircleBody(body)) return body.radius;
+    private static getBodyDistanceYToEdgeFromCenter = (body: BodyType, dir: Direction): number => {
+        if (isCircleBody(body)) return TestUtils.getCircleBodyDistancetoEdge(body, dir);
         if (isRectBody(body)) return body.height / 2;
+        throw new Error();
+    }
+
+    private static getCircleBodyDistancetoEdge = (body: CircleBodyType, dir: Direction): number => {
+        return isDiagonal(dir) ? body.radius * diagonalScalar : body.radius;
+    }
+
+    // get diameter / longest rect side
+    private static getBodyLength = (body: BodyType) => {
+        if (isCircleBody(body)) return body.radius * 2;
+        if (isRectBody(body)) return Math.max(body.width, body.height) * 2;
         throw new Error();
     }
 
@@ -283,10 +190,5 @@ export class TestUtils {
     private static getRectXYPosFromCenter = (rect: RectBodyType, center: Vector): Vector => {
         return Vectors.subtract(center, Vectors.create(rect.width / 2, rect.height / 2));
     }
-
-    private static getDirectionalVector = (dir: Direction, mag: number): Vector => {
-        const unitVector = DIRECTION_TO_UNIT_VECTOR_MAP[dir];
-        return Vectors.rescale(unitVector, mag);
-    };
 
 }

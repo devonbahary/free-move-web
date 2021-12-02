@@ -24,6 +24,11 @@ const initCollisionPair = (collisionType: CollisionType): CollisionPair => {
                 movingBody: new CircleBody(), 
                 collisionBody: new RectBody(),
             };
+        case CollisionType.rectVsCircle:
+            return {
+                movingBody: new RectBody(),
+                collisionBody: new CircleBody(),
+            };
         case CollisionType.rectVsRect:
             return {
                 movingBody: new RectBody(),
