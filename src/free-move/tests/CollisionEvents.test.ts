@@ -1,4 +1,3 @@
-import { CircleBody, RectBody } from "../Bodies";
 import { CollisionEvents } from "../CollisionEvents";
 import { Maths } from "../Maths";
 import { BodyType, CollisionEvent, CollisionPair, Vector } from "../types";
@@ -11,33 +10,6 @@ import {
 
 const SHOULD = 'should return a collision event';
 const SHOULD_NOT = 'should NOT return any collision event';
-
-const initCollisionPair = (collisionType: CollisionType): CollisionPair => {
-    switch (collisionType) {
-        case CollisionType.circleVsCircle:
-            return {
-                movingBody: new CircleBody(), 
-                collisionBody: new CircleBody(),
-            };
-        case CollisionType.circleVsRect:
-            return {
-                movingBody: new CircleBody(), 
-                collisionBody: new RectBody(),
-            };
-        case CollisionType.rectVsCircle:
-            return {
-                movingBody: new RectBody(),
-                collisionBody: new CircleBody(),
-            };
-        case CollisionType.rectVsRect:
-            return {
-                movingBody: new RectBody(),
-                collisionBody: new RectBody(),
-            };
-        default:
-            throw new Error(`unrecognized CollisionType ${collisionType}`);
-    }
-}
 
 const expectZeroTimeOfCollision = (collisionEvent: CollisionEvent) => {
     expect(Maths.roundFloatingPoint(collisionEvent.timeOfCollision) === 0).toBe(true);
@@ -62,7 +34,7 @@ describe('CollisionEvents', () => {
                     let expectCollisionEvent: (collisionEvent: CollisionEvent) => void;
                     
                     beforeEach(() => {
-                        collisionPair = initCollisionPair(collisionType);
+                        collisionPair = TestUtils.initCollisionPair(collisionType);
                         ({ movingBody, collisionBody } = collisionPair);
 
                         const bodies = [ movingBody, collisionBody ];

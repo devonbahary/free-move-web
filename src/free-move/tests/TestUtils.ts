@@ -1,5 +1,5 @@
 import { BodyType, CircleBodyType, CollisionPair, RectBodyType, Vector } from "../types";
-import { isCircleBody, isRectBody } from "../Bodies";
+import { CircleBody, isCircleBody, isRectBody, RectBody } from "../Bodies";
 import { Vectors } from "../Vectors";
 import { Collisions } from "../Collisions";
 
@@ -52,6 +52,30 @@ const isDiagonal = (dir: Direction) => {
 }
 
 export class TestUtils {
+    public static initCollisionPair = (collisionType: CollisionType): CollisionPair => {
+        switch (collisionType) {
+            case CollisionType.circleVsCircle:
+                return {
+                    movingBody: new CircleBody(), 
+                    collisionBody: new CircleBody(),
+                };
+            case CollisionType.circleVsRect:
+                return {
+                    movingBody: new CircleBody(), 
+                    collisionBody: new RectBody(),
+                };
+            case CollisionType.rectVsCircle:
+                return {
+                    movingBody: new RectBody(),
+                    collisionBody: new CircleBody(),
+                };
+            case CollisionType.rectVsRect:
+                return {
+                    movingBody: new RectBody(),
+                    collisionBody: new RectBody(),
+                };
+        }
+    }
     public static moveBodiesAdjacentToEachOther = (collisionPair: CollisionPair, dir: Direction) => {
         TestUtils.moveCollisionBodyRelativeToMovingBody(collisionPair, dir, 1);
     }
