@@ -1,4 +1,4 @@
-import { isCircleBody, isRectBody, Rectangle } from "./Bodies";
+import { isCircleBody, isRectBody, Rect } from "./Bodies";
 import { CollisionEvents } from "./CollisionEvents";
 import { Maths } from "./Maths";
 import { BodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionEvent, CollisionPair, RectVsCircleCollisionPair, RectVsRectCollisionPair, Vector } from "./types";
@@ -18,7 +18,7 @@ export class Collisions {
         const width = rectX1 - rectX0;
         const height = rectY1 - rectY0;
 
-        const rect = new Rectangle(width, height);
+        const rect = new Rect(width, height);
         rect.moveTo({ x: rectX0, y: rectY0 });
 
         return rect;

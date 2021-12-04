@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { Vectors } from "./Vectors";
-import { Circle as CircleType, CircleBodyType, Rect, RectBodyType, SaveableBodyState, Vector } from './types';
+import { CircleType, CircleBodyType, RectType, RectBodyType, SaveableBodyState, Vector } from './types';
 
 type ShapeConstructor = new (...args: any[]) => Point;
 
@@ -94,7 +94,7 @@ export class Point implements Vector {
     }
 }
 
-export class Rectangle extends Point implements Rect {
+export class Rect extends Point implements RectType {
     constructor(
         public width = 1,
         public height = 1,
@@ -154,7 +154,7 @@ export class Circle extends Point implements CircleType {
     }
 };
 
-export const RectBody = BodyMixin(Rectangle);
+export const RectBody = BodyMixin(Rect);
 
 export const isRectBody = (body: any): body is RectBodyType => {
     return body.width !== undefined && body.height !== undefined;

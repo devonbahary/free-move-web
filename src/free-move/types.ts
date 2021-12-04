@@ -10,9 +10,9 @@ export type Bounds = {
     height: number;
 }
 
-export type Rect = Vector & Bounds;
+export type RectType = Vector & Bounds;
 
-export type Circle = Vector & {
+export type CircleType = Vector & {
     radius: number;
 }
 
