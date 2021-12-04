@@ -10,7 +10,6 @@ export enum CollisionType {
     rectVsRect = 'rect vs rect',
 }
 
-// TODO: can we make Direction a union of Direction | DiagonalDirection?
 export enum Direction {
     UP = 'UP',
     RIGHT = 'RIGHT',
