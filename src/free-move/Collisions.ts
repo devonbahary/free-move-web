@@ -1,7 +1,7 @@
 import { isCircleBody, isRectBody, isFixedBody, Rect } from "./Bodies";
 import { CollisionEvents } from "./CollisionEvents";
 import { Maths } from "./Maths";
-import { BodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionEvent, CollisionPair, FixedBodyType, RectVsCircleCollisionPair, RectVsRectCollisionPair, Vector } from "./types";
+import { BodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionEvent, CollisionPair, FixedCollisionEvent, RectVsCircleCollisionPair, RectVsRectCollisionPair, Vector } from "./types";
 import { Vectors } from "./Vectors";
 
 export class Collisions {
@@ -30,38 +30,8 @@ export class Collisions {
 
         Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
 
-        const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
-        const { mass: mA, velocity: vA } = movingBody;
-        const { mass: mB, velocity: vB } = collisionBody;
-
-        // TODO: this presumes code will allow for velocity of a fixed body
-        // TODO: actually, a body can have velocity and THEN be set to fixed, meaning this is already possible
-        if (Collisions.isFixedVsFixed(movingBody, collisionBody)) {
-            return; // don't resolve collisions between two fixed bodies
-        }
-
-        // TODO: pull out into a resolveFixedCollision()
-        if (collisionBody.isFixed) {
-            if (Collisions.isCircleVsCircle(collisionPair)) {
-                movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(vA)));   
-            } else {
-                // TODO: remove roundFloatingPoint here, smell of bad diffPositions
-                if (Maths.roundFloatingPoint(diffPositions.x) === 0) {
-                    movingBody.setVelocity({ x: vA.x, y: -vA.y });
-                    if (Collisions.isMovingTowardsBody(collisionPair)) {
-                        movingBody.setVelocity({ x: -vA.x, y: -vA.y });
-                    }
-                } else if (Maths.roundFloatingPoint(diffPositions.y) === 0) {
-                    movingBody.setVelocity({ x: -vA.x, y: vA.y });
-                    if (Collisions.isMovingTowardsBody(collisionPair)) {
-                        movingBody.setVelocity({ x: -vA.x, y: -vA.y });
-                    }
-                } else {
-                    movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(vA)));
-                }
-            }
-            
-            return;
+        if (Collisions.isFixedCollisionEvent(collisionEvent)) {
+            return Collisions.resolveFixedCollision(collisionEvent);
         }
 
         /*
@@ -74,6 +44,10 @@ export class Collisions {
                         m = mass
                         x = position (at time of collision)
         */
+
+        const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
+        const { mass: mA, velocity: vA } = movingBody;
+        const { mass: mB, velocity: vB } = collisionBody;
 
         const diffVelocities = Vectors.subtract(vA, vB);
         
@@ -99,6 +73,38 @@ export class Collisions {
         
         if (!movingBody.isFixed) movingBody.setVelocity(finalVelocityA);
         collisionBody.setVelocity(finalVelocityB);
+    }
+
+    static resolveFixedCollision = (collisionEvent: FixedCollisionEvent) => {
+        const { collisionPair } = collisionEvent;
+
+        if (Collisions.isFixedVsFixed(collisionPair)) {
+            throw new Error(`fixed bodies should not be moving bodies`);
+        }
+
+        const { movingBody } = collisionPair;
+
+        const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
+
+        if (Collisions.isCircleVsCircle(collisionPair)) {
+            movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(movingBody.velocity)));   
+        } else {
+            const { x, y } = movingBody.velocity;
+            // TODO: remove roundFloatingPoint here, smell of bad diffPositions
+            if (Maths.roundFloatingPoint(diffPositions.x) === 0) {
+                movingBody.setVelocity({ x, y: -y });
+                if (Collisions.isMovingTowardsBody(collisionPair)) {
+                    movingBody.setVelocity({ x: -x, y: -y });
+                }
+            } else if (Maths.roundFloatingPoint(diffPositions.y) === 0) {
+                movingBody.setVelocity({ x: -x, y });
+                if (Collisions.isMovingTowardsBody(collisionPair)) {
+                    movingBody.setVelocity({ x: -x, y: -y });
+                }
+            } else {
+                movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(movingBody.velocity)));
+            }
+        }
     }
 
     // TODO: revisit, isn't working intuitively for rectangle vs any collisions
@@ -190,8 +196,14 @@ export class Collisions {
         return isRectBody(movingBody) && isRectBody(collisionBody);
     }
 
-    private static isFixedVsFixed = (bodyA: BodyType, bodyB: BodyType) => {
-        return isFixedBody(bodyA) && isFixedBody(bodyB);
+    private static isFixedVsFixed = (collisionPair: CollisionPair) => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isFixedBody(movingBody) && isFixedBody(collisionBody);
+    }
+
+    private static isFixedCollisionEvent = (collisionEvent: CollisionEvent): collisionEvent is FixedCollisionEvent => {
+        const { collisionBody } = collisionEvent.collisionPair;
+        return isFixedBody(collisionBody);
     }
 
     private static getCollisionRelativePositionVector = (collisionEvent: CollisionEvent): Vector => {

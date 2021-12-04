@@ -28,6 +28,7 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
     
         setFixed() {
             this.mass = Infinity;
+            this.velocity = Vectors.create(); // fixed bodies can't be moving bodies
         }
     
         isMoving() {
@@ -36,13 +37,13 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
     
         setVelocity(velocity: Vector) {
             if (this.isFixed && Vectors.magnitude(velocity)) {
-                throw new Error(`cannot set velocity for infinite-mass body`);
+                throw new Error(`cannot set velocity for fixed body`);
             }
             this.velocity = velocity;
         }
     
         applyForce(force: Vector) {
-            if (this.isFixed) return; // infinite-mass bodies can be subject to forces, even if nothing happens
+            if (this.isFixed) return; // fixed bodies can be subject to forces, even if nothing happens
             this.velocity = Vectors.add(this.velocity, Vectors.divide(force, this.mass));
         }
     

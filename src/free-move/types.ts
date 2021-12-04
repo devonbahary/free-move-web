@@ -41,6 +41,11 @@ export type CollisionPair = {
     collisionBody: BodyType;
 }
 
+type FixedCollisionPair = {
+    movingBody: BodyType;
+    collisionBody: FixedBodyType;
+}
+
 export type CircleVsCircleCollisionPair = {
     movingBody: CircleBodyType;
     collisionBody: CircleBodyType;
@@ -66,6 +71,10 @@ export type CollisionEvent = {
     timeOfCollision: number;
     collisionPoint?: Vector;
     contact?: Partial<RectSides>;
+}
+
+export type FixedCollisionEvent = CollisionEvent & {
+    collisionPair: FixedCollisionPair;
 }
 
 export type CircleVsCircleCollisionEvent = CollisionEvent & {

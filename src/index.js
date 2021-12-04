@@ -16,6 +16,18 @@ import { RectEntity } from './game/game-entities/RectEntity';
             - implement "sliding" or "glancing" 
         - investigate weird "jumping" / teleporting behavior when moving immobile elastic entities
         - investigate why player mass of 500 would make collisions "stick" to it
+    
+
+    THOUGHTS:
+        - on fixed movement
+            - unclear how we want to handle fixed bodies + movement
+                - how to handle a fixed body (infinite mass) in a collision?
+                    - [easy] non-fixed vs fixed: just reflect the non-fixed body off the fixed
+                    - [?] fixed vs non-fixed: add fixed velocity to non-fixed?
+                    - [?] fixed vs fixed: don't resolve collision (need to make sure fixed bodies don't move things like the environment)
+                - fixed bodies could never have velocity and only moveTo a new location
+                
+                
 */
 
 const GAME_MODES = {
