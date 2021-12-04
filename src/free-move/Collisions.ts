@@ -176,31 +176,6 @@ export class Collisions {
         return false;
     }
 
-    static isCircleVsCircle = (collisionPair: CollisionPair): collisionPair is CircleVsCircleCollisionPair => {
-        const { movingBody, collisionBody } = collisionPair;
-        return isCircleBody(movingBody) && isCircleBody(collisionBody);
-    }
-
-    static isCircleVsRect = (collisionPair: CollisionPair): collisionPair is CircleVsRectCollisionPair => {
-        const { movingBody, collisionBody } = collisionPair;
-        return isCircleBody(movingBody) && isRectBody(collisionBody);
-    }
-
-    static isRectVsCircle = (collisionPair: CollisionPair): collisionPair is RectVsCircleCollisionPair => {
-        const { movingBody, collisionBody } = collisionPair;
-        return isRectBody(movingBody) && isCircleBody(collisionBody);
-    }
-
-    static isRectVsRect = (collisionPair: CollisionPair): collisionPair is RectVsRectCollisionPair => {
-        const { movingBody, collisionBody } = collisionPair;
-        return isRectBody(movingBody) && isRectBody(collisionBody);
-    }
-
-    private static isFixedVsFixed = (collisionPair: CollisionPair) => {
-        const { movingBody, collisionBody } = collisionPair;
-        return isFixedBody(movingBody) && isFixedBody(collisionBody);
-    }
-
     private static getCollisionRelativePositionVector = (collisionEvent: CollisionEvent): Vector => {
         const { collisionPair } = collisionEvent;
         const { movingBody, collisionBody } = collisionPair;
@@ -243,5 +218,30 @@ export class Collisions {
         const diffVelocity = Vectors.neg(pointAVelocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
         const diffPosition = Vectors.subtract(pointB, pointA);
         return Vectors.dot(diffVelocity, diffPosition) < 0;
+    }
+
+    static isCircleVsCircle = (collisionPair: CollisionPair): collisionPair is CircleVsCircleCollisionPair => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isCircleBody(movingBody) && isCircleBody(collisionBody);
+    }
+
+    static isCircleVsRect = (collisionPair: CollisionPair): collisionPair is CircleVsRectCollisionPair => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isCircleBody(movingBody) && isRectBody(collisionBody);
+    }
+
+    static isRectVsCircle = (collisionPair: CollisionPair): collisionPair is RectVsCircleCollisionPair => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isRectBody(movingBody) && isCircleBody(collisionBody);
+    }
+
+    static isRectVsRect = (collisionPair: CollisionPair): collisionPair is RectVsRectCollisionPair => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isRectBody(movingBody) && isRectBody(collisionBody);
+    }
+
+    private static isFixedVsFixed = (collisionPair: CollisionPair) => {
+        const { movingBody, collisionBody } = collisionPair;
+        return isFixedBody(movingBody) && isFixedBody(collisionBody);
     }
 }
