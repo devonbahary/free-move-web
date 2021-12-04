@@ -52,27 +52,31 @@ const isDiagonal = (dir: Direction) => {
 }
 
 export class TestUtils {
-    public static initCollisionPair = (collisionType: CollisionType): CollisionPair => {
+    public static initCollisionPair = (
+        collisionType: CollisionType,
+        movingBodySize: number,
+        collisionBodySize: number,
+    ): CollisionPair => {
         switch (collisionType) {
             case CollisionType.circleVsCircle:
                 return {
-                    movingBody: new CircleBody(), 
-                    collisionBody: new CircleBody(),
+                    movingBody: new CircleBody(movingBodySize / 2), 
+                    collisionBody: new CircleBody(collisionBodySize / 2),
                 };
             case CollisionType.circleVsRect:
                 return {
-                    movingBody: new CircleBody(), 
-                    collisionBody: new RectBody(),
+                    movingBody: new CircleBody(movingBodySize / 2), 
+                    collisionBody: new RectBody(collisionBodySize, collisionBodySize),
                 };
             case CollisionType.rectVsCircle:
                 return {
-                    movingBody: new RectBody(),
-                    collisionBody: new CircleBody(),
+                    movingBody: new RectBody(movingBodySize, movingBodySize),
+                    collisionBody: new CircleBody(collisionBodySize / 2),
                 };
             case CollisionType.rectVsRect:
                 return {
-                    movingBody: new RectBody(),
-                    collisionBody: new RectBody(),
+                    movingBody: new RectBody(movingBodySize, movingBodySize),
+                    collisionBody: new RectBody(collisionBodySize, collisionBodySize),
                 };
         }
     }
@@ -81,7 +85,7 @@ export class TestUtils {
     }
 
     public static moveBodiesApartFromEachOther = (collisionPair: CollisionPair, dir: Direction) => {
-        TestUtils.moveCollisionBodyRelativeToMovingBody(collisionPair, dir, 2);
+        TestUtils.moveCollisionBodyRelativeToMovingBody(collisionPair, dir, 4);
     } 
 
     public static moveBodiesIntoEachOther = (collisionPair: CollisionPair, dir: Direction) => {
@@ -143,10 +147,10 @@ export class TestUtils {
         const targetCollisionBodyCenter = Vectors.add(movingBody.center, vectorFromMovingBodyCenterToTargetCollisionBodyCenter);
 
         if (isCircleBody(collisionBody)) {
-            const targetCirclePos = TestUtils.getCircleXYPosFromCenter(collisionBody, targetCollisionBodyCenter);
+            const targetCirclePos = Vectors.correctFloatingPoint(TestUtils.getCircleXYPosFromCenter(collisionBody, targetCollisionBodyCenter));
             collisionBody.moveTo(targetCirclePos);
         } else if (isRectBody(collisionBody)) {
-            const targetRectPos = TestUtils.getRectXYPosFromCenter(collisionBody, targetCollisionBodyCenter);
+            const targetRectPos = Vectors.correctFloatingPoint(TestUtils.getRectXYPosFromCenter(collisionBody, targetCollisionBodyCenter));
             collisionBody.moveTo(targetRectPos);
         } else {
             throw new Error();

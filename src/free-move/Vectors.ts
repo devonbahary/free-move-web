@@ -67,4 +67,9 @@ export class Vectors {
     }
 
     static format = (vector: Vector) => `(${round(vector.x)}, ${round(vector.y)})`;
+
+    static correctFloatingPoint = ({ x, y }: Vector) => {
+        const correct = (num: number) => Math.round(num * 10000000000) / 10000000000;
+        return Vectors.create(correct(x), correct(y));
+    }
 }
