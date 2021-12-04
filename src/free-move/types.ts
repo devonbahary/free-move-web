@@ -32,6 +32,10 @@ export type BodyType = InstanceType<ReturnType<typeof BodyMixin>>;
 export type CircleBodyType = InstanceType<typeof CircleBody>;
 export type RectBodyType = InstanceType<typeof RectBody>;
 
+export type FixedBodyType = BodyType & {
+    isFixed: true;
+}
+
 export type CollisionPair = {
     movingBody: BodyType;
     collisionBody: BodyType;

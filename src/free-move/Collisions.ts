@@ -1,7 +1,7 @@
-import { isCircleBody, isRectBody, Rect } from "./Bodies";
+import { isCircleBody, isRectBody, isFixedBody, Rect } from "./Bodies";
 import { CollisionEvents } from "./CollisionEvents";
 import { Maths } from "./Maths";
-import { BodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionEvent, CollisionPair, RectVsCircleCollisionPair, RectVsRectCollisionPair, Vector } from "./types";
+import { BodyType, CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionEvent, CollisionPair, FixedBodyType, RectVsCircleCollisionPair, RectVsRectCollisionPair, Vector } from "./types";
 import { Vectors } from "./Vectors";
 
 export class Collisions {
@@ -30,7 +30,7 @@ export class Collisions {
 
         Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
 
-        const diffPositions = Collisions.getCollisionRelativePositionVector(movingBody, collisionBody, collisionEvent);
+        const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
         const { mass: mA, velocity: vA } = movingBody;
         const { mass: mB, velocity: vB } = collisionBody;
 
@@ -190,13 +190,16 @@ export class Collisions {
         return isRectBody(movingBody) && isRectBody(collisionBody);
     }
 
-    private static getCollisionRelativePositionVector = (bodyA: BodyType, bodyB: BodyType, collisionEvent: CollisionEvent): Vector => {
-        const { contact, collisionPoint } = collisionEvent;
+    private static isFixedVsFixed = (bodyA: BodyType, bodyB: BodyType) => {
+        return isFixedBody(bodyA) && isFixedBody(bodyB);
+    }
 
-        const collisionPair = { movingBody: bodyA, collisionBody: bodyB };
+    private static getCollisionRelativePositionVector = (collisionEvent: CollisionEvent): Vector => {
+        const { contact, collisionPoint, collisionPair } = collisionEvent;
+        const { movingBody, collisionBody } = collisionPair;
 
         if (Collisions.isCircleVsCircle(collisionPair)) {
-            return Vectors.subtract(bodyA.center, bodyB.center);
+            return Vectors.subtract(movingBody.center, collisionBody.center);
         }
 
         if (Collisions.isRectVsRect(collisionPair)) {
@@ -210,9 +213,9 @@ export class Collisions {
             const x = contact.x0 ?? contact.x1;
             const y = contact.y0 ?? contact.y1;
             if (x !== undefined) {
-                return Vectors.create(bodyA.center.x - x, 0);
+                return Vectors.create(movingBody.center.x - x, 0);
             } else if (y !== undefined) {
-                return Vectors.create(0, bodyA.center.y - y);
+                return Vectors.create(0, movingBody.center.y - y);
             } 
 
             throw new Error(`can't getCollisionRelativePositionVector() for rect vs rect collision from contact without side: ${JSON.stringify(contact)}`);
@@ -225,12 +228,12 @@ export class Collisions {
         }
 
         if (Collisions.isCircleVsRect(collisionPair)) { 
-            return Vectors.subtract(bodyA.center, collisionPoint);
+            return Vectors.subtract(movingBody.center, collisionPoint);
         } else if (Collisions.isRectVsCircle(collisionPair)) {
-            return Vectors.subtract(collisionPoint, bodyB.center);
+            return Vectors.subtract(collisionPoint, collisionBody.center);
         }
 
-        throw new Error(`can't getCollisionRelativePositionVector() for bodies: ${JSON.stringify(bodyA)}, ${JSON.stringify(bodyB)}`);
+        throw new Error(`can't getCollisionRelativePositionVector() for bodies: ${JSON.stringify(movingBody)}, ${JSON.stringify(collisionBody)}`);
     }
 
     private static moveBodyToPointOfCollision = (body: BodyType, timeOfCollision: number) => {
@@ -246,9 +249,5 @@ export class Collisions {
         const diffVelocity = Vectors.neg(pointAVelocity); // v2 - v1, except we don't want to consider whether bodyB is moving towards bodyA
         const diffPosition = Vectors.subtract(pointB, pointA);
         return Vectors.dot(diffVelocity, diffPosition) < 0;
-    }
-
-    private static isFixedVsFixed = (bodyA: BodyType, bodyB: BodyType) => {
-        return bodyA.isFixed && bodyB.isFixed;
     }
 }

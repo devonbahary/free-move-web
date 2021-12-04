@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { Vectors } from "./Vectors";
-import { CircleType, CircleBodyType, RectType, RectBodyType, SaveableBodyState, Vector } from './types';
+import { CircleType, CircleBodyType, RectType, RectBodyType, SaveableBodyState, Vector, BodyType, FixedBodyType } from './types';
 
 type ShapeConstructor = new (...args: any[]) => Point;
 
@@ -164,4 +164,8 @@ export const CircleBody = BodyMixin(Circle);
 
 export const isCircleBody = (body: any): body is CircleBodyType => {
     return body.radius !== undefined;
+}
+
+export const isFixedBody = (body: BodyType): body is FixedBodyType => {
+    return body.isFixed === true;
 }
