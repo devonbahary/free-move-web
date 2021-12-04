@@ -1,4 +1,4 @@
-import { Element } from "../Element";
+import { Element } from '../Element';
 import { observer } from '../../utilities/observer';
 
 export class GameLoopControlsSprite {
@@ -8,22 +8,30 @@ export class GameLoopControlsSprite {
         this.observeGameIsPaused = observer(null, this.onGamePauseChange.bind(this));
     }
 
-    static get playButtonHTML() { return '<ion-icon name="play"></ion-icon>'; };
-    static get pauseButtonHTML() { return '<ion-icon name="pause"></ion-icon>'; };
-    static get stepForwardButtonHTML() { return '<ion-icon name="skip-forward"></ion-icon>'; };
-    static get stepBackwardButtonHTML() { return '<ion-icon name="skip-backward"></ion-icon>'; };
+    static get playButtonHTML() {
+        return '<ion-icon name="play"></ion-icon>';
+    }
+    static get pauseButtonHTML() {
+        return '<ion-icon name="pause"></ion-icon>';
+    }
+    static get stepForwardButtonHTML() {
+        return '<ion-icon name="skip-forward"></ion-icon>';
+    }
+    static get stepBackwardButtonHTML() {
+        return '<ion-icon name="skip-backward"></ion-icon>';
+    }
 
     initElement() {
         this.element = Element.create('div', undefined, 'game-loop-controls');
-        
-        this.playPauseButtonElement = Element.create('button'); 
+
+        this.playPauseButtonElement = Element.create('button');
         this.playPauseButtonElement.onclick = () => this.togglePlayPause();
 
         this.element.appendChild(this.playPauseButtonElement);
     }
 
     updatePlayPauseButtonHTML(isPaused) {
-        this.playPauseButtonElement.innerHTML = isPaused 
+        this.playPauseButtonElement.innerHTML = isPaused
             ? GameLoopControlsSprite.playButtonHTML
             : GameLoopControlsSprite.pauseButtonHTML;
     }
@@ -50,7 +58,6 @@ export class GameLoopControlsSprite {
                 GameLoopControlsSprite.stepBackwardButtonHTML,
             );
             this.element.insertBefore(this.stepBackwardButtonElement, this.playPauseButtonElement);
-
         } else if (this.stepForwardButtonElement) {
             this.stepForwardButtonElement.remove();
             this.stepBackwardButtonElement.remove();

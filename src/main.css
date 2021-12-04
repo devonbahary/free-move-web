@@ -28,7 +28,8 @@ body {
     height: 100%;
 }
 
-.circle, .rectangle {
+.circle,
+.rectangle {
     position: absolute;
     background: white;
     color: black;

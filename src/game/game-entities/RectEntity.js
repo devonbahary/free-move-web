@@ -1,5 +1,5 @@
-import { RectBody } from "../../free-move/Bodies";
-import { GameEntity } from "./GameEntity";
+import { RectBody } from '../../free-move/Bodies';
+import { GameEntity } from './GameEntity';
 
 export class RectEntity extends GameEntity {
     constructor() {

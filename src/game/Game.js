@@ -20,7 +20,7 @@ export class Game {
         this.initWorld();
         this.initGameLoopControls();
         this.initPlayer();
-        
+
         this.initGameLoop();
 
         this.control = new Control(this.player);
@@ -53,7 +53,7 @@ export class Game {
         this.frameCount = BEGIN_FRAME;
         this.frameToWorldState = {};
         this.isPaused = false;
-        
+
         setInterval(() => {
             this.update();
         }, 1000 / 60); // 60/s
@@ -61,7 +61,7 @@ export class Game {
 
     addGameEntity(gameEntity, sprite) {
         this.gameEntities.push(gameEntity);
-        this.addBody(gameEntity.body, sprite);        
+        this.addBody(gameEntity.body, sprite);
     }
 
     addBody(body, sprite) {

@@ -1,9 +1,9 @@
-import { Vectors } from "../free-move/Vectors";
+import { Vectors } from '../free-move/Vectors';
 
 export class Control {
     constructor(player) {
         this.player = player;
-        
+
         document.onkeydown = this.onkeydown;
         document.onkeyup = this.onkeyup;
         this.pressedKeys = {};
@@ -26,11 +26,11 @@ export class Control {
             default:
                 break;
         }
-    }
+    };
 
     onkeyup = (keyboardEvent) => {
         delete this.pressedKeys[keyboardEvent.key];
-    }
+    };
 
     update() {
         this.updatePlayerInput();

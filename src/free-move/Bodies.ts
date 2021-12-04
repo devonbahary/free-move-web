@@ -1,6 +1,15 @@
 import { v4 as uuid } from 'uuid';
-import { Vectors } from "./Vectors";
-import { CircleType, CircleBodyType, RectType, RectBodyType, SaveableBodyState, Vector, BodyType, FixedBodyType } from './types';
+import { Vectors } from './Vectors';
+import {
+    CircleType,
+    CircleBodyType,
+    RectType,
+    RectBodyType,
+    SaveableBodyState,
+    Vector,
+    BodyType,
+    FixedBodyType,
+} from './types';
 
 type ShapeConstructor = new (...args: any[]) => Point;
 
@@ -11,12 +20,12 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
         public mass: number;
         public isElastic: boolean;
         public name?: string;
-        
+
         constructor(...args: any[]) {
             super(...args);
-            
+
             this.id = uuid();
-            this.velocity = Vectors.create();        
+            this.velocity = Vectors.create();
             this.mass = 1;
             // TODO: implement restitution
             this.isElastic = true;
@@ -25,28 +34,28 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
         get isFixed() {
             return this.mass === Infinity;
         }
-    
+
         setFixed() {
             this.mass = Infinity;
             this.velocity = Vectors.create(); // fixed bodies can't be moving bodies
         }
-    
+
         isMoving() {
             return Vectors.magnitude(this.velocity) !== 0;
         }
-    
+
         setVelocity(velocity: Vector) {
             if (this.isFixed && Vectors.magnitude(velocity)) {
                 throw new Error(`cannot set velocity for fixed body`);
             }
             this.velocity = velocity;
         }
-    
+
         applyForce(force: Vector) {
             if (this.isFixed) return; // fixed bodies can be subject to forces, even if nothing happens
             this.velocity = Vectors.add(this.velocity, Vectors.divide(force, this.mass));
         }
-    
+
         toSaveableState(): SaveableBodyState {
             const { id, x, y, velocity } = this;
             return {
@@ -56,14 +65,11 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
                 velocity: { ...velocity },
             };
         }
-    }
-}
+    };
+};
 
 export class Point implements Vector {
-    constructor(
-        public x = 0,
-        public y = 0, 
-    ) {}
+    constructor(public x = 0, public y = 0) {}
 
     get center(): Vector {
         return Vectors.create(this.x, this.y);
@@ -85,7 +91,7 @@ export class Point implements Vector {
         return this.y;
     }
 
-    get pos() { 
+    get pos() {
         return Vectors.create(this.x, this.y);
     }
 
@@ -96,18 +102,12 @@ export class Point implements Vector {
 }
 
 export class Rect extends Point implements RectType {
-    constructor(
-        public width = 1,
-        public height = 1,
-    ) {
+    constructor(public width = 1, public height = 1) {
         super();
     }
 
     get center(): Vector {
-        return Vectors.create(
-            this.x + this.width / 2, 
-            this.y + this.height / 2,
-        );
+        return Vectors.create(this.x + this.width / 2, this.y + this.height / 2);
     }
 
     get x0() {
@@ -125,12 +125,10 @@ export class Rect extends Point implements RectType {
     get y1() {
         return this.y + this.height;
     }
-};
+}
 
 export class Circle extends Point implements CircleType {
-    constructor(
-        public radius = 0.5
-    ) {
+    constructor(public radius = 0.5) {
         super();
     }
 
@@ -153,20 +151,20 @@ export class Circle extends Point implements CircleType {
     get y1() {
         return this.y + this.radius * 2;
     }
-};
+}
 
 export const RectBody = BodyMixin(Rect);
 
 export const isRectBody = (body: any): body is RectBodyType => {
     return body.width !== undefined && body.height !== undefined;
-}
+};
 
 export const CircleBody = BodyMixin(Circle);
 
 export const isCircleBody = (body: any): body is CircleBodyType => {
     return body.radius !== undefined;
-}
+};
 
 export const isFixedBody = (body: BodyType): body is FixedBodyType => {
     return body.isFixed === true;
-}
+};

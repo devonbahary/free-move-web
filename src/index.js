@@ -53,8 +53,8 @@ const GAME_PARAMS = {
 };
 
 const getRandomCoordinates = () => {
-    const randX = Math.floor((Math.random() * GAME_PARAMS.bounds.width));
-    const randY = Math.floor((Math.random() * GAME_PARAMS.bounds.height));
+    const randX = Math.floor(Math.random() * GAME_PARAMS.bounds.width);
+    const randY = Math.floor(Math.random() * GAME_PARAMS.bounds.height);
     return { x: randX, y: randY };
 };
 
@@ -87,7 +87,7 @@ const getRandomCoordinates = () => {
 
                 circle.moveTo(getRandomCoordinates());
                 circle.move(Vectors.create(Math.random(), Math.random()));
-                
+
                 const characterSprite = new CircleSprite(circle.body);
                 game.addGameEntity(circle, characterSprite);
             }
@@ -107,7 +107,7 @@ const getRandomCoordinates = () => {
 
                     if (isFixed) circle.body.setFixed();
                     else circle.move(randomVelocity);
-                    
+
                     const characterSprite = new CircleSprite(circle.body);
                     game.addGameEntity(circle, characterSprite);
                 } else {
@@ -139,4 +139,3 @@ const getRandomCoordinates = () => {
             break;
     }
 })();
-

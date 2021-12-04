@@ -1,7 +1,7 @@
-import { Collisions } from "./Collisions";
-import { RectBody } from "./Bodies";
-import { CollisionEvents } from "./CollisionEvents";
-import { BodyType, Bounds, CollisionPair, SaveableBodyState } from "./types";
+import { Collisions } from './Collisions';
+import { RectBody } from './Bodies';
+import { CollisionEvents } from './CollisionEvents';
+import { BodyType, Bounds, CollisionPair, SaveableBodyState } from './types';
 
 type CollisionResolutionMem = {
     [bodyId: string]: string;
@@ -25,13 +25,13 @@ export class World {
     private collisionResolutionMem: CollisionResolutionMem;
 
     constructor(bounds: Bounds) {
-        const { width, height } = bounds; 
+        const { width, height } = bounds;
         this.width = width;
         this.height = height;
 
         this.bodies = [];
-        this.collisionResolutionMem = {}; 
-        
+        this.collisionResolutionMem = {};
+
         this.initBoundaries();
     }
 
@@ -47,7 +47,7 @@ export class World {
 
     getSaveableWorldState() {
         return {
-            bodies: this.bodies.map(body => body.toSaveableState()),
+            bodies: this.bodies.map((body) => body.toSaveableState()),
             collisionResolutionMem: this.collisionResolutionMem,
         };
     }
@@ -57,15 +57,15 @@ export class World {
 
         for (const saveableBody of bodies) {
             const { id, x, y, velocity } = saveableBody;
-            
-            const body = this.bodies.find(body => body.id === id);
-            
+
+            const body = this.bodies.find((body) => body.id === id);
+
             if (!body) throw new Error(`could not load body with id ${id}`);
-            
+
             body.moveTo({ x, y });
             body.setVelocity(velocity);
         }
-        
+
         this.collisionResolutionMem = collisionResolutionMem;
     }
 
@@ -87,13 +87,13 @@ export class World {
         leftBoundary.name = 'left boundary';
 
         const boundaries = [topBoundary, rightBoundary, bottomBoundary, leftBoundary];
-        
+
         for (const boundary of boundaries) {
             boundary.setFixed();
         }
 
         this.bodies.push(...boundaries);
-    }    
+    }
 
     private updateBody(body: BodyType) {
         if (!body.isMoving()) return;
@@ -114,7 +114,7 @@ export class World {
 
         for (const collisionEvent of collisionEvents) {
             const { collisionPair } = collisionEvent;
-            
+
             // prevent resolving the same collision back-to-back (causes "stickiness" bug of infinite reversal)
             if (this.hasAlreadyProcessedCollision(collisionPair)) continue;
 
@@ -127,7 +127,7 @@ export class World {
 
     private rememberCollision(collisionPair: CollisionPair) {
         const { movingBody, collisionBody } = collisionPair;
-        // both bodyA and bodyB are likely to encounter one another again after collision 
+        // both bodyA and bodyB are likely to encounter one another again after collision
         // resolution; important that both remember they already processed collision
         this.collisionResolutionMem[movingBody.id] = getCollisionResolutionMemId(movingBody, collisionBody);
         this.collisionResolutionMem[collisionBody.id] = getCollisionResolutionMemId(collisionBody, movingBody);

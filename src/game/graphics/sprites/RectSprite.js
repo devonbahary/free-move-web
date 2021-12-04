@@ -1,5 +1,5 @@
-import { Element } from "../Element";
-import { BodySprite } from "./BodySprite";
+import { Element } from '../Element';
+import { BodySprite } from './BodySprite';
 
 export class RectSprite extends BodySprite {
     constructor(rectBody) {

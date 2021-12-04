@@ -11,7 +11,7 @@ export class Element {
     static setDimensions(element, width, height) {
         Object.assign(element.style, {
             width: Element.convertSizeToPixels(width),
-            height: Element.convertSizeToPixels(height),  
+            height: Element.convertSizeToPixels(height),
         });
     }
 
@@ -19,7 +19,7 @@ export class Element {
         const worldElement = Element.create('div', undefined, 'world');
 
         const { width, height } = world;
-        
+
         Element.setDimensions(worldElement, width, height);
 
         for (let i = 1; i < height; i++) {
@@ -27,7 +27,7 @@ export class Element {
             row.style.top = Element.convertSizeToPixels(i);
             worldElement.appendChild(row);
         }
-        
+
         for (let i = 1; i < width; i++) {
             const column = Element.create('div', 'column');
             column.style.left = Element.convertSizeToPixels(i);
@@ -42,5 +42,5 @@ export class Element {
     static moveToGameCoordinates = (element, x, y) => {
         element.style.left = Element.convertSizeToPixels(x);
         element.style.top = Element.convertSizeToPixels(y);
-    }
+    };
 }

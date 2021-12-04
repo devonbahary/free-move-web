@@ -1,5 +1,4 @@
-import { Element } from "../Element";
-
+import { Element } from '../Element';
 
 export class BodySprite {
     constructor(body) {
@@ -14,7 +13,7 @@ export class BodySprite {
     getElement() {
         return Element.create('span', this.elementClass);
     }
-    
+
     initElement() {
         this.element = this.getElement();
         this.setDimensions();
