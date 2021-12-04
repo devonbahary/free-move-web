@@ -13,7 +13,8 @@ import {
     isValidTimeOfCollision,
 } from "./collision-events.util";
 import { Collisions } from "./Collisions";
-import { BodyType, CircleVsRectCollisionEvent, CollisionEvent, Vector, RectVsCircleCollisionEvent, RectVsRectCollisionEvent, CircleVsCircleCollisionPair, CircleVsCircleCollisionEvent, CircleVsRectCollisionPair, RectVsCircleCollisionPair, RectVsRectCollisionPair } from "./types";
+import { isFixedBody } from './Bodies';
+import { BodyType, CircleVsRectCollisionEvent, CollisionEvent, Vector, RectVsCircleCollisionEvent, RectVsRectCollisionEvent, CircleVsCircleCollisionPair, CircleVsCircleCollisionEvent, CircleVsRectCollisionPair, RectVsCircleCollisionPair, RectVsRectCollisionPair, FixedCollisionEvent } from "./types";
 import { Vectors } from "./Vectors";
 
 export class CollisionEvents {
@@ -256,5 +257,25 @@ export class CollisionEvents {
 
             return validCollisionEvents;
         }, []);
+    }
+
+    static isCircleVsRectCollisionEvent = (collisionEvent: CollisionEvent): collisionEvent is CircleVsRectCollisionEvent => {
+        const { collisionPair, collisionPoint } = collisionEvent;
+        return Collisions.isCircleVsRect(collisionPair) && Boolean(collisionPoint);
+    }
+
+    static isRectVsCircleCollisionEvent = (collisionEvent: CollisionEvent): collisionEvent is RectVsCircleCollisionEvent => {
+        const { collisionPair, collisionPoint } = collisionEvent;
+        return Collisions.isRectVsCircle(collisionPair) && Boolean(collisionPoint);
+    }
+
+    static isRectVsRectCollisionEvent = (collisionEvent: CollisionEvent): collisionEvent is RectVsRectCollisionEvent => {
+        const { collisionPair, contact } = collisionEvent;
+        return Collisions.isRectVsRect(collisionPair) && Boolean(contact);
+    }
+
+    static isFixedCollisionEvent = (collisionEvent: CollisionEvent): collisionEvent is FixedCollisionEvent => {
+        const { collisionBody } = collisionEvent.collisionPair;
+        return isFixedBody(collisionBody);
     }
 }

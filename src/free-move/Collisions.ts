@@ -30,7 +30,7 @@ export class Collisions {
 
         Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
 
-        if (Collisions.isFixedCollisionEvent(collisionEvent)) {
+        if (CollisionEvents.isFixedCollisionEvent(collisionEvent)) {
             return Collisions.resolveFixedCollision(collisionEvent);
         }
 
@@ -201,26 +201,16 @@ export class Collisions {
         return isFixedBody(movingBody) && isFixedBody(collisionBody);
     }
 
-    private static isFixedCollisionEvent = (collisionEvent: CollisionEvent): collisionEvent is FixedCollisionEvent => {
-        const { collisionBody } = collisionEvent.collisionPair;
-        return isFixedBody(collisionBody);
-    }
-
     private static getCollisionRelativePositionVector = (collisionEvent: CollisionEvent): Vector => {
-        const { contact, collisionPoint, collisionPair } = collisionEvent;
+        const { collisionPair } = collisionEvent;
         const { movingBody, collisionBody } = collisionPair;
 
         if (Collisions.isCircleVsCircle(collisionPair)) {
             return Vectors.subtract(movingBody.center, collisionBody.center);
         }
 
-        if (Collisions.isRectVsRect(collisionPair)) {
-            if (!contact) {
-                throw new Error(
-                    `can't getCollisionRelativePositionVector() for rect vs rect collision from collision event without contact: ${JSON.stringify(collisionEvent)}`,
-                );
-            }
-            
+        if (CollisionEvents.isRectVsRectCollisionEvent(collisionEvent)) {
+            const { contact } = collisionEvent;
             // either x-aligned or y-aligned collision
             const x = contact.x0 ?? contact.x1;
             const y = contact.y0 ?? contact.y1;
@@ -229,20 +219,12 @@ export class Collisions {
             } else if (y !== undefined) {
                 return Vectors.create(0, movingBody.center.y - y);
             } 
-
-            throw new Error(`can't getCollisionRelativePositionVector() for rect vs rect collision from contact without side: ${JSON.stringify(contact)}`);
         }
 
-        if (!collisionPoint) {
-            throw new Error(
-                `can't getCollisionRelativePositionVector() for circle vs rect collision from collision event without collisionPoint: ${JSON.stringify(collisionEvent)}`,
-            );
-        }
-
-        if (Collisions.isCircleVsRect(collisionPair)) { 
-            return Vectors.subtract(movingBody.center, collisionPoint);
-        } else if (Collisions.isRectVsCircle(collisionPair)) {
-            return Vectors.subtract(collisionPoint, collisionBody.center);
+        if (CollisionEvents.isCircleVsRectCollisionEvent(collisionEvent)) { 
+            return Vectors.subtract(movingBody.center, collisionEvent.collisionPoint);
+        } else if (CollisionEvents.isRectVsCircleCollisionEvent(collisionEvent)) {
+            return Vectors.subtract(collisionEvent.collisionPoint, collisionBody.center);
         }
 
         throw new Error(`can't getCollisionRelativePositionVector() for bodies: ${JSON.stringify(movingBody)}, ${JSON.stringify(collisionBody)}`);
