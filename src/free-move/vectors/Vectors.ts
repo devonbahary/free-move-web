@@ -1,4 +1,7 @@
-import { Vector } from './types';
+export type Vector = {
+    x: number;
+    y: number;
+};
 
 const round = (val: number) => Math.round(val * 1000) / 1000;
 

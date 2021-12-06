@@ -1,14 +1,8 @@
-import { Maths } from './Maths';
-import {
-    CircleBodyType,
-    CircleVsCircleCollisionPair,
-    CircleVsRectCollisionEvent,
-    RectBodyType,
-    RectSides,
-    RectVsCircleCollisionEvent,
-    Vector,
-} from './types';
-import { Vectors } from './Vectors';
+import { CircleBodyType, RectBodyType, RectSides } from '@bodies/Bodies';
+import { CircleVsRectCollisionEvent, RectVsCircleCollisionEvent } from '@collision-events/CollisionEvents';
+import { CircleVsCircleCollisionPair } from '@collisions/Collisions';
+import { Maths } from '@utils/Maths';
+import { Vector, Vectors } from '@vectors/Vectors';
 
 export const COLLISION_SIDES: (keyof RectSides)[] = ['x0', 'x1', 'y0', 'y1'];
 

@@ -1,18 +1,37 @@
-import { isCircleBody, isRectBody, isFixedBody, Rect } from './Bodies';
-import { CollisionEvents } from './CollisionEvents';
-import { Maths } from './Maths';
-import {
-    BodyType,
-    CircleVsCircleCollisionPair,
-    CircleVsRectCollisionPair,
-    CollisionEvent,
-    CollisionPair,
-    FixedCollisionEvent,
-    RectVsCircleCollisionPair,
-    RectVsRectCollisionPair,
-    Vector,
-} from './types';
-import { Vectors } from './Vectors';
+import { isCircleBody, isRectBody, isFixedBody, Rect, BodyType, FixedBodyType, CircleBodyType, RectBodyType } from '@bodies/Bodies';
+import { CollisionEvent, CollisionEvents, FixedCollisionEvent } from '@collision-events/CollisionEvents';
+import { Maths } from '@utils/Maths';
+import { Vector, Vectors } from '@vectors/Vectors';
+
+export type CollisionPair = {
+    movingBody: BodyType;
+    collisionBody: BodyType;
+};
+
+export type FixedCollisionPair = {
+    movingBody: BodyType;
+    collisionBody: FixedBodyType;
+};
+
+export type CircleVsCircleCollisionPair = {
+    movingBody: CircleBodyType;
+    collisionBody: CircleBodyType;
+};
+
+export type CircleVsRectCollisionPair = {
+    movingBody: CircleBodyType;
+    collisionBody: RectBodyType;
+};
+
+export type RectVsCircleCollisionPair = {
+    movingBody: RectBodyType;
+    collisionBody: CircleBodyType;
+};
+
+export type RectVsRectCollisionPair = {
+    movingBody: RectBodyType;
+    collisionBody: RectBodyType;
+};
 
 export class Collisions {
     // TODO: use in quad-tree optimization

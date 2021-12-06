@@ -1,4 +1,4 @@
-import { Maths } from './Maths';
+import { Maths } from '../utils/Maths';
 import {
     COLLISION_SIDES,
     OPPOSITE_SIDE_MAP,
@@ -11,24 +11,41 @@ import {
     getTimeOfCircleVsRectCornerCollision,
     getTimeOfRectCornerVsCircleCollision,
     isValidTimeOfCollision,
-} from './collision-events.util';
-import { Collisions } from './Collisions';
-import { isFixedBody } from './Bodies';
-import {
-    BodyType,
-    CircleVsRectCollisionEvent,
-    CollisionEvent,
-    Vector,
-    RectVsCircleCollisionEvent,
-    RectVsRectCollisionEvent,
-    CircleVsCircleCollisionPair,
-    CircleVsCircleCollisionEvent,
-    CircleVsRectCollisionPair,
-    RectVsCircleCollisionPair,
-    RectVsRectCollisionPair,
-    FixedCollisionEvent,
-} from './types';
-import { Vectors } from './Vectors';
+} from '@collision-events/utility';
+import { CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionPair, Collisions, FixedCollisionPair, RectVsCircleCollisionPair, RectVsRectCollisionPair } from '@collisions/Collisions';
+import { Vector, Vectors } from '@vectors/Vectors';
+import { BodyType, isFixedBody, RectSides } from '@bodies/Bodies';
+
+export type CollisionEvent = {
+    collisionPair: CollisionPair;
+    timeOfCollision: number;
+    collisionPoint?: Vector;
+    contact?: Partial<RectSides>;
+};
+
+export type FixedCollisionEvent = CollisionEvent & {
+    collisionPair: FixedCollisionPair;
+};
+
+export type CircleVsCircleCollisionEvent = CollisionEvent & {
+    collisionPair: CircleVsCircleCollisionPair;
+};
+
+export type CircleVsRectCollisionEvent = CollisionEvent & {
+    collisionPair: CircleVsRectCollisionPair;
+    collisionPoint: Vector;
+};
+
+export type RectVsCircleCollisionEvent = CollisionEvent & {
+    collisionPair: RectVsCircleCollisionPair;
+    collisionPoint: Vector;
+};
+
+export type RectVsRectCollisionEvent = CollisionEvent & {
+    collisionPair: RectVsRectCollisionPair;
+    contact: Partial<RectSides>;
+};
+
 
 export class CollisionEvents {
     // TODO: implement quadtree to prevent O(n^2)

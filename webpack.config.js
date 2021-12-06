@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const path = require('path');
 
 module.exports = {
@@ -42,5 +43,8 @@ module.exports = {
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
+        plugins: [
+            new TsconfigPathsPlugin({}),
+        ],
     },
 };

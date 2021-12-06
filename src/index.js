@@ -1,6 +1,6 @@
 import { CircleEntity } from './game/game-entities/CircleEntity';
 import { Game } from './game/Game';
-import { Vectors } from './free-move/Vectors';
+import { Vectors } from './free-move/vectors/Vectors';
 import { CircleSprite } from './game/graphics/sprites/CircleSprite';
 import './main.css';
 import { RectSprite } from './game/graphics/sprites/RectSprite';

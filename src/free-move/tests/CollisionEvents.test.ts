@@ -1,7 +1,8 @@
-import { CollisionEvents } from '../CollisionEvents';
-import { Maths } from '../Maths';
-import { BodyType, CollisionEvent, CollisionPair, Vector } from '../types';
-import { Vectors } from '../Vectors';
+import { BodyType } from '@bodies/Bodies';
+import { CollisionPair } from '@collisions/Collisions';
+import { CollisionEvent, CollisionEvents } from '@collision-events/CollisionEvents';
+import { Maths } from '@utils/Maths';
+import { Vector, Vectors } from '@vectors/Vectors';
 import { CollisionType, Direction, TestUtils } from './TestUtils';
 
 type TestVariationBodySizePair = {

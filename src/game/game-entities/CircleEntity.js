@@ -1,4 +1,4 @@
-import { CircleBody } from '../../free-move/Bodies';
+import { CircleBody } from '../../free-move/bodies/Bodies';
 import { GameEntity } from './GameEntity';
 
 export class CircleEntity extends GameEntity {
