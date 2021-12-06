@@ -71,7 +71,7 @@ export class CollisionEvents {
         return collisionEvents.sort((a, b) => a.timeOfCollision - b.timeOfCollision);
     };
 
-    static getCircleVsCircleCollisionEvent = (
+    private static getCircleVsCircleCollisionEvent = (
         collisionPair: CircleVsCircleCollisionPair,
     ): CircleVsCircleCollisionEvent | null => {
         const timeOfCollision = getTimeOfCircleVsCircleCollision(collisionPair);
@@ -238,7 +238,7 @@ export class CollisionEvents {
         return getHeterogeneousCollisionEvents(getSideCollisionEvents, getCornerCollisionEvents);
     };
 
-    static getRectVsRectCollisionEvents = (collisionPair: RectVsRectCollisionPair) => {
+    private static getRectVsRectCollisionEvents = (collisionPair: RectVsRectCollisionPair) => {
         const { movingBody: rectA, collisionBody: rectB } = collisionPair;
 
         return COLLISION_SIDES.reduce<RectVsRectCollisionEvent[]>((validCollisionEvents, movingBodyContactSide) => {
