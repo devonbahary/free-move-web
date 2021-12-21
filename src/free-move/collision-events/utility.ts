@@ -1,6 +1,6 @@
-import { CircleBodyType, RectBodyType, RectSides } from '@bodies/Bodies';
-import { CircleVsRectCollisionEvent, RectVsCircleCollisionEvent } from '@collision-events/CollisionEvents';
-import { CircleVsCircleCollisionPair } from '@collisions/Collisions';
+import { CircleBodyType, RectBodyType, RectSides } from '@bodies/types';
+import { CircleVsRectCollisionEvent, RectVsCircleCollisionEvent } from '@collision-events/types';
+import { CircleVsCircleCollisionPair } from '@collisions/types';
 import { Maths } from '@utils/Maths';
 import { Vector, Vectors } from '@vectors/Vectors';
 

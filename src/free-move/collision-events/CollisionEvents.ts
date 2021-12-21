@@ -12,40 +12,24 @@ import {
     getTimeOfRectCornerVsCircleCollision,
     isValidTimeOfCollision,
 } from '@collision-events/utility';
-import { CircleVsCircleCollisionPair, CircleVsRectCollisionPair, CollisionPair, Collisions, FixedCollisionPair, RectVsCircleCollisionPair, RectVsRectCollisionPair } from '@collisions/Collisions';
+import { Collisions } from '@collisions/Collisions';
 import { Vector, Vectors } from '@vectors/Vectors';
-import { BodyType, isFixedBody, RectSides } from '@bodies/Bodies';
-
-export type CollisionEvent = {
-    collisionPair: CollisionPair;
-    timeOfCollision: number;
-    collisionPoint?: Vector;
-    contact?: Partial<RectSides>;
-};
-
-export type FixedCollisionEvent = CollisionEvent & {
-    collisionPair: FixedCollisionPair;
-};
-
-export type CircleVsCircleCollisionEvent = CollisionEvent & {
-    collisionPair: CircleVsCircleCollisionPair;
-};
-
-export type CircleVsRectCollisionEvent = CollisionEvent & {
-    collisionPair: CircleVsRectCollisionPair;
-    collisionPoint: Vector;
-};
-
-export type RectVsCircleCollisionEvent = CollisionEvent & {
-    collisionPair: RectVsCircleCollisionPair;
-    collisionPoint: Vector;
-};
-
-export type RectVsRectCollisionEvent = CollisionEvent & {
-    collisionPair: RectVsRectCollisionPair;
-    contact: Partial<RectSides>;
-};
-
+import { isFixedBody } from '@bodies/Bodies';
+import { BodyType } from '@bodies/types';
+import {
+    CircleVsCircleCollisionPair,
+    CircleVsRectCollisionPair,
+    RectVsCircleCollisionPair,
+    RectVsRectCollisionPair,
+} from '@collisions/types';
+import {
+    CircleVsCircleCollisionEvent,
+    CircleVsRectCollisionEvent,
+    CollisionEvent,
+    FixedCollisionEvent,
+    RectVsCircleCollisionEvent,
+    RectVsRectCollisionEvent,
+} from '@collision-events/types';
 
 export class CollisionEvents {
     // TODO: implement quadtree to prevent O(n^2)

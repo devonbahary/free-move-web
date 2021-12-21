@@ -1,6 +1,8 @@
-import { BodyType, CircleBody, CircleBodyType, isCircleBody, isRectBody, RectBody, RectBodyType } from '@bodies/Bodies';
+import { CircleBody, isCircleBody, isRectBody, RectBody } from '@bodies/Bodies';
 import { Vector, Vectors } from '@vectors/Vectors';
-import { CollisionPair, Collisions } from '@collisions/Collisions';
+import { Collisions } from '@collisions/Collisions';
+import { CollisionPair } from '@collisions/types';
+import { BodyType, CircleBodyType, RectBodyType } from '@bodies/types';
 
 export enum CollisionType {
     circleVsCircle = 'circle vs circle',

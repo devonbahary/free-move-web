@@ -1,6 +1,8 @@
-import { CollisionPair, Collisions } from './collisions/Collisions';
-import { BodyType, Bounds, RectBody, SaveableBodyState } from './bodies/Bodies';
-import { CollisionEvents } from './collision-events/CollisionEvents';
+import { Collisions } from '@collisions/Collisions';
+import { BodyType, Bounds, SaveableBodyState } from '@bodies/types';
+import { RectBody } from '@bodies/Bodies';
+import { CollisionEvents } from '@collision-events/CollisionEvents';
+import { CollisionPair } from '@collisions/types';
 
 type CollisionResolutionMem = {
     [bodyId: string]: string;

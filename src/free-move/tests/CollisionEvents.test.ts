@@ -1,6 +1,7 @@
-import { BodyType } from '@bodies/Bodies';
-import { CollisionPair } from '@collisions/Collisions';
-import { CollisionEvent, CollisionEvents } from '@collision-events/CollisionEvents';
+import { BodyType } from '@bodies/types';
+import { CollisionEvents } from '@collision-events/CollisionEvents';
+import { CollisionEvent } from '@collision-events/types';
+import { CollisionPair } from '@collisions/types';
 import { Maths } from '@utils/Maths';
 import { Vector, Vectors } from '@vectors/Vectors';
 import { CollisionType, Direction, TestUtils } from './TestUtils';
