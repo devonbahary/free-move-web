@@ -115,7 +115,7 @@ export class Collisions {
         }
     };
 
-    static isOverlapping = (collisionPair: CollisionPair, log = false) => {
+    static isOverlapping = (collisionPair: CollisionPair) => {
         if (Collisions.isCircleVsCircle(collisionPair)) {
             const { movingBody, collisionBody } = collisionPair;
             
