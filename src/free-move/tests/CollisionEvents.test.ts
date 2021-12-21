@@ -122,7 +122,7 @@ describe('CollisionEvents', () => {
                         TestUtils.moveBodiesIntoEachOther(collisionPair, direction);
                     });
 
-                    it.skip(`${SHOULD_NOT} when one body is moving towards another body that the moving body is already intersecting`, () => {
+                    it(`${SHOULD_NOT} when one body is moving towards another body that the moving body is already intersecting`, () => {
                         TestUtils.moveBodyTowardsBody(collisionPair);
                         expectNoCollisionEvents();
                     });

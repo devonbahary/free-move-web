@@ -10,7 +10,7 @@ import {
     RectVsCircleCollisionPair,
     RectVsRectCollisionPair,
 } from '@collisions/types';
-import { BodyType } from '@bodies/types';
+import { BodyType, CircleBodyType, RectBodyType } from '@bodies/types';
 
 export class Collisions {
     // TODO: use in quad-tree optimization
@@ -115,6 +115,35 @@ export class Collisions {
         }
     };
 
+    static isOverlapping = (collisionPair: CollisionPair, log = false) => {
+        if (Collisions.isCircleVsCircle(collisionPair)) {
+            const { movingBody, collisionBody } = collisionPair;
+            
+            const totalRadiiLength = movingBody.radius + collisionBody.radius;
+            
+            const diffPos = Vectors.subtract(movingBody.center, collisionBody.center); 
+            const diffPosLength = Vectors.magnitude(diffPos);
+            
+            return Maths.roundFloatingPoint(diffPosLength) < totalRadiiLength;
+        }
+
+        if (Collisions.isCircleVsRect(collisionPair)) {
+            const { movingBody: circle, collisionBody: rect } = collisionPair;
+            return Collisions.areCircleAndRectIntersecting(circle, rect);
+        }
+
+        if (Collisions.isRectVsCircle(collisionPair)) {
+            const { movingBody: rect, collisionBody: circle } = collisionPair;
+            return Collisions.areCircleAndRectIntersecting(circle, rect);
+        }
+
+        if (Collisions.isRectVsRect(collisionPair)) {
+            return Collisions.areRectsIntersecting(collisionPair);
+        }
+
+        throw new Error(`cannot determine if overlap exists for collisionPair: ${JSON.stringify(collisionPair)}`);
+    }
+
     // TODO: revisit, isn't working intuitively for rectangle vs any collisions
     static isMovingTowardsBody = (collisionPair: CollisionPair) => {
         const { movingBody, collisionBody } = collisionPair;
@@ -193,6 +222,39 @@ export class Collisions {
 
         return false;
     };
+
+    // https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
+    private static areCircleAndRectIntersecting = (circle: CircleBodyType, rect: RectBodyType) => {
+        const diffX = Math.abs(rect.center.x - circle.center.x);
+        const diffY = Math.abs(rect.center.y - circle.center.y);
+        const { width, height } = rect;
+        const { radius } = circle;
+
+        if (diffX >= width / 2 + radius || diffY >= height / 2 + radius) {
+            return false;
+        }
+
+        if (diffX < width / 2 || diffY < height / 2) {
+            return true;
+        }
+
+        const distanceToRectCorner = (diffX - width / 2) ** 2 + (diffY - height / 2) ** 2;
+
+        return distanceToRectCorner < radius ** 2;
+    };
+
+    private static areRectsIntersecting = (collisionPair: RectVsRectCollisionPair) => {
+        const { movingBody: rectA, collisionBody: rectB } = collisionPair;
+        if (
+            rectB.x1 <= rectA.x0 ||
+            rectB.x0 >= rectA.x1 || 
+            rectB.y1 <= rectA.y0 ||
+            rectB.y0 >= rectA.y1
+        ) {
+            return false;
+        }
+        return true;
+    }
 
     private static getCollisionRelativePositionVector = (collisionEvent: CollisionEvent): Vector => {
         const { collisionPair } = collisionEvent;
