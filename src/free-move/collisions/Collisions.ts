@@ -79,7 +79,7 @@ export class Collisions {
         );
         const finalVelocityB = Vectors.divide(sum, mB);
 
-        if (!movingBody.isFixed) movingBody.setVelocity(finalVelocityA);
+        movingBody.setVelocity(finalVelocityA);
         collisionBody.setVelocity(finalVelocityB);
     };
 
