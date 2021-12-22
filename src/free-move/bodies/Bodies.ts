@@ -8,7 +8,7 @@ import {
     RectBodyType,
     RectType,
     SaveableBodyState,
-} from './types';
+} from '@bodies/types';
 
 type ShapeConstructor = new (...args: any[]) => Point;
 
@@ -17,7 +17,6 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
         public id: string;
         public velocity: Vector;
         public mass: number;
-        public isElastic: boolean;
         public name?: string;
 
         constructor(...args: any[]) {
@@ -26,8 +25,6 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
             this.id = uuid();
             this.velocity = Vectors.create();
             this.mass = 1;
-            // TODO: implement restitution
-            this.isElastic = true;
         }
 
         get isFixed() {

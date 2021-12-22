@@ -14,8 +14,6 @@ import { RectEntity } from './game/game-entities/RectEntity';
             - repercussions, what does it look like for a fixed character to move into a fixed character?
         - inelastic collisions with another circle / rectangle
             - implement "sliding" or "glancing" 
-        - investigate weird "jumping" / teleporting behavior when moving immobile elastic entities
-        - investigate why player mass of 500 would make collisions "stick" to it
     
 
     THOUGHTS:
