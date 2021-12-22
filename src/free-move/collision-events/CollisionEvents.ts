@@ -39,10 +39,10 @@ export class CollisionEvents {
 
             const collisionPair = { movingBody, collisionBody };
 
-            // ignore bodies that are already overlapping (allow for movement in order to escape each other)
-            if (Collisions.isOverlapping(collisionPair)) {
-                return acc;
-            }
+            // TODO: ignore bodies that are already overlapping (allow for movement in order to escape each other)
+            // if (Collisions.isOverlapping(collisionPair)) {
+            //     return acc;
+            // }
 
             // broad phase collision detection
             if (!Collisions.isMovingTowardsBody(collisionPair)) {
