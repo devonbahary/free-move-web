@@ -27,6 +27,10 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
             this.mass = 1;
         }
 
+        static get MIN_SPEED() {
+            return 0.0001;
+        }
+
         get isFixed() {
             return this.mass === Infinity;
         }
@@ -50,6 +54,20 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
         applyForce(force: Vector) {
             if (this.isFixed) return; // fixed bodies can be subject to forces, even if nothing happens
             this.velocity = Vectors.add(this.velocity, Vectors.divide(force, this.mass));
+        }
+
+        applyFriction() {
+            if (!this.isMoving()) return;
+
+            const { x, y } = this.velocity;
+
+            const newX = x * 0.9;
+            const newY = y * 0.9;
+
+            this.setVelocity({
+                x: Math.abs(newX) >= Body.MIN_SPEED ? newX : 0,
+                y: Math.abs(newY) >= Body.MIN_SPEED ? newY : 0,
+            });
         }
 
         toSaveableState(): SaveableBodyState {

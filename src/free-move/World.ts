@@ -110,6 +110,8 @@ export class World {
             // be processed
             this.forgetCollision(body);
 
+            body.applyFriction();
+
             return;
         }
 
