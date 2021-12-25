@@ -17,6 +17,7 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
         public id: string;
         public velocity: Vector;
         public mass: number;
+        public elasticity: number;
         public name?: string;
 
         constructor(...args: any[]) {
@@ -25,6 +26,7 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
             this.id = uuid();
             this.velocity = Vectors.create();
             this.mass = 1;
+            this.elasticity = 0.4;
         }
 
         static get MIN_SPEED() {

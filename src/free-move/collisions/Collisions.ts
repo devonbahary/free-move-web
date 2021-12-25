@@ -79,8 +79,10 @@ export class Collisions {
         );
         const finalVelocityB = Vectors.divide(sum, mB);
 
-        movingBody.setVelocity(finalVelocityA);
-        collisionBody.setVelocity(finalVelocityB);
+        const cor = Collisions.getCoefficientOfRestitution(collisionPair);
+
+        movingBody.setVelocity(Vectors.mult(finalVelocityA, cor));
+        collisionBody.setVelocity(Vectors.mult(finalVelocityB, cor));
     };
 
     static resolveFixedCollision = (collisionEvent: FixedCollisionEvent) => {
@@ -93,9 +95,12 @@ export class Collisions {
         const { movingBody } = collisionPair;
 
         const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
+        
+        const cor = Collisions.getCoefficientOfRestitution(collisionPair);
 
         if (Collisions.isCircleVsCircle(collisionPair)) {
-            movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(movingBody.velocity)));
+            const reflectedVector = Vectors.rescale(diffPositions, Vectors.magnitude(movingBody.velocity));
+            movingBody.setVelocity(Vectors.mult(reflectedVector, cor));
         } else {
             const { x, y } = movingBody.velocity;
             // TODO: remove roundFloatingPoint here, smell of bad diffPositions
@@ -112,6 +117,7 @@ export class Collisions {
             } else {
                 movingBody.setVelocity(Vectors.rescale(diffPositions, Vectors.magnitude(movingBody.velocity)));
             }
+            movingBody.setVelocity(Vectors.mult(movingBody.velocity, cor));
         }
     };
 
@@ -222,6 +228,11 @@ export class Collisions {
 
         return false;
     };
+
+    private static getCoefficientOfRestitution = (collisionPair: CollisionPair) => {
+        const { movingBody, collisionBody } = collisionPair;
+        return Math.min(movingBody.elasticity, collisionBody.elasticity);
+    }
 
     // https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
     private static areCircleAndRectIntersecting = (circle: CircleBodyType, rect: RectBodyType) => {
