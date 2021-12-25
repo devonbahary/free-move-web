@@ -30,7 +30,7 @@ export const BodyMixin = <T extends ShapeConstructor>(Shape: T) => {
         }
 
         static get MIN_SPEED() {
-            return 0.0001;
+            return 0.01;
         }
 
         get isFixed() {
