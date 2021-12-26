@@ -38,10 +38,53 @@ export class Collisions {
 
         Collisions.moveBodyToPointOfCollision(movingBody, timeOfCollision);
 
+        if (isFixedBody(movingBody)) {
+            throw new Error(`cannot resolve collision with fixed movingBody`);
+        }
+
         if (CollisionEvents.isFixedCollisionEvent(collisionEvent)) {
             return Collisions.resolveFixedCollision(collisionEvent);
         }
+        
+        const diffPositions = Vectors.subtract(movingBody.center, collisionBody.center);
 
+        let [ finalVelocityA, finalVelocityB ] = Collisions.getNonFixedCollisionVectors(
+            collisionEvent,
+            diffPositions,
+        );
+
+        // let the rect bounce off the circle with respect to the difference in center of masses
+        // but the circle needs to bounce directly off the face of the rect in order for the two
+        // bodies to still have clearance of each other after collision
+        if (CollisionEvents.isCircleVsRectCollisionEvent(collisionEvent)) {
+            const diffPositions = Vectors.subtract(movingBody.center, collisionEvent.collisionPoint);
+            ([ finalVelocityA ] = Collisions.getNonFixedCollisionVectors(
+                collisionEvent,
+                diffPositions,
+            ));
+        } else if (CollisionEvents.isRectVsCircleCollisionEvent(collisionEvent)) {
+            const diffPositions = Vectors.subtract(collisionEvent.collisionPoint, collisionBody.center);
+            ([ ,finalVelocityB ] = Collisions.getNonFixedCollisionVectors(
+                collisionEvent,
+                diffPositions,
+            ));
+        }
+
+        const cor = Collisions.getCoefficientOfRestitution(collisionPair);
+
+        movingBody.setVelocity(Vectors.mult(finalVelocityA, cor));
+        collisionBody.setVelocity(Vectors.mult(finalVelocityB, cor));
+    };
+
+    static getNonFixedCollisionVectors = (
+        collisionEvent: CollisionEvent, 
+        diffPositions: Vector
+    ): [ Vector, Vector ] => {
+        const { collisionPair } = collisionEvent;
+        const { movingBody, collisionBody } = collisionPair;
+
+        const { mass: mA, velocity: vA } = movingBody;
+        const { mass: mB, velocity: vB } = collisionBody;
         /*
             2D Elastic Collision (angle-free)
             https://stackoverflow.com/questions/35211114/2d-elastic-ball-collision-physics
@@ -53,12 +96,7 @@ export class Collisions {
                         x = position (at time of collision)
         */
 
-        const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
-        const { mass: mA, velocity: vA } = movingBody;
-        const { mass: mB, velocity: vB } = collisionBody;
-
         const diffVelocities = Vectors.subtract(vA, vB);
-
         const dotProduct = Vectors.dot(diffVelocities, diffPositions);
         const magnitude = Vectors.magnitude(diffPositions) ** 2;
         const massScalar = (2 * mB) / (mA + mB);
@@ -79,11 +117,8 @@ export class Collisions {
         );
         const finalVelocityB = Vectors.divide(sum, mB);
 
-        const cor = Collisions.getCoefficientOfRestitution(collisionPair);
-
-        movingBody.setVelocity(Vectors.mult(finalVelocityA, cor));
-        collisionBody.setVelocity(Vectors.mult(finalVelocityB, cor));
-    };
+        return [finalVelocityA, finalVelocityB];
+    }
 
     static resolveFixedCollision = (collisionEvent: FixedCollisionEvent) => {
         const { collisionPair } = collisionEvent;
