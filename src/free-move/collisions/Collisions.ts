@@ -53,18 +53,25 @@ export class Collisions {
             diffPositions,
         );
 
-        // let the rect bounce off the circle with respect to the difference in center of masses
-        // but the circle needs to bounce directly off the face of the rect in order for the two
-        // bodies to still have clearance of each other after collision
+        // heterogeneous collisions should allow the rect to deflect off of a circle with respect
+        // to their center of positions, but because the face of a rect is a rigid constraint that
+        // we can't move through, we always need to bounce directly off that face so that bodies have
+        // clearance of each other after collision  
         if (CollisionEvents.isCircleVsRectCollisionEvent(collisionEvent)) {
-            const diffPositions = Vectors.subtract(movingBody.center, collisionEvent.collisionPoint);
+            const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
             ([ finalVelocityA ] = Collisions.getNonFixedCollisionVectors(
                 collisionEvent,
                 diffPositions,
             ));
         } else if (CollisionEvents.isRectVsCircleCollisionEvent(collisionEvent)) {
-            const diffPositions = Vectors.subtract(collisionEvent.collisionPoint, collisionBody.center);
+            const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
             ([ ,finalVelocityB ] = Collisions.getNonFixedCollisionVectors(
+                collisionEvent,
+                diffPositions,
+            ));
+        } else if (CollisionEvents.isRectVsRectCollisionEvent(collisionEvent)) {
+            const diffPositions = Collisions.getCollisionRelativePositionVector(collisionEvent);
+            ([ finalVelocityA, finalVelocityB ] = Collisions.getNonFixedCollisionVectors(
                 collisionEvent,
                 diffPositions,
             ));
